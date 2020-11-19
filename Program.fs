@@ -16,7 +16,7 @@ let computeHashStringFromFile filePath =
     if not (File.Exists filePath) then
         None
     else
-        use file = File.Create filePath
+        use file = File.OpenRead filePath
         file
             |> SHA256.Create().ComputeHash
             |> Seq.map (fun c -> c.ToString("x2"))
