@@ -56,11 +56,31 @@ and makeHashStructure path =
     else
         None
 
+let makeLeftSpacer level =
+    assert (0 <= level)
+    match level with
+        | 0 -> ""
+        | 1 -> "├── "
+        | n ->  (String.replicate (n-1) "│   ") + "├── "
+
+let rec printHashStructureHelper structure level =
+    match structure with
+        | File (path, hash) ->
+            printfn "%s%s %s" (makeLeftSpacer level) hash path
+        | Dir (path, hash, children) ->
+            printfn "%s%s %s" (makeLeftSpacer level) hash path
+            for child in children do
+                printHashStructureHelper child (level + 1)
+
+let rec printHashStructure structure =
+    printHashStructureHelper structure 0
 
 [<EntryPoint>]
 let main argv =
     for arg in argv do
-        let hashStructure = makeHashStructure arg
-        printfn "%A" hashStructure
+        let optHashStructure = makeHashStructure arg
+        match optHashStructure with
+            | None -> printfn "%s is not a valid path" arg
+            | Some(hashStructure) -> printHashStructure hashStructure
 
     0
