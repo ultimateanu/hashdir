@@ -66,9 +66,10 @@ let makeLeftSpacer level =
 let rec printHashStructureHelper structure level =
     match structure with
         | File (path, hash) ->
-            printfn "%s%s %s" (makeLeftSpacer level) hash path
+            printfn "%s%s %s" (makeLeftSpacer level) hash (Path.GetFileName path)
         | Dir (path, hash, children) ->
-            printfn "%s%s %s" (makeLeftSpacer level) hash path
+            printfn "%s%s %c%s" (makeLeftSpacer level) hash
+                Path.DirectorySeparatorChar (DirectoryInfo(path).Name)
             for child in children do
                 printHashStructureHelper child (level + 1)
 
