@@ -1,4 +1,4 @@
-open System
+open CommandLine
 open System.IO
 open System.Security.Cryptography
 open System.Text
@@ -73,15 +73,30 @@ let rec printHashStructureHelper structure level =
             for child in children do
                 printHashStructureHelper child (level + 1)
 
+
 let rec printHashStructure structure =
     printHashStructureHelper structure 0
 
+
+type Options = {
+  [<Option('i', "include-hidden-files", Default = false, HelpText = "Include hidden files.")>] IncludeHiddenFiles : bool;
+  [<Value(0, Required = true, MetaName="input", HelpText = "Input directories or files.")>] Input : seq<string>;
+}
+
+
+let run (o : Options)  =
+    for item in o.Input do
+        let optHashStructure = makeHashStructure item
+        match optHashStructure with
+            | None -> printfn "%s is not a valid path" item
+            | Some(hashStructure) -> printHashStructure hashStructure
+
+
 [<EntryPoint>]
 let main argv =
-    for arg in argv do
-        let optHashStructure = makeHashStructure arg
-        match optHashStructure with
-            | None -> printfn "%s is not a valid path" arg
-            | Some(hashStructure) -> printHashStructure hashStructure
+    let parsedResult = CommandLine.Parser.Default.ParseArguments<Options>(argv)
+    match parsedResult with
+        | :? Parsed<Options> as parsed -> run parsed.Value
+        | _ -> ()
 
     0
