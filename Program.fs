@@ -34,12 +34,12 @@ let getHash itemHash =
             hash
 
 
-let rec makeDirHashStructure dirPath =
+let rec makeDirHashStructure includeHiddenFiles dirPath =
     assert Directory.Exists(dirPath)
     let children =
         dirPath
             |> Directory.EnumerateFileSystemEntries
-            |> Seq.choose makeHashStructure
+            |> Seq.choose (makeHashStructure includeHiddenFiles)
     let childrenHash =
         children
             |> Seq.map getHash
@@ -48,11 +48,15 @@ let rec makeDirHashStructure dirPath =
     Dir(path = dirPath, hash = childrenHash, children = children)
 
 
-and makeHashStructure path =
+and makeHashStructure includeHiddenFiles path =
     if File.Exists(path) then
-        Some(File(path = path, hash = (computeHashStringFromFile path)))
+        if ((not includeHiddenFiles) &&
+            (File.GetAttributes(path) &&& FileAttributes.Hidden).Equals(FileAttributes.Hidden)) then
+            None
+        else
+            Some(File(path = path, hash = (computeHashStringFromFile path)))
     else if Directory.Exists(path) then
-        Some(makeDirHashStructure path)
+        Some(makeDirHashStructure includeHiddenFiles path)
     else
         None
 
@@ -86,7 +90,7 @@ type Options = {
 
 let run (o : Options)  =
     for item in o.Input do
-        let optHashStructure = makeHashStructure item
+        let optHashStructure = makeHashStructure o.IncludeHiddenFiles item
         match optHashStructure with
             | None -> printfn "%s is not a valid path" item
             | Some(hashStructure) -> printHashStructure hashStructure
