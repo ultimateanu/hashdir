@@ -39,6 +39,7 @@ let rec makeDirHashStructure includeHiddenFiles dirPath =
     let children =
         dirPath
             |> Directory.EnumerateFileSystemEntries
+            |> Seq.sortBy(id)
             |> Seq.choose (makeHashStructure includeHiddenFiles)
     let childrenHash =
         children
