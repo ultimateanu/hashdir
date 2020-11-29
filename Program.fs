@@ -61,26 +61,36 @@ and makeHashStructure includeHiddenFiles path =
     else
         None
 
-let makeLeftSpacer level =
-    assert (0 <= level)
-    match level with
-        | 0 -> ""
-        | 1 -> "├── "
-        | n ->  (String.replicate (n-1) "│   ") + "├── "
+let makeLeftSpacer levels =
+    match levels with
+        | [] -> ""
+        | lastLevelActive :: parentsActive ->
+            let parentSpacer =
+                parentsActive
+                    |> List.rev
+                    |> List.map (fun isActive -> if isActive then "│   " else "    ")
+                    |> System.String.Concat
 
-let rec printHashStructureHelper structure level =
+            let curSpacer = if lastLevelActive then "├── " else "└── "
+            parentSpacer + curSpacer
+
+
+let rec printHashStructureHelper structure (levels:List<bool>) =
     match structure with
         | File (path, hash) ->
-            printfn "%s%s %s" (makeLeftSpacer level) hash (Path.GetFileName path)
+            printfn "%s%s %s" (makeLeftSpacer levels) hash (Path.GetFileName path)
         | Dir (path, hash, children) ->
-            printfn "%s%s %c%s" (makeLeftSpacer level) hash
+            printfn "%s%s %c%s" (makeLeftSpacer levels) hash
                 Path.DirectorySeparatorChar (DirectoryInfo(path).Name)
-            for child in children do
-                printHashStructureHelper child (level + 1)
+            let allButLastChild = Seq.take (Seq.length children - 1) children
+            let lastChild = Seq.last children
+            for child in allButLastChild do
+                printHashStructureHelper child (true :: levels)
+            printHashStructureHelper lastChild (false :: levels)
 
 
 let rec printHashStructure structure =
-    printHashStructureHelper structure 0
+    printHashStructureHelper structure []
 
 
 type Options = {
