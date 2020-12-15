@@ -1,3 +1,5 @@
 {
-    "files.trimTrailingWhitespace": true
+    "files.trimTrailingWhitespace": true,
+    "FSharp.suggestSdkScripts": false,
+    "files.eol": "\n"
 }
