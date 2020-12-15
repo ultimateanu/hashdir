@@ -95,6 +95,7 @@ let rec printHashStructure structure =
 
 type Options = {
   [<Option('i', "include-hidden-files", Default = false, HelpText = "Include hidden files.")>] IncludeHiddenFiles : bool;
+  [<Option('e', "include-empty-dir", Default = true, HelpText = "Include empty directories.")>] IncludeEmptyDir : bool;
   [<Value(0, Required = true, MetaName="input", HelpText = "Input directories or files.")>] Input : seq<string>;
 }
 
