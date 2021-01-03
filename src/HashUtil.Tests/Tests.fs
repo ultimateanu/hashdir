@@ -25,13 +25,6 @@ type FileSystem(output:ITestOutputHelper) =
 
     [<Fact>]
     let ``Check root dir hash`` () =
-        let outputHashStructure = makeHashStructure false rootDir
-        Assert.True(outputHashStructure.IsSome)
-
-        // Root hashdir
-        let dirHash = getHash outputHashStructure.Value
-        Assert.Equal("f5b7237efb5ad6d72149bf6b10e6d035cf012d9c37700905991549d6d32d81c4", dirHash)
-
         // One file dir
         let oneFileDirHash = makeHashStructure false (Path.Combine(rootDir, "dir_one"))
         Assert.True(oneFileDirHash.IsSome)
@@ -39,14 +32,19 @@ type FileSystem(output:ITestOutputHelper) =
             "e0bc614e4fd035a488619799853b075143deea596c477b8dc077e309c0fe42e9",
             getHash oneFileDirHash.Value)
 
-        // Overall expected hash structure
-        //let expectedHashStructure =
-        //    Dir(path = rootDir,
-        //        hash = "9da9449853c7cfafb7b428097cbb3aaf45587b66146bf01a1515c667f1e24707",
-        //        children = [
-        //            File(path = Path.Combine(rootDir, "shakespeare.txt"),
-        //                 hash = "d66f4bbd3a6f998979be96cced35d44ed32226f58eb38d347ef09c5d205b6fc4")])
-        //Assert.Equal(expectedHashStructure, outputHashStructure.Value)
+        // Two file dir
+        let twoFilesDirHash = makeHashStructure false (Path.Combine(rootDir, "dir_two"))
+        Assert.True(twoFilesDirHash.IsSome)
+        Assert.Equal(
+            "33b675636da5dcc86ec847b38c08fa49ff1cace9749931e0a5d4dfdbdedd808a",
+            getHash twoFilesDirHash.Value)
+
+        // Root hashdir
+        let rootHash = makeHashStructure false rootDir
+        Assert.True(rootHash.IsSome)
+        Assert.Equal(
+            "f5b7237efb5ad6d72149bf6b10e6d035cf012d9c37700905991549d6d32d81c4",
+            getHash rootHash.Value)
 
 
     interface IDisposable with

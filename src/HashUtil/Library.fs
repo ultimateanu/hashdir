@@ -49,7 +49,7 @@ module FS =
                 |> List.reduce (+)
                 |> Checksum.computeHashString
         Dir(path = dirPath, hash = childrenHash, children = children)
-    
+
     and makeHashStructure includeHiddenFiles path =
         if File.Exists(path) then
             if ((not includeHiddenFiles) &&
@@ -61,7 +61,7 @@ module FS =
             Some(makeDirHashStructure includeHiddenFiles path)
         else
             None
-    
+
     let makeLeftSpacer levels =
         match levels with
             | [] -> ""
@@ -71,10 +71,10 @@ module FS =
                         |> List.rev
                         |> List.map (fun isActive -> if isActive then "│   " else "    ")
                         |> System.String.Concat
-    
+
                 let curSpacer = if lastLevelActive then "├── " else "└── "
                 parentSpacer + curSpacer
-    
+
     let rec printHashStructureHelper structure (levels:List<bool>) =
         match structure with
             | File (path, hash) ->
