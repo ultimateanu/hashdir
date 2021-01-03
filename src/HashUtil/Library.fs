@@ -25,7 +25,7 @@ module Checksum =
 module FS =
     type ItemHash =
         | File of path : string * hash : string
-        | Dir of path : string * hash : string * children : seq<ItemHash>
+        | Dir of path : string * hash : string * children : List<ItemHash>
 
     let getHash itemHash =
         match itemHash with
@@ -39,12 +39,14 @@ module FS =
         let children =
             dirPath
                 |> Directory.EnumerateFileSystemEntries
-                |> Seq.sortBy(id)
-                |> Seq.choose (makeHashStructure includeHiddenFiles)
+                |> Seq.toList
+                |> List.sort
+                |> List.choose (makeHashStructure includeHiddenFiles)
+
         let childrenHash =
             children
-                |> Seq.map getHash
-                |> Seq.reduce (+)
+                |> List.map getHash
+                |> List.reduce (+)
                 |> Checksum.computeHashString
         Dir(path = dirPath, hash = childrenHash, children = children)
     
@@ -80,8 +82,8 @@ module FS =
             | Dir (path, hash, children) ->
                 printfn "%s%s %c%s" (makeLeftSpacer levels) hash
                     Path.DirectorySeparatorChar (DirectoryInfo(path).Name)
-                let allButLastChild = Seq.take (Seq.length children - 1) children
-                let lastChild = Seq.last children
+                let allButLastChild = List.take (children.Length - 1) children
+                let lastChild = List.last children
                 for child in allButLastChild do
                     printHashStructureHelper child (true :: levels)
                 printHashStructureHelper lastChild (false :: levels)

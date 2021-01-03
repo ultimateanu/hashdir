@@ -16,10 +16,21 @@ type FileSystem(output:ITestOutputHelper) =
 
     [<Fact>]
     let ``Check root dir hash`` () =
-        let optHashStructure = makeHashStructure false rootDir
-        Assert.True(optHashStructure.IsSome)
-        let dirHash = getHash optHashStructure.Value
+        let outputHashStructure = makeHashStructure false rootDir
+        Assert.True(outputHashStructure.IsSome)
+
+        // Root hashdir
+        let dirHash = getHash outputHashStructure.Value
         Assert.Equal("9da9449853c7cfafb7b428097cbb3aaf45587b66146bf01a1515c667f1e24707", dirHash)
+
+        // Overall expected hash structure
+        let expectedHashStructure =
+            Dir(path = rootDir,
+                hash = "9da9449853c7cfafb7b428097cbb3aaf45587b66146bf01a1515c667f1e24707",
+                children = [
+                    File(path = Path.Combine(rootDir, "shakespeare.txt"),
+                         hash = "d66f4bbd3a6f998979be96cced35d44ed32226f58eb38d347ef09c5d205b6fc4")])
+        Assert.Equal(expectedHashStructure, outputHashStructure.Value)
 
 
     interface IDisposable with
