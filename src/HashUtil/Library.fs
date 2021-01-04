@@ -34,24 +34,27 @@ module FS =
             | Dir (_, hash, _) ->
                 hash
 
-    let rec makeDirHashStructure includeHiddenFiles dirPath =
+    let rec makeDirHashStructure includeHiddenFiles includeEmptyDir dirPath =
         assert Directory.Exists(dirPath)
         let children =
             dirPath
                 |> Directory.EnumerateFileSystemEntries
                 |> Seq.toList
                 |> List.sort
-                |> List.choose (makeHashStructure includeHiddenFiles)
+                |> List.choose (makeHashStructure includeHiddenFiles includeEmptyDir)
 
-        let childrenHash =
-            children
-                |> List.map getHash
-                |> fun x -> "" :: x // Add empty string as a child to compute hash of empty dir.
-                |> List.reduce (+)
-                |> Checksum.computeHashString
-        Dir(path = dirPath, hash = childrenHash, children = children)
+        if children.IsEmpty && not includeEmptyDir then
+            None
+        else
+            let childrenHash =
+                children
+                    |> List.map getHash
+                    |> fun x -> "" :: x // Add empty string as a child to compute hash of empty dir.
+                    |> List.reduce (+)
+                    |> Checksum.computeHashString
+            Some(Dir(path = dirPath, hash = childrenHash, children = children))
 
-    and makeHashStructure includeHiddenFiles path =
+    and makeHashStructure includeHiddenFiles includeEmptyDir path =
         if File.Exists(path) then
             if ((not includeHiddenFiles) &&
                 (File.GetAttributes(path) &&& FileAttributes.Hidden).Equals(FileAttributes.Hidden)) then
@@ -59,7 +62,7 @@ module FS =
             else
                 Some(File(path = path, hash = (Checksum.computeHashStringFromFile path)))
         else if Directory.Exists(path) then
-            Some(makeDirHashStructure includeHiddenFiles path)
+            makeDirHashStructure includeHiddenFiles includeEmptyDir path
         else
             None
 

@@ -11,8 +11,10 @@ type Options = {
 
 let run (o : Options)  =
     for item in o.Input do
-        let optHashStructure = makeHashStructure o.IncludeHiddenFiles item
+        // TODO: add arg for empty dir
+        let optHashStructure = makeHashStructure o.IncludeHiddenFiles true item
         match optHashStructure with
+            // TODO: return more informative type in case dir exists but is empty
             | None -> printfn "%s is not a valid path" item
             | Some(hashStructure) -> printHashStructure hashStructure
 
