@@ -29,7 +29,7 @@ type FsSetupFixture() =
             Directory.Delete(tempDir, true)
             ()
 
-type DemoTests(fsSetupFixture: FsSetupFixture, output:ITestOutputHelper) =
+type HashStructureTests(fsSetupFixture: FsSetupFixture, output:ITestOutputHelper) =
     interface IClassFixture<FsSetupFixture>
 
     [<Fact>]
