@@ -11,11 +11,13 @@ type FsSetupFixture() =
         Directory.CreateDirectory(tempDir) |> ignore;
         Directory.CreateDirectory(rootDir) |> ignore;
         File.WriteAllText(Path.Combine(rootDir, "shakespeare.txt"), "To be or not to be...");
-        // Dir with one file
+        // Dir with 0 files
+        Directory.CreateDirectory(Path.Combine(rootDir, "dir_zero")) |> ignore;
+        // Dir with 1 file
         let dirOne = Path.Combine(rootDir, "dir_one")
         Directory.CreateDirectory(dirOne) |> ignore;
         File.WriteAllText(Path.Combine(dirOne, "file1.txt"), "1");
-        // Dir with two file
+        // Dir with 2 files
         let dirTwo = Path.Combine(rootDir, "dir_two")
         Directory.CreateDirectory(dirTwo) |> ignore;
         File.WriteAllText(Path.Combine(dirTwo, "file1.txt"), "1");
@@ -33,7 +35,15 @@ type HashStructureTests(fsSetupFixture: FsSetupFixture, output:ITestOutputHelper
     interface IClassFixture<FsSetupFixture>
 
     [<Fact>]
-    member _.``Dir with one file`` () =
+    member _.``Dir with 0 files`` () =
+        let oneFileDirHash = makeHashStructure false (Path.Combine(fsSetupFixture.RootDir, "dir_zero"))
+        Assert.True(oneFileDirHash.IsSome)
+        Assert.Equal(
+            "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            getHash oneFileDirHash.Value)
+
+    [<Fact>]
+    member _.``Dir with 1 file`` () =
         let oneFileDirHash = makeHashStructure false (Path.Combine(fsSetupFixture.RootDir, "dir_one"))
         Assert.True(oneFileDirHash.IsSome)
         Assert.Equal(
@@ -41,7 +51,7 @@ type HashStructureTests(fsSetupFixture: FsSetupFixture, output:ITestOutputHelper
             getHash oneFileDirHash.Value)
 
     [<Fact>]
-    member _.``Dir with two files`` () =
+    member _.``Dir with 2 files`` () =
         let twoFileDirHash = makeHashStructure false (Path.Combine(fsSetupFixture.RootDir, "dir_two"))
         Assert.True(twoFileDirHash.IsSome)
         Assert.Equal(
@@ -53,5 +63,5 @@ type HashStructureTests(fsSetupFixture: FsSetupFixture, output:ITestOutputHelper
         let rootHash = makeHashStructure false fsSetupFixture.RootDir
         Assert.True(rootHash.IsSome)
         Assert.Equal(
-            "f5b7237efb5ad6d72149bf6b10e6d035cf012d9c37700905991549d6d32d81c4",
+            "070019945bc35bce97b3ca01630efed4f8d191b1336b78c085aa944d8a375f27",
             getHash rootHash.Value)

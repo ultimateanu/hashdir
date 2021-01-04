@@ -46,6 +46,7 @@ module FS =
         let childrenHash =
             children
                 |> List.map getHash
+                |> fun x -> "" :: x // Add empty string as a child to compute hash of empty dir.
                 |> List.reduce (+)
                 |> Checksum.computeHashString
         Dir(path = dirPath, hash = childrenHash, children = children)
