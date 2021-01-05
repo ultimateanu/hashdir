@@ -11,6 +11,10 @@ type FsSetupFixture() =
         Directory.CreateDirectory(tempDir) |> ignore;
         Directory.CreateDirectory(rootDir) |> ignore;
         File.WriteAllText(Path.Combine(rootDir, "shakespeare.txt"), "To be or not to be...");
+        // Hidden file
+        let hiddenFilePath = Path.Combine(rootDir, ".fakerc")
+        File.WriteAllText(Path.Combine(rootDir, ".fakerc"), "config");
+        File.SetAttributes(hiddenFilePath, FileAttributes.Hidden);
         // Dir with 0 files
         Directory.CreateDirectory(Path.Combine(rootDir, "dir_zero")) |> ignore;
         // Dir with 1 file
@@ -50,6 +54,7 @@ type HashStructureTests(fsSetupFixture: FsSetupFixture, output:ITestOutputHelper
         Assert.Equal(
             "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
             getHash oneFileDirHash.Value)
+        output.WriteLine("a root:" + fsSetupFixture.RootDir)
 
     [<Fact>]
     member _.``Dir with 0 files (exclude empty dir)`` () =
@@ -83,6 +88,29 @@ type HashStructureTests(fsSetupFixture: FsSetupFixture, output:ITestOutputHelper
             getHash twoFileDirHash.Value)
 
     [<Fact>]
+    member _.``Empty file (include)`` () =
+        let includeHiddenFiles = true
+        let includeEmptyDir = true
+        let rootHash =
+            Path.Combine(fsSetupFixture.RootDir, ".fakerc")
+                |> makeHashStructure includeHiddenFiles includeEmptyDir
+                |> makeOption
+        Assert.True(rootHash.IsSome)
+        Assert.Equal(
+            "b79606fb3afea5bd1609ed40b622142f1c98125abcfe89a76a661b0e8e343910",
+            getHash rootHash.Value)
+
+    [<Fact>]
+    member _.``Empty file (exclude)`` () =
+        let includeHiddenFiles = false
+        let includeEmptyDir = true
+        let rootHash =
+            Path.Combine(fsSetupFixture.RootDir, ".fakerc")
+                |> makeHashStructure includeHiddenFiles includeEmptyDir
+                |> makeOption
+        Assert.True(rootHash.IsNone)
+
+    [<Fact>]
     member _.``Root hash (include empty dir)`` () =
         let includeEmptyDir = true
         let rootHash =
@@ -104,4 +132,30 @@ type HashStructureTests(fsSetupFixture: FsSetupFixture, output:ITestOutputHelper
         Assert.True(rootHash.IsSome)
         Assert.Equal(
             "f5b7237efb5ad6d72149bf6b10e6d035cf012d9c37700905991549d6d32d81c4",
+            getHash rootHash.Value)
+
+    [<Fact>]
+    member _.``Root hash (include hidden file)`` () =
+        let includeHiddenFiles = true
+        let includeEmptyDir = true
+        let rootHash =
+            fsSetupFixture.RootDir
+                |> makeHashStructure includeHiddenFiles includeEmptyDir
+                |> makeOption
+        Assert.True(rootHash.IsSome)
+        Assert.Equal(
+            "dfd92296a00e4592fb2e88871d650b6b4f3096ca42e508630ca069704f6741a3",
+            getHash rootHash.Value)
+
+    [<Fact>]
+    member _.``Root hash (exclude hidden file)`` () =
+        let includeHiddenFiles = false
+        let includeEmptyDir = true
+        let rootHash =
+            fsSetupFixture.RootDir
+                |> makeHashStructure includeHiddenFiles includeEmptyDir
+                |> makeOption
+        Assert.True(rootHash.IsSome)
+        Assert.Equal(
+            "070019945bc35bce97b3ca01630efed4f8d191b1336b78c085aa944d8a375f27",
             getHash rootHash.Value)
