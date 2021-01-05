@@ -3,6 +3,10 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net5.0</TargetFramework>
+    <AssemblyName>hashdir</AssemblyName>
+    <Version>0.0.1</Version>
+    <Company>SimpleSolutions</Company>
+    <Authors>Anu Bandi</Authors>
   </PropertyGroup>
 
   <ItemGroup>
