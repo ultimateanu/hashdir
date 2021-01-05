@@ -36,15 +36,20 @@ module FS =
 
     let rec makeDirHashStructure includeHiddenFiles includeEmptyDir dirPath =
         assert Directory.Exists(dirPath)
+        let getResult (x : Result<ItemHash,string>) =
+            match x with
+                | Ok v -> Some v
+                | Error _ -> None
         let children =
             dirPath
                 |> Directory.EnumerateFileSystemEntries
                 |> Seq.toList
                 |> List.sort
-                |> List.choose (makeHashStructure includeHiddenFiles includeEmptyDir)
+                |> List.map (makeHashStructure includeHiddenFiles includeEmptyDir)
+                |> List.choose getResult
 
         if children.IsEmpty && not includeEmptyDir then
-            None
+            Error("Excluding dir because it is empty")
         else
             let childrenHash =
                 children
@@ -52,19 +57,19 @@ module FS =
                     |> fun x -> "" :: x // Add empty string as a child to compute hash of empty dir.
                     |> List.reduce (+)
                     |> Checksum.computeHashString
-            Some(Dir(path = dirPath, hash = childrenHash, children = children))
+            Ok(Dir(path = dirPath, hash = childrenHash, children = children))
 
     and makeHashStructure includeHiddenFiles includeEmptyDir path =
         if File.Exists(path) then
             if ((not includeHiddenFiles) &&
                 (File.GetAttributes(path) &&& FileAttributes.Hidden).Equals(FileAttributes.Hidden)) then
-                None
+                Error("Not including hidden file")
             else
-                Some(File(path = path, hash = (Checksum.computeHashStringFromFile path)))
+                Ok(File(path = path, hash = (Checksum.computeHashStringFromFile path)))
         else if Directory.Exists(path) then
             makeDirHashStructure includeHiddenFiles includeEmptyDir path
         else
-            None
+            Error("Path is invalid")
 
     let makeLeftSpacer levels =
         match levels with
