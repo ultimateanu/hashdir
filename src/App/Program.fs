@@ -1,5 +1,6 @@
 open CommandLine
 open HashUtil.FS
+open System.IO
 
 
 type Options = {
@@ -9,12 +10,15 @@ type Options = {
 }
 
 
-let run (o : Options)  =
+let run (o : Options) =
     for item in o.Input do
         let optHashStructure = makeHashStructure o.IncludeHiddenFiles o.IncludeEmptyDir item
+        let strWriter = new StringWriter()
         match optHashStructure with
             | Error e -> printfn "Error: %s" e
-            | Ok hashStructure -> printHashStructure hashStructure
+            | Ok hashStructure ->
+                printHashStructure hashStructure strWriter
+                printfn "%s" (strWriter.ToString())
 
 
 [<EntryPoint>]

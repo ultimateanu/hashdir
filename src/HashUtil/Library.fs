@@ -1,8 +1,9 @@
 ﻿namespace HashUtil
 
+open System
+open System.IO
 open System.Security.Cryptography
 open System.Text
-open System.IO
 
 
 module Checksum =
@@ -84,18 +85,19 @@ module FS =
                 let curSpacer = if lastLevelActive then "├── " else "└── "
                 parentSpacer + curSpacer
 
-    let rec printHashStructureHelper structure (levels:List<bool>) =
+    let rec printHashStructureHelper (structure:ItemHash) (levels:List<bool>) (outputWriter:TextWriter) =
         match structure with
             | File (path, hash) ->
-                printfn "%s%s %s" (makeLeftSpacer levels) hash (Path.GetFileName path)
+                let fileLine = sprintf "%s%s %s" (makeLeftSpacer levels) hash (Path.GetFileName path)
+                outputWriter.WriteLine(fileLine)
             | Dir (path, hash, children) ->
-                printfn "%s%s %c%s" (makeLeftSpacer levels) hash
-                    Path.DirectorySeparatorChar (DirectoryInfo(path).Name)
+                let dirLine = sprintf "%s%s %c%s" (makeLeftSpacer levels) hash Path.DirectorySeparatorChar (DirectoryInfo(path).Name)
+                outputWriter.WriteLine(dirLine)
                 let allButLastChild = List.take (children.Length - 1) children
                 let lastChild = List.last children
                 for child in allButLastChild do
-                    printHashStructureHelper child (true :: levels)
-                printHashStructureHelper lastChild (false :: levels)
+                    printHashStructureHelper child (true :: levels) outputWriter
+                printHashStructureHelper lastChild (false :: levels) outputWriter
 
-    let rec printHashStructure structure =
-        printHashStructureHelper structure []
+    let rec printHashStructure (structure:ItemHash) (outputWriter:TextWriter) =
+        printHashStructureHelper structure [] outputWriter
