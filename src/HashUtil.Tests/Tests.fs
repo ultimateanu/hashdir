@@ -1,4 +1,4 @@
-open System
+﻿open System
 open Xunit
 open Xunit.Abstractions
 open System.IO
@@ -34,6 +34,40 @@ type FsSetupFixture() =
         member this.Dispose() =
             Directory.Delete(tempDir, true)
             ()
+
+type DisplayTests(output:ITestOutputHelper) =
+    [<Fact>]
+    member _.``Print file hash`` () =
+        let hashStructure = File(path = "/path/to/file.txt", hash = "a1b2c3")
+        let strWriter = new StringWriter()
+        printHashStructure hashStructure strWriter
+        Assert.Equal("a1b2c3 file.txt\r\n", strWriter.ToString())
+
+    [<Fact>]
+    member _.``Print dir 1 file hash`` () =
+        let hashStructure =
+            ItemHash.Dir(
+                path = "/path/to/dir",
+                hash = "d1",
+                children = [File(path = "/path/to/dir/file1.txt", hash = "f1")]
+            )
+        let strWriter = new StringWriter()
+        printHashStructure hashStructure strWriter
+        Assert.Equal("d1 \dir\r\n└── f1 file1.txt\r\n", strWriter.ToString())
+
+    [<Fact>]
+    member _.``Print dir 2 file hash`` () =
+        let hashStructure =
+            ItemHash.Dir(
+                path = "/path/to/dir",
+                hash = "d1",
+                children = [File(path = "/path/to/dir/file1.txt", hash = "f1");
+                            File(path = "/path/to/dir/file2.txt", hash = "f2")]
+            )
+        let strWriter = new StringWriter()
+        printHashStructure hashStructure strWriter
+        Assert.Equal("d1 \dir\r\n├── f1 file1.txt\r\n└── f2 file2.txt\r\n", strWriter.ToString())
+
 
 type HashStructureTests(fsSetupFixture: FsSetupFixture, output:ITestOutputHelper) =
     let makeOption x =
