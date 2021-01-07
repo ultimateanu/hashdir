@@ -70,7 +70,7 @@ module FS =
         else if Directory.Exists(path) then
             makeDirHashStructure includeHiddenFiles includeEmptyDir path
         else
-            Error("Path is invalid")
+            Error(sprintf "'%s' is not a valid path" path)
 
     let makeLeftSpacer levels =
         match levels with

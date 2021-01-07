@@ -4,10 +4,10 @@ open System.IO
 
 
 type Options =
-    { [<Option('i', "include-hidden-files", Default = false, HelpText = "Include hidden files.")>]
+    { [<Option('h', "include-hidden-files", Default = false, HelpText = "Include hidden files.")>]
       IncludeHiddenFiles: bool
-      [<Option('e', "include-empty-dir", Default = true, HelpText = "Include empty directories.")>]
-      IncludeEmptyDir: bool
+      [<Option('e', "skip-empty-dir", Default = false, HelpText = "Skip empty directories.")>]
+      SkipEmptyDir: bool
       [<Value(0, Required = true, MetaName = "input", HelpText = "Input directories or files.")>]
       Input: seq<string> }
 
@@ -15,10 +15,8 @@ type Options =
 let run (o: Options) =
     for item in o.Input do
         let optHashStructure =
-            makeHashStructure o.IncludeHiddenFiles o.IncludeEmptyDir item
-
+            makeHashStructure o.IncludeHiddenFiles (not o.SkipEmptyDir) item
         let strWriter = new StringWriter()
-
         match optHashStructure with
         | Error e -> printfn "Error: %s" e
         | Ok hashStructure ->

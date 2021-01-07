@@ -12,9 +12,9 @@
       "commandName": "Project",
       "commandLineArgs": "--help"
     },
-    "Desktop (no empty dir)": {
+    "Desktop (skip empty dir)": {
       "commandName": "Project",
-      "commandLineArgs": "--include-empty-dir=false C:\\Users\\ultim\\Desktop\\test"
+      "commandLineArgs": "--skip-empty-dir C:\\Users\\ultim\\Desktop\\test"
     }
   }
 }
