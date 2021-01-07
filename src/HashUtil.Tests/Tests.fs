@@ -1,8 +1,9 @@
-﻿open System
+﻿open HashUtil.FS
+open System
+open System.IO
+open System.Runtime.InteropServices
 open Xunit
 open Xunit.Abstractions
-open System.IO
-open HashUtil.FS
 
 type FsSetupFixture() =
     let tempDir = Path.GetFullPath(Path.Combine(Path.GetTempPath(), "hashdir_test_" + Guid.NewGuid().ToString()))
@@ -14,7 +15,8 @@ type FsSetupFixture() =
         // Hidden file
         let hiddenFilePath = Path.Combine(rootDir, ".fakerc")
         File.WriteAllText(Path.Combine(rootDir, ".fakerc"), "config");
-        File.SetAttributes(hiddenFilePath, FileAttributes.Hidden);
+        if RuntimeInformation.IsOSPlatform(OSPlatform.Windows) then
+            File.SetAttributes(hiddenFilePath, FileAttributes.Hidden);
         // Dir with 0 files
         Directory.CreateDirectory(Path.Combine(rootDir, "dir_zero")) |> ignore;
         // Dir with 1 file
@@ -38,10 +40,12 @@ type FsSetupFixture() =
 type DisplayTests(output:ITestOutputHelper) =
     [<Fact>]
     member _.``Print file hash`` () =
-        let hashStructure = File(path = "/path/to/file.txt", hash = "a1b2c3")
+        let hashStructure = ItemHash.File(path = "/path/to/file.txt", hash = "a1b2c3")
         let strWriter = new StringWriter()
         printHashStructure hashStructure strWriter
-        Assert.Equal("a1b2c3 file.txt\r\n", strWriter.ToString())
+
+        let expectedStr = sprintf "a1b2c3 file.txt%s" Environment.NewLine
+        Assert.Equal(expectedStr, strWriter.ToString())
 
     [<Fact>]
     member _.``Print dir 1 file hash`` () =
@@ -49,11 +53,15 @@ type DisplayTests(output:ITestOutputHelper) =
             ItemHash.Dir(
                 path = "/path/to/dir",
                 hash = "d1",
-                children = [File(path = "/path/to/dir/file1.txt", hash = "f1")]
+                children = [ItemHash.File(path = "/path/to/dir/file1.txt", hash = "f1")]
             )
         let strWriter = new StringWriter()
         printHashStructure hashStructure strWriter
-        Assert.Equal("d1 \dir\r\n└── f1 file1.txt\r\n", strWriter.ToString())
+
+        let expectedStr =
+            sprintf "d1 %cdir%s└── f1 file1.txt%s"
+                Path.DirectorySeparatorChar Environment.NewLine Environment.NewLine
+        Assert.Equal(expectedStr, strWriter.ToString())
 
     [<Fact>]
     member _.``Print dir 2 file hash`` () =
@@ -61,12 +69,17 @@ type DisplayTests(output:ITestOutputHelper) =
             ItemHash.Dir(
                 path = "/path/to/dir",
                 hash = "d1",
-                children = [File(path = "/path/to/dir/file1.txt", hash = "f1");
-                            File(path = "/path/to/dir/file2.txt", hash = "f2")]
+                children = [ItemHash.File(path = "/path/to/dir/file1.txt", hash = "f1");
+                            ItemHash.File(path = "/path/to/dir/file2.txt", hash = "f2")]
             )
         let strWriter = new StringWriter()
         printHashStructure hashStructure strWriter
-        Assert.Equal("d1 \dir\r\n├── f1 file1.txt\r\n└── f2 file2.txt\r\n", strWriter.ToString())
+
+        let expectedStr =
+            sprintf "d1 %cdir%s├── f1 file1.txt%s└── f2 file2.txt%s"
+                Path.DirectorySeparatorChar Environment.NewLine
+                Environment.NewLine Environment.NewLine
+        Assert.Equal(expectedStr, strWriter.ToString())
 
 
 type HashStructureTests(fsSetupFixture: FsSetupFixture, output:ITestOutputHelper) =
