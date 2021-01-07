@@ -44,7 +44,7 @@ type DisplayTests(output:ITestOutputHelper) =
         let strWriter = new StringWriter()
         printHashStructure hashStructure strWriter
 
-        let expectedStr = sprintf "a1b2c3 file.txt%s" Environment.NewLine
+        let expectedStr = "a1b2c3 file.txt\n"
         Assert.Equal(expectedStr, strWriter.ToString())
 
     [<Fact>]
@@ -58,9 +58,7 @@ type DisplayTests(output:ITestOutputHelper) =
         let strWriter = new StringWriter()
         printHashStructure hashStructure strWriter
 
-        let expectedStr =
-            sprintf "d1 %cdir%s"
-                Path.DirectorySeparatorChar Environment.NewLine
+        let expectedStr = "d1 /dir\n"
         Assert.Equal(expectedStr, strWriter.ToString())
 
     [<Fact>]
@@ -74,9 +72,7 @@ type DisplayTests(output:ITestOutputHelper) =
         let strWriter = new StringWriter()
         printHashStructure hashStructure strWriter
 
-        let expectedStr =
-            sprintf "d1 %cdir%s└── f1 file1.txt%s"
-                Path.DirectorySeparatorChar Environment.NewLine Environment.NewLine
+        let expectedStr = "d1 /dir\n└── f1 file1.txt\n"
         Assert.Equal(expectedStr, strWriter.ToString())
 
     [<Fact>]
@@ -91,10 +87,7 @@ type DisplayTests(output:ITestOutputHelper) =
         let strWriter = new StringWriter()
         printHashStructure hashStructure strWriter
 
-        let expectedStr =
-            sprintf "d1 %cdir%s├── f1 file1.txt%s└── f2 file2.txt%s"
-                Path.DirectorySeparatorChar Environment.NewLine
-                Environment.NewLine Environment.NewLine
+        let expectedStr = "d1 /dir\n├── f1 file1.txt\n└── f2 file2.txt\n"
         Assert.Equal(expectedStr, strWriter.ToString())
 
 

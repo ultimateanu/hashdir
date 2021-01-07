@@ -89,10 +89,12 @@ module FS =
         match structure with
             | File (path, hash) ->
                 let fileLine = sprintf "%s%s %s" (makeLeftSpacer levels) hash (Path.GetFileName path)
-                outputWriter.WriteLine(fileLine)
+                // Append "\n" rather than use WriteLine() to avoid system line endings (e.g. "\r\n")
+                outputWriter.Write(sprintf "%s\n" fileLine)
             | Dir (path, hash, children) ->
-                let dirLine = sprintf "%s%s %c%s" (makeLeftSpacer levels) hash Path.DirectorySeparatorChar (DirectoryInfo(path).Name)
-                outputWriter.WriteLine(dirLine)
+                let dirLine = sprintf "%s%s %c%s" (makeLeftSpacer levels) hash '/' (DirectoryInfo(path).Name)
+                // Append "\n" rather than use WriteLine() to avoid system line endings (e.g. "\r\n")
+                outputWriter.Write(sprintf "%s\n" dirLine)
                 if not children.IsEmpty then
                     let allButLastChild = List.take (children.Length - 1) children
                     let lastChild = List.last children
