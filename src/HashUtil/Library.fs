@@ -93,11 +93,12 @@ module FS =
             | Dir (path, hash, children) ->
                 let dirLine = sprintf "%s%s %c%s" (makeLeftSpacer levels) hash Path.DirectorySeparatorChar (DirectoryInfo(path).Name)
                 outputWriter.WriteLine(dirLine)
-                let allButLastChild = List.take (children.Length - 1) children
-                let lastChild = List.last children
-                for child in allButLastChild do
-                    printHashStructureHelper child (true :: levels) outputWriter
-                printHashStructureHelper lastChild (false :: levels) outputWriter
+                if not children.IsEmpty then
+                    let allButLastChild = List.take (children.Length - 1) children
+                    let lastChild = List.last children
+                    for child in allButLastChild do
+                        printHashStructureHelper child (true :: levels) outputWriter
+                    printHashStructureHelper lastChild (false :: levels) outputWriter
 
     let rec printHashStructure (structure:ItemHash) (outputWriter:TextWriter) =
         printHashStructureHelper structure [] outputWriter

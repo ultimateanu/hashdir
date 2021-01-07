@@ -48,6 +48,22 @@ type DisplayTests(output:ITestOutputHelper) =
         Assert.Equal(expectedStr, strWriter.ToString())
 
     [<Fact>]
+    member _.``Print dir 0 files hash`` () =
+        let hashStructure =
+            ItemHash.Dir(
+                path = "/path/to/dir",
+                hash = "d1",
+                children = []
+            )
+        let strWriter = new StringWriter()
+        printHashStructure hashStructure strWriter
+
+        let expectedStr =
+            sprintf "d1 %cdir%s"
+                Path.DirectorySeparatorChar Environment.NewLine
+        Assert.Equal(expectedStr, strWriter.ToString())
+
+    [<Fact>]
     member _.``Print dir 1 file hash`` () =
         let hashStructure =
             ItemHash.Dir(
