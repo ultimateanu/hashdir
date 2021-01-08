@@ -14,7 +14,7 @@
     },
     "Desktop (skip empty dir)": {
       "commandName": "Project",
-      "commandLineArgs": "--skip-empty-dir C:\\Users\\ultim\\Desktop\\test"
+      "commandLineArgs": "--skip-empty-dir --tree C:\\Users\\ultim\\Desktop\\test"
     },
     "Desktop --tree": {
       "commandName": "Project",
