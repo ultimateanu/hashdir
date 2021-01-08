@@ -1,14 +1,8 @@
 ﻿namespace HashUtil
 
-open System
 open System.IO
 open System.Security.Cryptography
 open System.Text
-
-
-module Util =
-    let getDirName path = DirectoryInfo(path).Name
-
 
 module Checksum =
     let computeHashString (input : string) =
