@@ -44,7 +44,7 @@ type DisplayTests(output:ITestOutputHelper) =
         let strWriter = new StringWriter()
         printHashStructure hashStructure strWriter
 
-        let expectedStr = "a1b2c3 file.txt\n"
+        let expectedStr = "a1b2c3  file.txt\n"
         Assert.Equal(expectedStr, strWriter.ToString())
 
     [<Fact>]
@@ -58,7 +58,7 @@ type DisplayTests(output:ITestOutputHelper) =
         let strWriter = new StringWriter()
         printHashStructure hashStructure strWriter
 
-        let expectedStr = "d1 /dir\n"
+        let expectedStr = "d1  /dir\n"
         Assert.Equal(expectedStr, strWriter.ToString())
 
     [<Fact>]
@@ -72,7 +72,7 @@ type DisplayTests(output:ITestOutputHelper) =
         let strWriter = new StringWriter()
         printHashStructure hashStructure strWriter
 
-        let expectedStr = "d1 /dir\n└── f1 file1.txt\n"
+        let expectedStr = "d1  /dir\n└── f1  file1.txt\n"
         Assert.Equal(expectedStr, strWriter.ToString())
 
     [<Fact>]
@@ -87,7 +87,7 @@ type DisplayTests(output:ITestOutputHelper) =
         let strWriter = new StringWriter()
         printHashStructure hashStructure strWriter
 
-        let expectedStr = "d1 /dir\n├── f1 file1.txt\n└── f2 file2.txt\n"
+        let expectedStr = "d1  /dir\n├── f1  file1.txt\n└── f2  file2.txt\n"
         Assert.Equal(expectedStr, strWriter.ToString())
 
 
