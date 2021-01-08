@@ -6,6 +6,10 @@ open System.Security.Cryptography
 open System.Text
 
 
+module Util =
+    let getDirName path = DirectoryInfo(path).Name
+
+
 module Checksum =
     let computeHashString (input : string) =
         input
@@ -52,12 +56,20 @@ module FS =
         if children.IsEmpty && not includeEmptyDir then
             Error("Excluding dir because it is empty")
         else
+            let getNameAndHashString (x:ItemHash):string =
+                match x with
+                    | File (path, hash) ->
+                        hash + (Path.GetFileName path)
+                    | Dir (path, hash, _) ->
+                        hash + (Util.getDirName path)
+
             let childrenHash =
                 children
-                    |> List.map getHash
+                    |> List.map getNameAndHashString
                     |> fun x -> "" :: x // Add empty string as a child to compute hash of empty dir.
                     |> List.reduce (+)
                     |> Checksum.computeHashString
+
             Ok(Dir(path = dirPath, hash = childrenHash, children = children))
 
     and makeHashStructure includeHiddenFiles includeEmptyDir path =

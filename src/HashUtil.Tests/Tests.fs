@@ -37,6 +37,7 @@ type FsSetupFixture() =
             Directory.Delete(tempDir, true)
             ()
 
+
 type DisplayTests(output:ITestOutputHelper) =
     [<Fact>]
     member _.``Print file hash`` () =
@@ -129,7 +130,7 @@ type HashStructureTests(fsSetupFixture: FsSetupFixture, output:ITestOutputHelper
                 |> makeOption
         Assert.True(oneFileDirHash.IsSome)
         Assert.Equal(
-            "e0bc614e4fd035a488619799853b075143deea596c477b8dc077e309c0fe42e9",
+            "c0b9c17c8ac302513644256d06d1518a50c0c349e28023c2795a17dfa5479e1f",
             getHash oneFileDirHash.Value)
 
     [<Fact>]
@@ -140,7 +141,7 @@ type HashStructureTests(fsSetupFixture: FsSetupFixture, output:ITestOutputHelper
                 |> makeOption
         Assert.True(twoFileDirHash.IsSome)
         Assert.Equal(
-            "33b675636da5dcc86ec847b38c08fa49ff1cace9749931e0a5d4dfdbdedd808a",
+            "072d85c3b6926317ee8c340d4e989c9588c75408e63b5674571624a096faf9b5",
             getHash twoFileDirHash.Value)
 
     [<Fact>]
@@ -175,7 +176,7 @@ type HashStructureTests(fsSetupFixture: FsSetupFixture, output:ITestOutputHelper
                 |> makeOption
         Assert.True(rootHash.IsSome)
         Assert.Equal(
-            "070019945bc35bce97b3ca01630efed4f8d191b1336b78c085aa944d8a375f27",
+            "e8bc90f811e969cc4f4f119057b5bda6b4269ede9b54c6358ff49d0b32e3b55f",
             getHash rootHash.Value)
 
     [<Fact>]
@@ -187,7 +188,7 @@ type HashStructureTests(fsSetupFixture: FsSetupFixture, output:ITestOutputHelper
                 |> makeOption
         Assert.True(rootHash.IsSome)
         Assert.Equal(
-            "f5b7237efb5ad6d72149bf6b10e6d035cf012d9c37700905991549d6d32d81c4",
+            "115c16b7fc0e1af49b0c646d982afdcf2bdb32ad28e1dac335e64a3d0e023aed",
             getHash rootHash.Value)
 
     [<Fact>]
@@ -200,7 +201,7 @@ type HashStructureTests(fsSetupFixture: FsSetupFixture, output:ITestOutputHelper
                 |> makeOption
         Assert.True(rootHash.IsSome)
         Assert.Equal(
-            "dfd92296a00e4592fb2e88871d650b6b4f3096ca42e508630ca069704f6741a3",
+            "f878c04d1538053df32fe42f626211e6d02515ef453e3286ed4c8ed2405efe2e",
             getHash rootHash.Value)
 
     [<Fact>]
@@ -213,5 +214,5 @@ type HashStructureTests(fsSetupFixture: FsSetupFixture, output:ITestOutputHelper
                 |> makeOption
         Assert.True(rootHash.IsSome)
         Assert.Equal(
-            "070019945bc35bce97b3ca01630efed4f8d191b1336b78c085aa944d8a375f27",
+            "e8bc90f811e969cc4f4f119057b5bda6b4269ede9b54c6358ff49d0b32e3b55f",
             getHash rootHash.Value)
