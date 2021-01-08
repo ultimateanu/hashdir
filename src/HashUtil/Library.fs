@@ -91,7 +91,7 @@ module FS =
                 let curSpacer = if lastLevelActive then "├── " else "└── "
                 parentSpacer + curSpacer
 
-    let rec printHashStructureHelper (structure:ItemHash) (levels:List<bool>) (outputWriter:TextWriter) =
+    let rec printHashStructureHelper structure printTree levels (outputWriter:TextWriter) =
         match structure with
             | File (path, hash) ->
                 let fileLine = sprintf "%s%s  %s" (makeLeftSpacer levels) hash (Path.GetFileName path)
@@ -101,12 +101,12 @@ module FS =
                 let dirLine = sprintf "%s%s  %c%s" (makeLeftSpacer levels) hash '/' (DirectoryInfo(path).Name)
                 // Append "\n" rather than use WriteLine() to avoid system line endings (e.g. "\r\n")
                 outputWriter.Write(sprintf "%s\n" dirLine)
-                if not children.IsEmpty then
+                if printTree && not children.IsEmpty then
                     let allButLastChild = List.take (children.Length - 1) children
                     let lastChild = List.last children
                     for child in allButLastChild do
-                        printHashStructureHelper child (true :: levels) outputWriter
-                    printHashStructureHelper lastChild (false :: levels) outputWriter
+                        printHashStructureHelper child printTree (true :: levels) outputWriter
+                    printHashStructureHelper lastChild printTree (false :: levels) outputWriter
 
-    let rec printHashStructure (structure:ItemHash) (outputWriter:TextWriter) =
-        printHashStructureHelper structure [] outputWriter
+    let rec printHashStructure structure printTree outputWriter =
+        printHashStructureHelper structure printTree [] outputWriter

@@ -8,6 +8,8 @@ type Options =
       IncludeHiddenFiles: bool
       [<Option('e', "skip-empty-dir", Default = false, HelpText = "Skip empty directories.")>]
       SkipEmptyDir: bool
+      [<Option('t', "tree", Default = false, HelpText = "Output directory tree.")>]
+      Tree: bool
       [<Value(0, Required = true, MetaName = "input", HelpText = "Input directories or files.")>]
       Input: seq<string> }
 
@@ -20,7 +22,7 @@ let run (o: Options) =
         match optHashStructure with
         | Error e -> printfn "Error: %s" e
         | Ok hashStructure ->
-            printHashStructure hashStructure strWriter
+            printHashStructure hashStructure o.Tree strWriter
             printf "%s" (strWriter.ToString())
 
 
