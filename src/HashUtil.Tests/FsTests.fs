@@ -4,7 +4,6 @@ open HashUtil.FS
 open HashUtil.Util
 open System
 open System.IO
-open System.Runtime.InteropServices
 open Xunit
 open Xunit.Abstractions
 
