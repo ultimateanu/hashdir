@@ -7,5 +7,5 @@ module Util =
 
     let makeOption x =
         match x with
-            | Error _ -> None
-            | Ok v -> Some(v)
+        | Error _ -> None
+        | Ok v -> Some(v)

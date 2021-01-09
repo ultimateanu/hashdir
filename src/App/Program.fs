@@ -2,7 +2,6 @@ open CommandLine
 open HashUtil.FS
 open System.IO
 
-
 type Options =
     { [<Option('h', "include-hidden-files", Default = false, HelpText = "Include hidden files.")>]
       IncludeHiddenFiles: bool
@@ -18,7 +17,9 @@ let run (o: Options) =
     for item in o.Input do
         let optHashStructure =
             makeHashStructure o.IncludeHiddenFiles (not o.SkipEmptyDir) item
+
         let strWriter = new StringWriter()
+
         match optHashStructure with
         | Error e -> printfn "Error: %s" e
         | Ok hashStructure ->
