@@ -168,8 +168,8 @@ type HashProperties(fsTempDirSetupFixture: FsTempDirSetupFixture, output: ITestO
 
         let fileHash =
             filePath
-            |> makeHashStructure includeHiddenFiles includeEmptyDir
-            |> makeOption
+                |> makeHashStructure includeHiddenFiles includeEmptyDir
+                |> makeOption
 
         // Expect their hashes to be equal.
         Assert.True(dirHash.IsSome)
