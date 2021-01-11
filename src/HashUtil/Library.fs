@@ -100,12 +100,12 @@ module FS =
         match structure with
         | File (path, hash) ->
             let fileLine =
-                sprintf "%s%s %s" (makeLeftSpacer levels) hash (Path.GetFileName path)
+                sprintf "%s%s  %s" (makeLeftSpacer levels) hash (Path.GetFileName path)
             // Append "\n" rather than use WriteLine() to avoid system line endings (e.g. "\r\n")
             outputWriter.Write(sprintf "%s\n" fileLine)
         | Dir (path, hash, children) ->
             let dirLine =
-                sprintf "%s%s %c%s" (makeLeftSpacer levels) hash '/' (DirectoryInfo(path).Name)
+                sprintf "%s%s  %c%s" (makeLeftSpacer levels) hash '/' (DirectoryInfo(path).Name)
             // Append "\n" rather than use WriteLine() to avoid system line endings (e.g. "\r\n")
             outputWriter.Write(sprintf "%s\n" dirLine)
 
