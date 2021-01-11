@@ -58,13 +58,13 @@ type FilenameInHash(fsTempDirSetupFixture: FsTempDirSetupFixture, output: ITestO
 
         let dirAHash =
             dirA
-            |> makeHashStructure includeHiddenFiles includeEmptyDir
-            |> makeOption
+                |> makeHashStructure includeHiddenFiles includeEmptyDir
+                |> makeOption
 
         let dirBHash =
             dirB
-            |> makeHashStructure includeHiddenFiles includeEmptyDir
-            |> makeOption
+                |> makeHashStructure includeHiddenFiles includeEmptyDir
+                |> makeOption
 
         // Expect their hashes to be equal.
         Assert.Equal(getHash dirAHash.Value, getHash dirBHash.Value)
@@ -91,13 +91,13 @@ type FilenameInHash(fsTempDirSetupFixture: FsTempDirSetupFixture, output: ITestO
 
         let dirAHash =
             dirA
-            |> makeHashStructure includeHiddenFiles includeEmptyDir
-            |> makeOption
+                |> makeHashStructure includeHiddenFiles includeEmptyDir
+                |> makeOption
 
         let dirBHash =
             dirB
-            |> makeHashStructure includeHiddenFiles includeEmptyDir
-            |> makeOption
+                |> makeHashStructure includeHiddenFiles includeEmptyDir
+                |> makeOption
 
         // Expect their hashes to be different.
         Assert.NotEqual<string>(getHash dirAHash.Value, getHash dirBHash.Value)
@@ -124,8 +124,8 @@ type FilenameInHash(fsTempDirSetupFixture: FsTempDirSetupFixture, output: ITestO
 
         let dirAHash =
             dirA
-            |> makeHashStructure includeHiddenFiles includeEmptyDir
-            |> makeOption
+                |> makeHashStructure includeHiddenFiles includeEmptyDir
+                |> makeOption
 
         let dirBHash =
             dirB
