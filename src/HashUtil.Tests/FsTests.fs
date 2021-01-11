@@ -134,3 +134,44 @@ type FilenameInHash(fsTempDirSetupFixture: FsTempDirSetupFixture, output: ITestO
 
         // Expect their hashes to be different.
         Assert.NotEqual<string>(getHash dirAHash.Value, getHash dirBHash.Value)
+
+
+type HashProperties(fsTempDirSetupFixture: FsTempDirSetupFixture, output: ITestOutputHelper) =
+    // Create root dir for each test.
+    let rootDir =
+        Path.Combine(fsTempDirSetupFixture.TempDir, "filename_in_hash_root_dir")
+
+    do Directory.CreateDirectory(rootDir) |> ignore
+
+    // Clean up root dir after each test.
+    interface IDisposable with
+        member this.Dispose() = Directory.Delete(rootDir, true)
+
+    interface IClassFixture<FsTempDirSetupFixture>
+
+    [<Fact>]
+    member _.``Empty dir and empty file should have same hash``() =
+        // Setup two directories with files/dirs of same name and content.
+        let dirPath = Path.Combine(rootDir, "empty_dir")
+        let filePath = Path.Combine(rootDir, "empty_file.txt")
+        Directory.CreateDirectory(dirPath) |> ignore
+        File.WriteAllText(filePath, "")
+
+        // Compute the hash of empty dir and empty file.
+        let includeHiddenFiles = true
+        let includeEmptyDir = true
+
+        let dirHash =
+            dirPath
+                |> makeHashStructure includeHiddenFiles includeEmptyDir
+                |> makeOption
+
+        let fileHash =
+            filePath
+            |> makeHashStructure includeHiddenFiles includeEmptyDir
+            |> makeOption
+
+        // Expect their hashes to be equal.
+        Assert.True(dirHash.IsSome)
+        Assert.True(fileHash.IsSome)
+        Assert.Equal(getHash dirHash.Value, getHash fileHash.Value)
