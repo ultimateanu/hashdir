@@ -129,8 +129,8 @@ type FilenameInHash(fsTempDirSetupFixture: FsTempDirSetupFixture, output: ITestO
 
         let dirBHash =
             dirB
-            |> makeHashStructure includeHiddenFiles includeEmptyDir
-            |> makeOption
+                |> makeHashStructure includeHiddenFiles includeEmptyDir
+                |> makeOption
 
         // Expect their hashes to be different.
         Assert.NotEqual<string>(getHash dirAHash.Value, getHash dirBHash.Value)
