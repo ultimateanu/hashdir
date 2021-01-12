@@ -10,6 +10,7 @@
     <PackageProjectUrl>https://ultimateanu.github.io/hashdir</PackageProjectUrl>
     <RepositoryUrl>https://github.com/ultimateanu/hashdir</RepositoryUrl>
     <Description>A command line utility to checksum directories and files.</Description>
+    <PublishReadyToRunShowWarnings>true</PublishReadyToRunShowWarnings>
 
     <!-- Create NuGet tool -->
     <Title>hashdir</Title>
