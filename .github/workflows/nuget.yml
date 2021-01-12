@@ -1,8 +1,8 @@
 name: nuget
 
 on:
-  push:
-  pull_request:
+  release:
+    types: [published]
 
 jobs:
   build:
