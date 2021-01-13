@@ -94,11 +94,13 @@ let displayArchString arch =
     | Arm64 -> "ARM64"
     | Architecture.Any -> "Any"
 
-let runProcess cmd (args: string) =
+let printColor str =
     Console.ForegroundColor <- ConsoleColor.Yellow
-    printfn "\n\nRUNNING: %s %s" cmd args
+    printfn "\n\n%s" str
     Console.ResetColor()
 
+let runProcess cmd (args: string) =
+    printColor (sprintf "RUNNING: %s %s" cmd args)
     let cleanPs = Process.Start(cmd, args)
     cleanPs.WaitForExit()
     assert (cleanPs.ExitCode = 0)
@@ -149,16 +151,16 @@ let main =
 
     let outputProfiles =
         if RuntimeInformation.IsOSPlatform(OSPlatform.Windows) then
-            printf "Building Windows binaries"
+            printColor (sprintf "\n\nBuilding Windows binaries")
             windowsProfiles
         elif RuntimeInformation.IsOSPlatform(OSPlatform.OSX) then
-            printf "Building macOS binaries"
+            printColor (sprintf "\n\nBuilding macOS binaries")
             macProfiles
         elif RuntimeInformation.IsOSPlatform(OSPlatform.Linux) then
-            printf "Building Linux binaries"
-            macProfiles
+            printColor (sprintf "\n\nBuilding Linux binaries")
+            linuxProfiles
         else
-            printf "Error: Unknown platform"
+            printColor (sprintf "Error: Unknown platform")
             assert (false)
             []
 
