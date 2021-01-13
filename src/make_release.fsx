@@ -3,17 +3,51 @@
 open System
 open System.Diagnostics
 open System.IO
+open System.IO.Compression
+open System.Runtime.InteropServices
+#r "System.IO.Compression.FileSystem.dll"
 
-let macProfiles = [ "mac64" ]
-let windowsProfiles = [ "win32"; "win64" ]
-let linuxProfiles = [ "linux32"; "linux64" ]
-let dotNetProfiles = [ "dotnet" ]
 
-// Configuration
-let outputProfiles = windowsProfiles @ dotNetProfiles
+// Configuration ----------------------------------------------------
 let versionStr = "0.1.0"
+// ------------------------------------------------------------------
 
+type Compression = Zip | TarGz
+type OperatingSystem = MacOS | Windows | Linux | Any
+type Architecture = X86 | X64 | Arm | Arm64 | Any
+type PublishSpec = { name: string;
+                     os: OperatingSystem;
+                     architecture: Architecture;
+                     compression: Compression }
+let macProfiles = [
+    {name="mac64"; os=MacOS; architecture=X64; compression=TarGz}]
+let windowsProfiles = [
+    {name="win32"; os=Windows; architecture=X86; compression=Zip};
+    {name="win64"; os=Windows; architecture=X64; compression=Zip};
+    {name="win32arm"; os=Windows; architecture=Arm; compression=Zip};
+    {name="win64arm"; os=Windows; architecture=Arm64; compression=Zip}]
+let linuxProfiles = [
+    {name="linux32"; os=Linux; architecture=X86; compression=TarGz};
+    {name="linux64"; os=Linux; architecture=X64; compression=TarGz}]
+// TODO: add zip also?
+let dotNetProfiles =[
+    {name="dotnet"; os=OperatingSystem.Any; architecture=Any; compression=TarGz}]
 let outputDir = "release"
+
+let displayOsString os =
+    match os with
+        | MacOS -> "macOS"
+        | Windows -> "Windows"
+        | Linux -> "Linux"
+        | OperatingSystem.Any -> "Any"
+
+let displayArchString os =
+    match os with
+        | X86 -> "32bit"
+        | X64 -> "64bit"
+        | Arm -> "ARM"
+        | Arm64 -> "ARM64"
+        | Architecture.Any -> "Any"
 
 let runProcess cmd (args: string) =
     Console.ForegroundColor <- ConsoleColor.Yellow
@@ -26,34 +60,63 @@ let runProcess cmd (args: string) =
 
 let dotnet args = runProcess "dotnet" args
 
-let buildBinary profile =
+let buildBinary (profile:PublishSpec) =
     // Build binary
-    dotnet (sprintf "publish -c Release -p:PublishProfile=%s src/App/App.fsproj" profile)
+    dotnet (sprintf "publish -c Release -p:PublishProfile=%s src/App/App.fsproj" profile.name)
 
     // Create published dir
     let oldProfileDir =
-        Path.Join("src/App/bin/Release/net5.0/publish", profile)
-
-    let newProfileDir =
-        Path.Join(outputDir, sprintf "hashdir_%s_%s" versionStr profile)
+        Path.Combine("src/App/bin/Release/net5.0/publish", profile.name)
+    let newProfileDirName = profile.name
+    let newProfileDir = Path.Combine(outputDir, newProfileDirName)
 
     Directory.CreateDirectory(newProfileDir) |> ignore
-    File.Copy("README.md", Path.Join(newProfileDir, "README.md"))
-    File.Copy("LICENSE", Path.Join(newProfileDir, "LICENSE"))
+    File.Copy("README.md", Path.Combine(newProfileDir, "README.md"))
+    File.Copy("LICENSE", Path.Combine(newProfileDir, "LICENSE"))
 
     // TODO: copy recursively not just the files
     oldProfileDir
     |> Directory.GetFiles
-    |> Array.map (fun f -> File.Copy(f, Path.Join(newProfileDir, Path.GetFileName(f))))
+    |> Array.map (fun f -> File.Copy(f, Path.Combine(newProfileDir, Path.GetFileName(f))))
+    |> ignore
+
+    // Compress folder
+    // TODO: to tar.gz etc.
+    // TODO: name dotnet correctly
+    let zipFilename =
+        sprintf "hashdir_%s_%s_%s.zip"
+            versionStr
+            (displayOsString profile.os)
+            (displayArchString profile.architecture)
+    ZipFile.CreateFromDirectory(newProfileDir, Path.Combine(outputDir, zipFilename))
 
 
-// Main Program
-if Directory.Exists(outputDir) then
-    Directory.Delete(outputDir, true)
+let main =
+    // Create fresh output dir
+    if Directory.Exists(outputDir) then
+        Directory.Delete(outputDir, true)
+    Directory.CreateDirectory(outputDir) |> ignore
 
-Directory.CreateDirectory(outputDir)
+    // Clean then build each release target
+    dotnet "clean"
 
-dotnet "clean"
+    let outputProfilesz =
+        if RuntimeInformation.IsOSPlatform(OSPlatform.Windows) then
+            printf "Building Windows binaries"
+            windowsProfiles
+        elif RuntimeInformation.IsOSPlatform(OSPlatform.OSX) then
+            printf "Building macOS binaries"
+            macProfiles
+        elif RuntimeInformation.IsOSPlatform(OSPlatform.Linux) then
+            printf "Building Linux binaries"
+            macProfiles
+        else
+            printf "Error: Unknown platform"
+            assert(false)
+            []
 
-for profile in outputProfiles do
-    buildBinary profile |> ignore
+
+    for profile in outputProfilesz do
+        buildBinary profile |> ignore
+
+main
