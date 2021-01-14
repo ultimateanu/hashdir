@@ -99,6 +99,11 @@ let printColor color str =
     printfn "\n\n%s" str
     Console.ResetColor()
 
+let ensure exp msg =
+    if not exp then
+        printColor ConsoleColor.Red (sprintf "ERROR: %s" msg)
+        Environment.Exit(1)
+
 let runProcess cmd (args: string) =
     printColor ConsoleColor.Yellow (sprintf "RUNNING: %s %s" cmd args)
     let cleanPs = Process.Start(cmd, args)
@@ -128,9 +133,7 @@ let buildBinary (profile: PublishSpec) =
     let releaseFiles = Directory.GetFiles oldProfileDir
 
     // Expect only a single binary
-    if 1 <> Array.length releaseFiles then
-        printColor ConsoleColor.Red "ERROR: Expected a single binary file"
-        Environment.Exit(1)
+    ensure (1 = Array.length releaseFiles) "Expected a single binary file."
 
     releaseFiles
     |> Array.map (fun f -> File.Copy(f, Path.Combine(newProfileDir, Path.GetFileName(f))))
@@ -153,6 +156,15 @@ let buildBinary (profile: PublishSpec) =
             sprintf "-czv -C %s -f %s %s" outputDir tarGzFilename releaseName
 
         runProcess "tar" tarArgs
+
+
+
+let makeNuGetRelease () =
+    dotnet "pack -c Release ./src/App/App.fsproj"
+    let nugetOutputFiles = Directory.GetFiles "src/App/nupkg"
+    ensure (1 = Array.length nugetOutputFiles) "Expected a single file for NuGet output."
+    let nugetPackagePath = Array.head nugetOutputFiles
+    File.Copy(nugetPackagePath, Path.Combine(outputDir, Path.GetFileName(nugetPackagePath)))
 
 
 let main =
@@ -182,6 +194,9 @@ let main =
 
     for profile in outputProfiles do
         buildBinary profile |> ignore
+
+    // Make NuGet package
+    makeNuGetRelease ()
 
 
 main
