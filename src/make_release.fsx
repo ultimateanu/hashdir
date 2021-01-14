@@ -94,13 +94,13 @@ let displayArchString arch =
     | Arm64 -> "ARM64"
     | Architecture.Any -> "Any"
 
-let printColor str =
-    Console.ForegroundColor <- ConsoleColor.Yellow
+let printColor color str =
+    Console.ForegroundColor <- color
     printfn "\n\n%s" str
     Console.ResetColor()
 
 let runProcess cmd (args: string) =
-    printColor (sprintf "RUNNING: %s %s" cmd args)
+    printColor ConsoleColor.Yellow (sprintf "RUNNING: %s %s" cmd args)
     let cleanPs = Process.Start(cmd, args)
     cleanPs.WaitForExit()
     assert (cleanPs.ExitCode = 0)
@@ -125,8 +125,14 @@ let buildBinary (profile: PublishSpec) =
     File.Copy("LICENSE", Path.Combine(newProfileDir, "LICENSE"))
 
     // TODO: copy recursively not just the files
-    oldProfileDir
-    |> Directory.GetFiles
+    let releaseFiles = Directory.GetFiles oldProfileDir
+
+    // Expect only a single binary
+    if 1 <> Array.length releaseFiles then
+        printColor ConsoleColor.Red "ERROR: Expected a single binary file"
+        Environment.Exit(1)
+
+    releaseFiles
     |> Array.map (fun f -> File.Copy(f, Path.Combine(newProfileDir, Path.GetFileName(f))))
     |> ignore
 
@@ -161,16 +167,16 @@ let main =
 
     let outputProfiles =
         if RuntimeInformation.IsOSPlatform(OSPlatform.Windows) then
-            printColor (sprintf "\n\nBuilding Windows binaries")
+            printColor ConsoleColor.Yellow (sprintf "\n\nBuilding Windows binaries")
             windowsProfiles
         elif RuntimeInformation.IsOSPlatform(OSPlatform.OSX) then
-            printColor (sprintf "\n\nBuilding macOS binaries")
+            printColor ConsoleColor.Yellow (sprintf "\n\nBuilding macOS binaries")
             macProfiles
         elif RuntimeInformation.IsOSPlatform(OSPlatform.Linux) then
-            printColor (sprintf "\n\nBuilding Linux binaries")
+            printColor ConsoleColor.Yellow (sprintf "\n\nBuilding Linux binaries")
             linuxProfiles
         else
-            printColor (sprintf "Error: Unknown platform")
+            printColor ConsoleColor.Red (sprintf "Error: Unknown platform")
             assert (false)
             []
 
