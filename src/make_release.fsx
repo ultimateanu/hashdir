@@ -112,13 +112,13 @@ let buildBinary (profile: PublishSpec) =
     dotnet (sprintf "publish -c Release -p:PublishProfile=%s src/App/App.fsproj" profile.Name)
 
     // Create published dir
+    let releaseName =
+        sprintf "hashdir_%s_%s_%s" versionStr (displayOsString profile.Os) (displayArchString profile.Architecture)
+
     let oldProfileDir =
         Path.Combine("src/App/bin/Release/net5.0/publish", profile.Name)
 
-    let newProfileDirName = profile.Name
-
-    let newProfileDir =
-        Path.Combine(outputDir, newProfileDirName)
+    let newProfileDir = Path.Combine(outputDir, releaseName)
 
     Directory.CreateDirectory(newProfileDir) |> ignore
     File.Copy("README.md", Path.Combine(newProfileDir, "README.md"))
@@ -130,13 +130,23 @@ let buildBinary (profile: PublishSpec) =
     |> Array.map (fun f -> File.Copy(f, Path.Combine(newProfileDir, Path.GetFileName(f))))
     |> ignore
 
-    // Compress folder
-    // TODO: to tar.gz etc.
     // TODO: name dotnet correctly
-    let zipFilename =
-        sprintf "hashdir_%s_%s_%s.zip" versionStr (displayOsString profile.Os) (displayArchString profile.Architecture)
 
-    ZipFile.CreateFromDirectory(newProfileDir, Path.Combine(outputDir, zipFilename))
+    // Compress release into a single file.
+    match profile.Compression with
+    | Zip ->
+        let zipFilename =
+            Path.Combine(outputDir, sprintf "%s.zip" releaseName)
+
+        ZipFile.CreateFromDirectory(newProfileDir, zipFilename)
+    | TarGz ->
+        let tarGzFilename =
+            Path.Combine(outputDir, sprintf "%s.tar.gz" releaseName)
+
+        let tarArgs =
+            sprintf "-czv -C %s -f %s %s" outputDir tarGzFilename releaseName
+
+        runProcess "tar" tarArgs
 
 
 let main =
