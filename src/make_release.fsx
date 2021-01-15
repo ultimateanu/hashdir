@@ -99,18 +99,25 @@ let runProcess cmd (args: string) =
     printColor ConsoleColor.Yellow (sprintf "RUNNING: %s %s" cmd args)
     let cleanPs = Process.Start(cmd, args)
     cleanPs.WaitForExit()
-    assert (cleanPs.ExitCode = 0)
+    ensure (cleanPs.ExitCode = 0) "Process not successful"
 
 let dotnet args = runProcess "dotnet" args
 
 let buildSingleBinary (profile: PublishSpec) =
     // Build binary
-    dotnet (sprintf "publish -c Release -p:PublishProfile=binary -p:RuntimeIdentifier=%s src/App/App.fsproj"
-        (RuntimeIdentifierString profile.Rid))
+    dotnet (
+        sprintf
+            "publish -c Release -p:PublishProfile=binary -p:RuntimeIdentifier=%s src/App/App.fsproj"
+            (RuntimeIdentifierString profile.Rid)
+    )
 
     // Create published dir
-    let releaseName = sprintf "hashdir_%s_%s" versionStr profile.Name
-    let oldProfileDir = "src/App/bin/Release/net5.0/publish/binary"
+    let releaseName =
+        sprintf "hashdir_%s_%s" versionStr profile.Name
+
+    let oldProfileDir =
+        "src/App/bin/Release/net5.0/publish/binary"
+
     let newProfileDir = Path.Combine(outputDir, releaseName)
 
     Directory.CreateDirectory(newProfileDir) |> ignore
@@ -159,6 +166,7 @@ let main =
     // Create fresh output dir
     if Directory.Exists(outputDir) then
         Directory.Delete(outputDir, true)
+
     Directory.CreateDirectory(outputDir) |> ignore
 
     dotnet "clean"
@@ -178,6 +186,7 @@ let main =
             printColor ConsoleColor.Red (sprintf "Error: Unknown platform")
             assert (false)
             []
+
     for profile in binaryProfiles do
         buildSingleBinary profile |> ignore
 
