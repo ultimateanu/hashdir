@@ -65,12 +65,6 @@ let linuxProfiles =
         Rid = LinuxArm64
         Compression = TarGz } ]
 
-// TODO: add zip also?
-let dotNetProfiles =
-    [ { Name = "dotnet"
-        Rid = Win86
-        Compression = TarGz } ]
-
 let RuntimeIdentifierString id =
     match id with
     // MacOS
@@ -103,6 +97,22 @@ let runProcess cmd (args: string) =
 
 let dotnet args = runProcess "dotnet" args
 
+let compressDir compression releaseName =
+    match compression with
+    | Zip ->
+        let zipFilename =
+            Path.Combine(outputDir, sprintf "%s.zip" releaseName)
+
+        ZipFile.CreateFromDirectory(Path.Combine(outputDir, releaseName), zipFilename)
+    | TarGz ->
+        let tarGzFilename =
+            Path.Combine(outputDir, sprintf "%s.tar.gz" releaseName)
+
+        let tarArgs =
+            sprintf "-czv -C %s -f %s %s" outputDir tarGzFilename releaseName
+
+        runProcess "tar" tarArgs
+
 let buildSingleBinary (profile: PublishSpec) =
     // Build binary
     dotnet (
@@ -124,35 +134,16 @@ let buildSingleBinary (profile: PublishSpec) =
     File.Copy("README.md", Path.Combine(newProfileDir, "README.md"))
     File.Copy("LICENSE", Path.Combine(newProfileDir, "LICENSE"))
 
-    // TODO: copy recursively not just the files
     let releaseFiles = Directory.GetFiles oldProfileDir
-
-    // Expect only a single binary
+    // Expect only a single binary.
     ensure (1 = Array.length releaseFiles) "Expected a single binary file."
-
+    // Copy binary to output dir.
     releaseFiles
     |> Array.map (fun f -> File.Copy(f, Path.Combine(newProfileDir, Path.GetFileName(f))))
     |> ignore
 
-    // TODO: name dotnet correctly
-
     // Compress release into a single file.
-    match profile.Compression with
-    | Zip ->
-        let zipFilename =
-            Path.Combine(outputDir, sprintf "%s.zip" releaseName)
-
-        ZipFile.CreateFromDirectory(newProfileDir, zipFilename)
-    | TarGz ->
-        let tarGzFilename =
-            Path.Combine(outputDir, sprintf "%s.tar.gz" releaseName)
-
-        let tarArgs =
-            sprintf "-czv -C %s -f %s %s" outputDir tarGzFilename releaseName
-
-        runProcess "tar" tarArgs
-
-
+    compressDir profile.Compression releaseName
 
 let makeNuGetRelease () =
     dotnet "pack -c Release ./src/App/App.fsproj"
@@ -161,6 +152,12 @@ let makeNuGetRelease () =
     let nugetPackagePath = Array.head nugetOutputFiles
     File.Copy(nugetPackagePath, Path.Combine(outputDir, Path.GetFileName(nugetPackagePath)))
 
+let makeDotnetRelease () =
+    dotnet "publish -c Release -p:PublishProfile=dotnet src/App/App.fsproj"
+    let releaseName = sprintf "hashdir_%s_dotnet" versionStr
+    Directory.Move("src/App/bin/Release/net5.0/publish/dotnet", Path.Combine(outputDir, releaseName))
+    compressDir Zip releaseName
+    compressDir TarGz releaseName
 
 let main =
     // Create fresh output dir
@@ -190,8 +187,9 @@ let main =
     for profile in binaryProfiles do
         buildSingleBinary profile |> ignore
 
-    // Make NuGet package
-    makeNuGetRelease ()
-
+    // Make cross platform outputs on macOS.
+    if RuntimeInformation.IsOSPlatform(OSPlatform.OSX) then
+        // makeNuGetRelease ()
+        makeDotnetRelease ()
 
 main
