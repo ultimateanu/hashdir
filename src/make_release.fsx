@@ -8,7 +8,6 @@ open System.Runtime.InteropServices
 
 #r "System.IO.Compression.FileSystem.dll"
 
-
 // Configuration ----------------------------------------------------
 let versionStr = "0.1.0"
 let outputDir = "release"
@@ -17,19 +16,6 @@ let outputDir = "release"
 type Compression =
     | Zip
     | TarGz
-
-type OperatingSystem =
-    | MacOS
-    | Windows
-    | Linux
-    | Any
-
-type Architecture =
-    | X86
-    | X64
-    | Arm
-    | Arm64
-    | Any
 
 type RuntimeIdentifier =
     // MacOS
@@ -47,62 +33,42 @@ type RuntimeIdentifier =
 type PublishSpec =
     { Name: string
       Rid: RuntimeIdentifier
-      Os: OperatingSystem
-      Architecture: Architecture
       Compression: Compression }
 
 let macProfiles =
-    [ { Name = "mac64"
+    [ { Name = "macOS_64bit"
         Rid = Mac64
-        Os = MacOS
-        Architecture = X64
         Compression = TarGz } ]
 
 let windowsProfiles =
-    [ { Name = "win32"
+    [ { Name = "Windows_32bit"
         Rid = Win86
-        Os = Windows
-        Architecture = X86
         Compression = Zip }
-      { Name = "win64"
+      { Name = "Windows_64bit"
         Rid = Win64
-        Os = Windows
-        Architecture = X64
         Compression = Zip }
-      { Name = "win32arm"
+      { Name = "Windows_ARM"
         Rid = WinArm
-        Os = Windows
-        Architecture = Arm
         Compression = Zip }
-      { Name = "win64arm"
+      { Name = "Windows_ARM64"
         Rid = WinArm64
-        Os = Windows
-        Architecture = Arm64
         Compression = Zip } ]
 
 let linuxProfiles =
-    [ { Name = "Linux64"
+    [ { Name = "Linux_64bit"
         Rid = Linux64
-        Os = Linux
-        Architecture = X64
         Compression = TarGz }
-      { Name = "LinuxArm"
+      { Name = "Linux_ARM"
         Rid = LinuxArm
-        Os = Linux
-        Architecture = Arm
         Compression = TarGz }
-      { Name = "LinuxArm64"
+      { Name = "Linux_ARM64"
         Rid = LinuxArm64
-        Os = Linux
-        Architecture = Arm64
         Compression = TarGz } ]
 
 // TODO: add zip also?
 let dotNetProfiles =
     [ { Name = "dotnet"
         Rid = Win86
-        Os = OperatingSystem.Any
-        Architecture = Any
         Compression = TarGz } ]
 
 let RuntimeIdentifierString id =
@@ -118,21 +84,6 @@ let RuntimeIdentifierString id =
     | Linux64 -> "linux-x64"
     | LinuxArm -> "linux-arm"
     | LinuxArm64 -> "linux-arm64"
-
-let displayOsString os =
-    match os with
-    | MacOS -> "macOS"
-    | Windows -> "Windows"
-    | Linux -> "Linux"
-    | OperatingSystem.Any -> "Any"
-
-let displayArchString arch =
-    match arch with
-    | X86 -> "32bit"
-    | X64 -> "64bit"
-    | Arm -> "ARM"
-    | Arm64 -> "ARM64"
-    | Architecture.Any -> "Any"
 
 let printColor color str =
     Console.ForegroundColor <- color
@@ -152,17 +103,14 @@ let runProcess cmd (args: string) =
 
 let dotnet args = runProcess "dotnet" args
 
-let buildBinary (profile: PublishSpec) =
+let buildSingleBinary (profile: PublishSpec) =
     // Build binary
     dotnet (sprintf "publish -c Release -p:PublishProfile=binary -p:RuntimeIdentifier=%s src/App/App.fsproj"
         (RuntimeIdentifierString profile.Rid))
 
     // Create published dir
-    let releaseName =
-        sprintf "hashdir_%s_%s_%s" versionStr (displayOsString profile.Os) (displayArchString profile.Architecture)
-
+    let releaseName = sprintf "hashdir_%s_%s" versionStr profile.Name
     let oldProfileDir = "src/App/bin/Release/net5.0/publish/binary"
-
     let newProfileDir = Path.Combine(outputDir, releaseName)
 
     Directory.CreateDirectory(newProfileDir) |> ignore
@@ -211,13 +159,12 @@ let main =
     // Create fresh output dir
     if Directory.Exists(outputDir) then
         Directory.Delete(outputDir, true)
-
     Directory.CreateDirectory(outputDir) |> ignore
 
-    // Clean then build each release target
     dotnet "clean"
 
-    let outputProfiles =
+    // Build single binaries for current platform.
+    let binaryProfiles =
         if RuntimeInformation.IsOSPlatform(OSPlatform.Windows) then
             printColor ConsoleColor.Yellow (sprintf "\n\nBuilding Windows binaries")
             windowsProfiles
@@ -231,9 +178,8 @@ let main =
             printColor ConsoleColor.Red (sprintf "Error: Unknown platform")
             assert (false)
             []
-
-    for profile in outputProfiles do
-        buildBinary profile |> ignore
+    for profile in binaryProfiles do
+        buildSingleBinary profile |> ignore
 
     // Make NuGet package
     makeNuGetRelease ()
