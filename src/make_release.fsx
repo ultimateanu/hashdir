@@ -1,17 +1,23 @@
 #!/usr/bin/env dotnet fsi
 
+#r "System.IO.Compression.FileSystem.dll"
+
+#load "HashUtil/Util.fs"
+#load "HashUtil/Library.fs"
+
 open System
 open System.Diagnostics
 open System.IO
 open System.IO.Compression
 open System.Runtime.InteropServices
-
-#r "System.IO.Compression.FileSystem.dll"
+open HashUtil.Checksum
 
 // Configuration ----------------------------------------------------
 let versionStr = "0.1.0"
-let outputDir = "release"
 // ------------------------------------------------------------------
+
+let releaseDir = "release"
+let nameAndVersion = sprintf "hashdir_%s" versionStr
 
 type Compression =
     | Zip
@@ -101,15 +107,15 @@ let compressDir compression releaseName =
     match compression with
     | Zip ->
         let zipFilename =
-            Path.Combine(outputDir, sprintf "%s.zip" releaseName)
+            Path.Combine(releaseDir, sprintf "%s.zip" releaseName)
 
-        ZipFile.CreateFromDirectory(Path.Combine(outputDir, releaseName), zipFilename)
+        ZipFile.CreateFromDirectory(Path.Combine(releaseDir, releaseName), zipFilename)
     | TarGz ->
         let tarGzFilename =
-            Path.Combine(outputDir, sprintf "%s.tar.gz" releaseName)
+            Path.Combine(releaseDir, sprintf "%s.tar.gz" releaseName)
 
         let tarArgs =
-            sprintf "-czv -C %s -f %s %s" outputDir tarGzFilename releaseName
+            sprintf "-czv -C %s -f %s %s" releaseDir tarGzFilename releaseName
 
         runProcess "tar" tarArgs
 
@@ -123,12 +129,12 @@ let buildSingleBinary (profile: PublishSpec) =
 
     // Create published dir
     let releaseName =
-        sprintf "hashdir_%s_%s" versionStr profile.Name
+        sprintf "%s_%s" nameAndVersion profile.Name
 
     let oldProfileDir =
         "src/App/bin/Release/net5.0/publish/binary"
 
-    let newProfileDir = Path.Combine(outputDir, releaseName)
+    let newProfileDir = Path.Combine(releaseDir, releaseName)
 
     Directory.CreateDirectory(newProfileDir) |> ignore
     File.Copy("README.md", Path.Combine(newProfileDir, "README.md"))
@@ -150,21 +156,21 @@ let makeNuGetRelease () =
     let nugetOutputFiles = Directory.GetFiles "src/App/nupkg"
     ensure (1 = Array.length nugetOutputFiles) "Expected a single file for NuGet output."
     let nugetPackagePath = Array.head nugetOutputFiles
-    File.Copy(nugetPackagePath, Path.Combine(outputDir, Path.GetFileName(nugetPackagePath)))
+    File.Copy(nugetPackagePath, Path.Combine(releaseDir, Path.GetFileName(nugetPackagePath)))
 
 let makeDotnetRelease () =
     dotnet "publish -c Release -p:PublishProfile=dotnet src/App/App.fsproj"
-    let releaseName = sprintf "hashdir_%s_dotnet" versionStr
-    Directory.Move("src/App/bin/Release/net5.0/publish/dotnet", Path.Combine(outputDir, releaseName))
+    let releaseName = sprintf "%s_dotnet" nameAndVersion
+    Directory.Move("src/App/bin/Release/net5.0/publish/dotnet", Path.Combine(releaseDir, releaseName))
     compressDir Zip releaseName
     compressDir TarGz releaseName
 
-let main =
+let buildRelease () =
     // Create fresh output dir
-    if Directory.Exists(outputDir) then
-        Directory.Delete(outputDir, true)
+    if Directory.Exists(releaseDir) then
+        Directory.Delete(releaseDir, true)
 
-    Directory.CreateDirectory(outputDir) |> ignore
+    Directory.CreateDirectory(releaseDir) |> ignore
 
     dotnet "clean"
 
@@ -192,4 +198,23 @@ let main =
         // makeNuGetRelease ()
         makeDotnetRelease ()
 
-main
+let makeChecksumFile () =
+    let checksumFilename =
+        Path.Combine(releaseDir, sprintf "%s_checksums_sha256.txt" nameAndVersion)
+
+    // Delete old checksum file.
+    if File.Exists checksumFilename then
+        File.Delete checksumFilename
+
+    let hashLines =
+        Directory.GetFiles(releaseDir)
+        |> Array.filter (fun f -> f.StartsWith(Path.Combine(releaseDir, "hashdir_")))
+        |> Array.sort
+        |> Array.map (fun f -> sprintf "%s  %s" (computeHashStringFromFile f) (Path.GetFileName f))
+
+    File.WriteAllLines(checksumFilename, hashLines)
+
+
+// MAIN
+buildRelease ()
+// makeChecksumFile ()
