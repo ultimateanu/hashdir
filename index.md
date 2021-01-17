@@ -33,7 +33,7 @@ hashdir --help
 
 ### Package manager
 hashdir is available via package managers. If you already have a package manager, this allows for easy installation and upgrades.
-A) dotnet (NuGet)
+#### dotnet (NuGet)
 ```
 dotnet tool install --global hashdir
 dotnet tool update --global hashdir
