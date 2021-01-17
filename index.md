@@ -49,7 +49,7 @@ dotnet hashdir.dll --help
 ```
 
 ### Build from source
-Since this is an open source project you can also build from source! This requires dotnet 5.
+Since this is an open source project you can also build from source! This requires [dotnet 5](https://dotnet.microsoft.com).
 1. Download the source code from the main branch on [GitHub](https://github.com/ultimateanu/hashdir/tree/main)
 2. _Optional_: Build and run the app
 ```
