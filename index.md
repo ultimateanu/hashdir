@@ -5,12 +5,19 @@
     * [Cross platform dotnet app](#cross-platform-dotnet-app)
     * [Build from source](#build-from-source)
 - [Usage](#usage)
-    
+
+
 # Overview
 **hashdir** is a simple command line tool to checksum directories and files.
 
-A [checksum](https://en.wikipedia.org/wiki/Checksum) is a short sequence of letters and numbers derived from another (often larger) sequence of data.
-    
+A [checksum](https://en.wikipedia.org/wiki/Checksum) is a short sequence of letters and numbers derived from another (often larger) sequence of data. Checksums are created from input data using a hashing algorithm. For a good hashing algorithm, it is extremely difficult to come up with an input that results in a specific checksum. Therefore a checksum acts like a digital fingerprint - if the checksums match we can be reasonably sure the input data matches.
+
+This is useful in many situations:
+- **Transferring files** - _compare checksums to ensure nothing was corrupted or tampered_
+- **Archiving data** - _storing the checksum along with the data allows you to verify that your usb/harddrive/cloud provider didn’t modify your data_
+- **Duplicate detection** - _check if you have duplicate files or directories and know what is safe to delete_
+
+
 # Install
 There are several ways to install **hashdir**, and they are listed below roughly in order of convenience. You can choose the method that fits your needs. The latest release can always be found at <https://github.com/ultimateanu/hashdir/releases>.
 
@@ -59,5 +66,6 @@ dotnet publish -c Release src/App/App.fsproj
 ```
 dotnet src/App/bin/Release/net5.0/publish/hashdir.dll --help
 ```
+
 
 # Usage
