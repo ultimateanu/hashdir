@@ -1,9 +1,9 @@
 - [Overview](#overview)
 - [Install](#install)
-    + [Package manager](#package-manager)
-    + [Stand-alone binary](#stand-alone-binary)
-    + [Cross platform dotnet app](#cross-platform-dotnet-app)
-    + [Build from source](#build-from-source)
+    * [Package manager](#package-manager)
+    * [Stand-alone binary](#stand-alone-binary)
+    * [Cross platform dotnet app](#cross-platform-dotnet-app)
+    * [Build from source](#build-from-source)
 - [Usage](#usage)
     
 # Overview
