@@ -15,8 +15,7 @@ A [checksum](https://en.wikipedia.org/wiki/Checksum) is a short sequence of lett
 There are several ways to install hashdir.
 
 ### Stand-alone binary
-This is a single executa
-  1) Download the latest version for your OS at https://github.com/ultimateanu/hashdir
+  1) Download the latest version for your OS at https://github.com/ultimateanu/hashdir/releases
 ### Cross platform dotnet app
 ### Package manager
 
