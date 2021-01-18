@@ -16,57 +16,57 @@
         }
     
             :root {
-                --animation-duration: 12046ms;
+                --animation-duration: 19046ms;
             }
 
             @keyframes roll {
                 0.000%{transform:translateY(0px)}
-11.896%{transform:translateY(-374px)}
-12.834%{transform:translateY(-748px)}
-14.320%{transform:translateY(-1122px)}
-15.408%{transform:translateY(-1496px)}
-16.362%{transform:translateY(-1870px)}
-17.516%{transform:translateY(-2244px)}
-18.703%{transform:translateY(-2618px)}
-20.571%{transform:translateY(-2992px)}
-22.173%{transform:translateY(-3366px)}
-22.962%{transform:translateY(-3740px)}
-23.776%{transform:translateY(-4114px)}
-25.527%{transform:translateY(-4488px)}
-31.388%{transform:translateY(-4862px)}
-32.243%{transform:translateY(-5236px)}
-33.978%{transform:translateY(-5610px)}
-34.036%{transform:translateY(-5984px)}
-45.633%{transform:translateY(-6358px)}
-46.547%{transform:translateY(-6732px)}
-48.082%{transform:translateY(-7106px)}
-49.261%{transform:translateY(-7480px)}
-50.274%{transform:translateY(-7854px)}
-51.171%{transform:translateY(-8228px)}
-52.158%{transform:translateY(-8602px)}
-53.852%{transform:translateY(-8976px)}
-55.678%{transform:translateY(-9350px)}
-56.791%{transform:translateY(-9724px)}
-58.492%{transform:translateY(-10098px)}
-59.704%{transform:translateY(-10472px)}
-61.107%{transform:translateY(-10846px)}
-62.303%{transform:translateY(-11220px)}
-63.548%{transform:translateY(-11594px)}
-65.076%{transform:translateY(-11968px)}
-66.030%{transform:translateY(-12342px)}
-67.334%{transform:translateY(-12716px)}
-68.404%{transform:translateY(-13090px)}
-69.666%{transform:translateY(-13464px)}
-73.161%{transform:translateY(-13838px)}
-74.058%{transform:translateY(-14212px)}
-75.959%{transform:translateY(-14586px)}
-76.017%{transform:translateY(-14960px)}
-91.698%{transform:translateY(-15334px)}
+7.524%{transform:translateY(-374px)}
+8.117%{transform:translateY(-748px)}
+9.057%{transform:translateY(-1122px)}
+9.745%{transform:translateY(-1496px)}
+10.349%{transform:translateY(-1870px)}
+11.078%{transform:translateY(-2244px)}
+11.829%{transform:translateY(-2618px)}
+13.011%{transform:translateY(-2992px)}
+14.024%{transform:translateY(-3366px)}
+14.523%{transform:translateY(-3740px)}
+15.037%{transform:translateY(-4114px)}
+16.145%{transform:translateY(-4488px)}
+19.852%{transform:translateY(-4862px)}
+20.393%{transform:translateY(-5236px)}
+21.490%{transform:translateY(-5610px)}
+21.527%{transform:translateY(-5984px)}
+28.862%{transform:translateY(-6358px)}
+29.439%{transform:translateY(-6732px)}
+30.411%{transform:translateY(-7106px)}
+31.156%{transform:translateY(-7480px)}
+31.797%{transform:translateY(-7854px)}
+32.364%{transform:translateY(-8228px)}
+32.989%{transform:translateY(-8602px)}
+34.060%{transform:translateY(-8976px)}
+35.215%{transform:translateY(-9350px)}
+35.918%{transform:translateY(-9724px)}
+36.995%{transform:translateY(-10098px)}
+37.761%{transform:translateY(-10472px)}
+38.649%{transform:translateY(-10846px)}
+39.405%{transform:translateY(-11220px)}
+40.192%{transform:translateY(-11594px)}
+41.158%{transform:translateY(-11968px)}
+41.762%{transform:translateY(-12342px)}
+42.586%{transform:translateY(-12716px)}
+43.264%{transform:translateY(-13090px)}
+44.062%{transform:translateY(-13464px)}
+46.272%{transform:translateY(-13838px)}
+46.839%{transform:translateY(-14212px)}
+48.042%{transform:translateY(-14586px)}
+48.078%{transform:translateY(-14960px)}
+94.750%{transform:translateY(-15334px)}
 100.000%{transform:translateY(-15334px)}
             }
 
             #screen_view {
-                animation-duration: 12046ms;
+                animation-duration: 19046ms;
                 animation-iteration-count:infinite;
                 animation-name:roll;
                 animation-timing-function: steps(1,end);
