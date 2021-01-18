@@ -10,6 +10,8 @@
 # Overview
 **hashdir** is a simple command line tool to checksum directories and files.
 
+![Sample usage](hashdir/assets/img/hashdir_demo.svg)
+
 A [checksum](https://en.wikipedia.org/wiki/Checksum) is a short sequence of letters and numbers derived from another (often larger) sequence of data. Checksums are created from input data using a hashing algorithm. For a good hashing algorithm, it is extremely difficult to come up with an input that results in a specific checksum. Therefore a checksum acts like a digital fingerprint - _if the checksums match we can be reasonably sure the input data matches_.
 
 This is useful in many situations:
