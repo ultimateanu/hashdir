@@ -10,6 +10,11 @@
   max-width: 800px;
 }
 
+// Make TOC links larger
+ul:first-child {
+  font-size: 1.25em;
+}
+
 // Make code snippets have black background
 pre.highlight {
   margin: 1em 0;
