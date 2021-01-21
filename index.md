@@ -70,7 +70,7 @@ dotnet src/App/bin/Release/net5.0/publish/hashdir.dll --help
 
 # Usage
 
-hashdir [options] item...
+hashdir [options] item
 
 **Options:**  
 | Flag                       | Default | Description                  |
@@ -84,8 +84,7 @@ hashdir [options] item...
 ## Examples
 1. Get the checksum of a file or directory.
 ```
-hashdir ~/Desktop/project/info.txt
-hashdir ~/Desktop/project
+hashdir ~/Desktop/project/
 ```
 2. Get the checksum of a directory with the hidden files. Print out all subdirectories and files (tree).
 ```
