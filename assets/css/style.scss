@@ -12,3 +12,22 @@
 .language-plaintext {
   margin: 1em 0;
 }
+
+// Make code snippets have black background
+pre,code {
+  color: hsl(0, 0%, 96%);
+  background-color: hsl(0, 0%, 9%);
+  font-size: 16px;
+  border-radius: 4px;
+  -moz-border-radius: 4px;
+  -webkit-border-radius: 4px
+}
+
+// Make headers smaller
+h2 {
+  font-size: 24px;
+  background: none;
+}
+h3 {
+  font-size: 18px
+}
