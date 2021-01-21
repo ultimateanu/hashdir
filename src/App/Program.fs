@@ -3,12 +3,12 @@ open HashUtil.FS
 open System.IO
 
 type Options =
-    { [<Option('h', "include-hidden-files", Default = false, HelpText = "Include hidden files.")>]
+    { [<Option('t', "tree", Default = false, HelpText = "Print directory tree.")>]
+      Tree: bool
+      [<Option('h', "include-hidden-files", Default = false, HelpText = "Include hidden files.")>]
       IncludeHiddenFiles: bool
       [<Option('e', "skip-empty-dir", Default = false, HelpText = "Skip empty directories.")>]
       SkipEmptyDir: bool
-      [<Option('t', "tree", Default = false, HelpText = "Output directory tree.")>]
-      Tree: bool
       [<Value(0, Required = true, MetaName = "input", HelpText = "Input directories or files.")>]
       Input: seq<string> }
 
