@@ -5,6 +5,7 @@
     * [Cross platform dotnet app](#cross-platform-dotnet-app)
     * [Build from source](#build-from-source)
 - [Usage](#usage)
+    * [Examples](#examples)
 
 
 # Overview
@@ -73,10 +74,6 @@ dotnet src/App/bin/Release/net5.0/publish/hashdir.dll --help
 hashdir [options] item
 
 **Options:**  
-| First Header  | Second Header |
-| ------------- | ------------- |
-| Content Cell  | Content Cell  |
-| Content Cell  | Content Cell  |
 
 | Flag                       | Default | Description                  |
 |----------------------------|---------|------------------------------|
@@ -86,7 +83,7 @@ hashdir [options] item
 | --help                     |         | Display help screen.         |
 | --version                  |         | Display version information. |
 
-## Examples
+### Examples
 1. Get the checksum of a file or directory.
 ```
 hashdir ~/Desktop/project/
