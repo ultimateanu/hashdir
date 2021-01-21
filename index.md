@@ -77,3 +77,15 @@ hashdir ~/Desktop/project
 ```
 
 Additional flags to get customized behavior are listed below.
+
+Usage:
+hashdir [options] item1 item2 item3
+
+| **Flag**                   | **Default** | **Description**                  |
+|----------------------------|-------------|----------------------------------|
+| -t, --tree                 | false       | Print directory tree.            |
+| -h, --include-hidden-files | false       | Include hidden files.            |
+| -e, --skip-empty-dir       | false       | Skip empty directories.          |
+| --help                     |             | Display help screen.             |
+| --version                  |             | Display version information.     |
+
