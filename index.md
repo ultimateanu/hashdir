@@ -70,22 +70,28 @@ dotnet src/App/bin/Release/net5.0/publish/hashdir.dll --help
 
 # Usage
 
-To get the checksum of a file or directory simply run hashdir followed by the item.
+hashdir [options] item...
+
+**Options:**  
+| Flag                       | Default | Description                  |
+|----------------------------|---------|------------------------------|
+| -t, --tree                 | false   | Print directory tree.        |
+| -h, --include-hidden-files | false   | Include hidden files.        |
+| -e, --skip-empty-dir       | false   | Skip empty directories.      |
+| --help                     |         | Display help screen.         |
+| --version                  |         | Display version information. |
+
+## Examples
+1. Get the checksum of a file or directory.
 ```
 hashdir ~/Desktop/project/info.txt
 hashdir ~/Desktop/project
 ```
-
-Additional flags to get customized behavior are listed below.
-
-Usage:
-hashdir [options] item1 item2 item3
-
-| **Flag**                   | **Default** | **Description**                  |
-|----------------------------|-------------|----------------------------------|
-| -t, --tree                 | false       | Print directory tree.            |
-| -h, --include-hidden-files | false       | Include hidden files.            |
-| -e, --skip-empty-dir       | false       | Skip empty directories.          |
-| --help                     |             | Display help screen.             |
-| --version                  |             | Display version information.     |
-
+2. Get the checksum of a directory with the hidden files. Print out all subdirectories and files (tree).
+```
+hashdir --include-hidden-files --tree ~/Desktop/project 
+```
+3. Get the checksum of multiple items.
+```
+hashdir song.mp3 info.txt report.pdf
+```
