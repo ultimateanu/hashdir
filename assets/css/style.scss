@@ -3,18 +3,16 @@
 
 @import "{{ site.theme }}";
 
-// Custom style below
+// CUSTOM STYLE BELOW
 
-#main_content {
+// Made desktop width larger
+.inner {
   max-width: 800px;
-}
-
-.language-plaintext {
-  margin: 1em 0;
 }
 
 // Make code snippets have black background
 pre.highlight {
+  margin: 1em 0;
   background-color: hsl(0, 0%, 9%);
   border-radius: 4px;
   -moz-border-radius: 4px;
