@@ -1,11 +1,6 @@
 - [Overview](#overview)
 - [Install](#install)
-    * [Stand-alone binary](#stand-alone-binary)
-    * [Package manager](#package-manager)
-    * [Cross platform dotnet app](#cross-platform-dotnet-app)
-    * [Build from source](#build-from-source)
 - [Usage](#usage)
-    * [Examples](#examples)
 - [About](#about)
 
 
@@ -97,6 +92,7 @@ hashdir --include-hidden-files --tree ~/Desktop/project
 ```
 hashdir song.mp3 info.txt report.pdf
 ```
+
 
 # About
 hashdir is an open-source project with a permissive [MIT License](https://github.com/ultimateanu/hashdir/blob/main/LICENSE). If you find a bug or have suggestions feel free to create an [issue](https://github.com/ultimateanu/hashdir/issues) on Github. Any contributions to the code, tests, or documentation are also welcome via a pull request.
