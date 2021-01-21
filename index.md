@@ -73,6 +73,11 @@ dotnet src/App/bin/Release/net5.0/publish/hashdir.dll --help
 hashdir [options] item
 
 **Options:**  
+| First Header  | Second Header |
+| ------------- | ------------- |
+| Content Cell  | Content Cell  |
+| Content Cell  | Content Cell  |
+
 | Flag                       | Default | Description                  |
 |----------------------------|---------|------------------------------|
 | -t, --tree                 | false   | Print directory tree.        |
