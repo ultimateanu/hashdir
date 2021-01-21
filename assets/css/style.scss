@@ -1,7 +1,9 @@
 ---
 ---
 
-@import "";
+@import "{{ site.theme }}";
+
 h1 {
-    color: red;
+  color: red;
 }
+
