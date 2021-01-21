@@ -1,9 +1,14 @@
 ---
 ---
 
-@import "";
+@import "{{ site.theme }}";
 
-h1 {
-  color: blue;
+// Custom style below
+
+#main_content {
+  max-width: 800px;
 }
 
+.language-plaintext {
+  margin: 1em 0;
+}
