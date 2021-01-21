@@ -11,13 +11,13 @@
 
 ![sample terminal usage](assets/img/hashdir_demo.svg)
 
-**hashdir** is a simple command line tool to checksum directories and files.
+**hashdir** is a simple command-line tool to checksum directories and files.
 
 A [checksum](https://en.wikipedia.org/wiki/Checksum) is a short sequence of letters and numbers derived from another (often larger) sequence of data. Checksums are created from input data using a hashing algorithm. For a good hashing algorithm, it is extremely difficult to come up with an input that results in a specific checksum. Therefore a checksum acts like a digital fingerprint - _if the checksums match we can be reasonably sure the input data matches_.
 
 This is useful in many situations:
 - **Transferring files** - compare checksums to ensure nothing was corrupted or tampered
-- **Archiving data** - storing the checksum along with the data allows you to verify that your usb/harddrive/cloud provider didn’t modify your data
+- **Archiving data** - storing the checksum along with the data allows you to verify that your USB/hard drive/cloud provider didn’t modify your data
 - **Duplicate detection** - check if you have duplicate files or directories and know what is safe to delete
 
 
@@ -42,7 +42,7 @@ dotnet tool install --global hashdir
 dotnet tool update --global hashdir
 ```
 
-### Cross platform dotnet app
+### Cross-platform dotnet app
 If you already have the dotnet runtime on your machine, you can use the dotnet application which is a cross-platform solution. Since this relies on the dotnet platform for your system, the resulting size is significantly smaller.
 1. Download the hashdir_x.y.z_dotnet zip or tar.gz file from [releases](https://github.com/ultimateanu/hashdir/releases)
 2. Extract the contents of the .zip or .tar.gz file
@@ -52,7 +52,7 @@ dotnet hashdir.dll --help
 ```
 
 ### Build from source
-Since this is an open source project you can also build from source! This requires [dotnet 5](https://dotnet.microsoft.com).
+Since this is an open-source project you can also build from source! This requires [dotnet 5](https://dotnet.microsoft.com).
 1. Download the source code from the main branch on [GitHub](https://github.com/ultimateanu/hashdir/tree/main)
 2. _Optional_: Build and run the app
 ```
@@ -69,3 +69,11 @@ dotnet src/App/bin/Release/net5.0/publish/hashdir.dll --help
 
 
 # Usage
+
+To get the checksum of a file or directory simply run hashdir followed by the item.
+```
+hashdir ~/Desktop/project/info.txt
+hashdir ~/Desktop/project
+```
+
+Additional flags to get customized behavior are listed below.
