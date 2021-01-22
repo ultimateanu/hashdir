@@ -1,5 +1,5 @@
 - [Overview](#overview)
-- [Install](#install)
+- [Installation](#installation)
 - [Usage](#usage)
 - [About](#about)
 
@@ -18,7 +18,7 @@ This is useful in many situations:
 - **Duplicate detection** - check if you have duplicate files or directories and know what is safe to delete
 
 
-# Install
+# Installation
 There are several ways to install hashdir, and they are listed below roughly in order of convenience. You can choose the method that fits your needs. The latest release can always be found at <https://github.com/ultimateanu/hashdir/releases>.
 
 ## Stand-alone binary
