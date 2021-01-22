@@ -30,6 +30,13 @@ pre.highlight {
   }
 }
 
+// Create seperator before header (except first)
+h1:not(:first-of-type) {
+  border-top: 2px solid hsl(0, 0%, 80%);
+  margin-top: 1em;
+  padding-top: 1.5em;
+}
+
 // Make headers smaller
 h2 {
   font-size: 24px;
