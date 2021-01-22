@@ -10,35 +10,39 @@
   max-width: 740px;
 }
 
-// Make TOC links larger
-ul:first-child {
-  font-size: 1.25em;
-}
-
-// Make code snippets have black background
-pre.highlight {
-  margin: 1em 0;
-  background-color: hsl(0, 0%, 9%);
-  border-radius: 4px;
-  -moz-border-radius: 4px;
-  -webkit-border-radius: 4px;
-
-  code {
-    background-color: hsl(0, 0%, 9%);
-    color: hsl(0, 0%, 96%);
-    font-size: 16px;
+// Scope style to the actual content
+#main_content {
+  
+  // Make TOC links larger
+  ul:first-child {
+    font-size: 1.25em;
   }
-}
 
-// Create seperator before header (except first)
-h2:not(:first-of-type) {
-  border-top: 2px solid hsl(0, 0%, 80%);
-  margin-top: 1em;
-  padding-top: 1.5em;
-}
+  // Make code snippets have black background
+  pre.highlight {
+    margin: 1em 0;
+    background-color: hsl(0, 0%, 9%);
+    border-radius: 4px;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
 
-// Header sizing adjustments
-h2 {
-  font-size: 2.5em;
-  background: none;
+    code {
+      background-color: hsl(0, 0%, 9%);
+      color: hsl(0, 0%, 96%);
+      font-size: 16px;
+    }
+  }
+
+  // Create seperator before header (except first)
+  h2:not(:first-of-type) {
+    border-top: 2px solid hsl(0, 0%, 80%);
+    margin-top: 1em;
+    padding-top: 1.5em;
+  }
+
+  // Header sizing adjustments
+  h2 {
+    font-size: 2.5em;
+    background: none;
+  }
 }
