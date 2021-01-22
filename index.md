@@ -72,13 +72,13 @@ hashdir [options] item
 
 **Options:**  
 
-| Flag                       | Default | Description                  |
-|----------------------------|---------|------------------------------|
-| -t, --tree                 | false   | Print directory tree.        |
-| -h, --include-hidden-files | false   | Include hidden files.        |
-| -e, --skip-empty-dir       | false   | Skip empty directories.      |
-| --help                     |         | Display help screen.         |
-| --version                  |         | Display version information. |
+| Flag                       | Description                  |
+|----------------------------|------------------------------|
+| -t, --tree                 | Print directory tree.        |
+| -h, --include-hidden-files | Include hidden files.        |
+| -e, --skip-empty-dir       | Skip empty directories.      |
+| --help                     | Display help screen.         |
+| --version                  | Display version information. |
 
 ## Examples
 1. Get the checksum of a file or directory.
