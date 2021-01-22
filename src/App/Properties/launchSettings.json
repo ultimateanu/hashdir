@@ -1,0 +1,24 @@
+{
+  "profiles": {
+    "App": {
+      "commandName": "Project",
+      "commandLineArgs": "C:\\Users\\ultim\\Desktop\\test"
+    },
+    "Desktop": {
+      "commandName": "Project",
+      "commandLineArgs": "C:\\Users\\ultim\\Desktop\\test"
+    },
+    "Help": {
+      "commandName": "Project",
+      "commandLineArgs": "--help"
+    },
+    "Desktop (skip empty dir)": {
+      "commandName": "Project",
+      "commandLineArgs": "--skip-empty-dir --tree C:\\Users\\ultim\\Desktop\\test"
+    },
+    "Desktop --tree": {
+      "commandName": "Project",
+      "commandLineArgs": "--tree C:\\Users\\ultim\\Desktop\\test"
+    }
+  }
+}

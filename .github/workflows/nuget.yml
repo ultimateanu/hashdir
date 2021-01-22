@@ -1,0 +1,24 @@
+name: nuget
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 5.0.102
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Pack NuGet package
+      run: dotnet pack --no-restore -c Release
+    - name: Publish to NuGet.org
+      run: dotnet nuget push ./src/App/nupkg/hashdir* --source https://api.nuget.org/v3/index.json --skip-duplicate --api-key ${{secrets.NUGET_API_KEY}}
+
