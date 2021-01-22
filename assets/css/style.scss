@@ -31,16 +31,9 @@ pre.highlight {
 }
 
 // Create seperator before header (except first)
-h2 {
+h2:not(:first-of-type) {
   border-top: 2px solid hsl(0, 0%, 80%);
   margin-top: 1em;
-  padding-top: 1.25em;
-  
-  background: none;
-  font-size: 2.5em;
-}
-h2:first-of-type {
-  border-top: none;
-  margin-top: none;
-  padding-top: none;
+  padding-top: 1.5em;
+  font-size: 2em;
 }
