@@ -18,6 +18,22 @@ There are several ways to get hashdir. Full details can be found [here](https://
 - **dotnet tool**: `dotnet tool install --global hashdir`
 
 ## Usage
+hashdir [options] item
+
+**Options:**  
+
+| Flag                       | Description                  |
+|----------------------------|------------------------------|
+| -t, --tree                 | Print directory tree.        |
+| -h, --include-hidden-files | Include hidden files.        |
+| -e, --skip-empty-dir       | Skip empty directories.      |
+| --help                     | Display help screen.         |
+| --version                  | Display version information. |
+
+### Examples
+1. Hash a file/directory: `hashdir ~/Desktop/project/`
+2. Hash a directory with hidden files and print tree: `hashdir --include-hidden-files --tree ~/Desktop/project`
+3. Hash multiple items: `hashdir song.mp3 info.txt report.pdf`
 
 ## License
 [MIT License](https://github.com/ultimateanu/hashdir/blob/main/LICENSE)
