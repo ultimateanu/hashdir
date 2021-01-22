@@ -7,7 +7,7 @@
 
 _A command-line utility to checksum directories and files._
 
-hashdir aims to be the easiest way to hash a file/directory. This is useful in many situations such as transferring files, archiving data, or detecting duplicates. It is a single binary, works on all major OS's, and has a simple command-line interface. It is developed with F# on .NET 5.
+**hashdir** aims to be the easiest way to hash a file/directory. This is useful in many situations such as transferring files, archiving data, or detecting duplicates. It is a single binary, works on all major OS's, and has a simple command-line interface. It is developed with F# on .NET 5.
 
 Links: [Github](https://github.com/ultimateanu/hashdir), [project site](https://ultimateanu.github.io/hashdir)
 
@@ -38,4 +38,4 @@ hashdir [options] item
 ## License
 [MIT License](https://github.com/ultimateanu/hashdir/blob/main/LICENSE)
 
-hashdir is an open-source project with a permissive license. If you find a bug or have suggestions feel free to create an issue on Github. Any contributions to the code, tests, or documentation are also welcome via a pull request.
+**hashdir** is an open-source project with a permissive license. If you find a bug or have suggestions feel free to create an issue on Github. Any contributions to the code, tests, or documentation are also welcome via a pull request.
