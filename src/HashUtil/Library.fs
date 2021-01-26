@@ -5,19 +5,31 @@ open System.Security.Cryptography
 open System.Text
 
 module Checksum =
-    let computeHashString (input: string) =
-        input
+    type HashType =
+        | MD5
+        | SHA256
+
+    let private getHashAlgorithm hashType =
+        let hashTypeStr =
+            match hashType with
+            | MD5 -> "MD5"
+            | SHA256 -> "SHA256"
+
+        hashTypeStr |> HashAlgorithm.Create
+
+    let computeHashOfString hashType (str: string) =
+        str
         |> Encoding.ASCII.GetBytes
-        |> SHA256.Create().ComputeHash
+        |> (getHashAlgorithm hashType).ComputeHash
         |> Seq.map (fun c -> c.ToString("x2"))
         |> Seq.reduce (+)
 
-    let computeHashStringFromFile filePath =
+    let computeHashOfFile hashType filePath =
         assert File.Exists filePath
         use file = File.OpenRead filePath
 
         file
-        |> SHA256.Create().ComputeHash
+        |> (getHashAlgorithm hashType).ComputeHash
         |> Seq.map (fun c -> c.ToString("x2"))
         |> Seq.reduce (+)
 
@@ -32,7 +44,7 @@ module FS =
         | File (_, hash) -> hash
         | Dir (_, hash, _) -> hash
 
-    let rec makeDirHashStructure includeHiddenFiles includeEmptyDir dirPath =
+    let rec makeDirHashStructure (hashType: Checksum.HashType) includeHiddenFiles includeEmptyDir dirPath =
         assert Directory.Exists(dirPath)
 
         let getResult (x: Result<ItemHash, string>) =
@@ -45,7 +57,7 @@ module FS =
             |> Directory.EnumerateFileSystemEntries
             |> Seq.toList
             |> List.sort
-            |> List.map (makeHashStructure includeHiddenFiles includeEmptyDir)
+            |> List.map (makeHashStructure hashType includeHiddenFiles includeEmptyDir)
             |> List.choose getResult
 
         if children.IsEmpty && not includeEmptyDir then
@@ -61,20 +73,20 @@ module FS =
                 |> List.map getNameAndHashString
                 |> fun x -> "" :: x // Add empty string as a child to compute hash of empty dir.
                 |> List.reduce (+)
-                |> Checksum.computeHashString
+                |> Checksum.computeHashOfString hashType
 
             Ok(Dir(path = dirPath, hash = childrenHash, children = children))
 
-    and makeHashStructure includeHiddenFiles includeEmptyDir path =
+    and makeHashStructure (hashType: Checksum.HashType) includeHiddenFiles includeEmptyDir path =
         if File.Exists(path) then
             if ((not includeHiddenFiles)
                 && (File.GetAttributes(path) &&& FileAttributes.Hidden)
                     .Equals(FileAttributes.Hidden)) then
                 Error("Not including hidden file")
             else
-                Ok(File(path = path, hash = (Checksum.computeHashStringFromFile path)))
+                Ok(File(path = path, hash = (Checksum.computeHashOfFile hashType path)))
         else if Directory.Exists(path) then
-            makeDirHashStructure includeHiddenFiles includeEmptyDir path
+            makeDirHashStructure hashType includeHiddenFiles includeEmptyDir path
         else
             Error(sprintf "'%s' is not a valid path" path)
 

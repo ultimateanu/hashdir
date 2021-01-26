@@ -1,4 +1,5 @@
 open CommandLine
+open HashUtil.Checksum
 open HashUtil.FS
 open System.IO
 
@@ -16,7 +17,7 @@ type Options =
 let run (o: Options) =
     for item in o.Input do
         let optHashStructure =
-            makeHashStructure o.IncludeHiddenFiles (not o.SkipEmptyDir) item
+            makeHashStructure SHA256 o.IncludeHiddenFiles (not o.SkipEmptyDir) item
 
         let strWriter = new StringWriter()
 

@@ -1,5 +1,6 @@
 ﻿module FsTests
 
+open HashUtil.Checksum
 open HashUtil.FS
 open HashUtil.Util
 open System
@@ -58,13 +59,13 @@ type FilenameInHash(fsTempDirSetupFixture: FsTempDirSetupFixture, output: ITestO
 
         let dirAHash =
             dirA
-                |> makeHashStructure includeHiddenFiles includeEmptyDir
-                |> makeOption
+            |> makeHashStructure HashType.SHA256 includeHiddenFiles includeEmptyDir
+            |> makeOption
 
         let dirBHash =
             dirB
-                |> makeHashStructure includeHiddenFiles includeEmptyDir
-                |> makeOption
+            |> makeHashStructure HashType.SHA256 includeHiddenFiles includeEmptyDir
+            |> makeOption
 
         // Expect their hashes to be equal.
         Assert.Equal(getHash dirAHash.Value, getHash dirBHash.Value)
@@ -91,13 +92,13 @@ type FilenameInHash(fsTempDirSetupFixture: FsTempDirSetupFixture, output: ITestO
 
         let dirAHash =
             dirA
-                |> makeHashStructure includeHiddenFiles includeEmptyDir
-                |> makeOption
+            |> makeHashStructure HashType.SHA256 includeHiddenFiles includeEmptyDir
+            |> makeOption
 
         let dirBHash =
             dirB
-                |> makeHashStructure includeHiddenFiles includeEmptyDir
-                |> makeOption
+            |> makeHashStructure HashType.SHA256 includeHiddenFiles includeEmptyDir
+            |> makeOption
 
         // Expect their hashes to be different.
         Assert.NotEqual<string>(getHash dirAHash.Value, getHash dirBHash.Value)
@@ -124,13 +125,13 @@ type FilenameInHash(fsTempDirSetupFixture: FsTempDirSetupFixture, output: ITestO
 
         let dirAHash =
             dirA
-                |> makeHashStructure includeHiddenFiles includeEmptyDir
-                |> makeOption
+            |> makeHashStructure HashType.SHA256 includeHiddenFiles includeEmptyDir
+            |> makeOption
 
         let dirBHash =
             dirB
-                |> makeHashStructure includeHiddenFiles includeEmptyDir
-                |> makeOption
+            |> makeHashStructure HashType.SHA256 includeHiddenFiles includeEmptyDir
+            |> makeOption
 
         // Expect their hashes to be different.
         Assert.NotEqual<string>(getHash dirAHash.Value, getHash dirBHash.Value)
@@ -163,13 +164,13 @@ type HashProperties(fsTempDirSetupFixture: FsTempDirSetupFixture, output: ITestO
 
         let dirHash =
             dirPath
-                |> makeHashStructure includeHiddenFiles includeEmptyDir
-                |> makeOption
+            |> makeHashStructure HashType.SHA256 includeHiddenFiles includeEmptyDir
+            |> makeOption
 
         let fileHash =
             filePath
-                |> makeHashStructure includeHiddenFiles includeEmptyDir
-                |> makeOption
+            |> makeHashStructure HashType.SHA256 includeHiddenFiles includeEmptyDir
+            |> makeOption
 
         // Expect their hashes to be equal.
         Assert.True(dirHash.IsSome)
