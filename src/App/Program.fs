@@ -8,7 +8,7 @@ open System.IO
 
 type Opt(item, tree, includeHiddenFiles, skipEmptyDir, algorithm) =
     // Arguments
-    member val items: string[] = item
+    member val items: string [] = item
 
     // Options
     member val printTree: bool = tree
@@ -17,7 +17,7 @@ type Opt(item, tree, includeHiddenFiles, skipEmptyDir, algorithm) =
     member val algorithm: string = algorithm
 
 
-let cmdHandler(opt: Opt) =
+let cmdHandler (opt: Opt) =
     // Parse requested algorithm. System.CommandLine should have already verified.
     let algorithmMaybe = parseHashType opt.algorithm
     assert algorithmMaybe.IsSome
@@ -38,23 +38,29 @@ let cmdHandler(opt: Opt) =
 
 [<EntryPoint>]
 let main args =
-    let root = new RootCommand("A command-line utility to checksum directories and files.")
+    let root =
+        RootCommand("A command-line utility to checksum directories and files.")
 
     // ARGS
-    let itemArg = new Argument<string[]>("item", "Directory or file to hash.")
+    let itemArg =
+        Argument<string []>("item", "Directory or file to hash.")
+
     itemArg.Arity <- ArgumentArity.OneOrMore
     root.AddArgument itemArg
 
     // OPTIONS
-    root.AddOption (Option<bool>([|"-t"; "--tree"|], "Print directory tree."))
-    root.AddOption (Option<bool>([|"-i"; "--include-hidden-files"|], "Include hidden files."))
-    root.AddOption (Option<bool>([|"-e"; "--skip-empty-dir"|], "Skip empty directories."))
+    root.AddOption(Option<bool>([| "-t"; "--tree" |], "Print directory tree."))
+    root.AddOption(Option<bool>([| "-i"; "--include-hidden-files" |], "Include hidden files."))
+    root.AddOption(Option<bool>([| "-e"; "--skip-empty-dir" |], "Skip empty directories."))
     // Hash Algorithm
-    let hashAlgOption = new Option<string>([|"-a"; "--algorithm"|], (fun () -> "sha256"), "The hash function to use.")
+    let hashAlgOption =
+        Option<string>([| "-a"; "--algorithm" |], (fun () -> "sha256"), "The hash function to use.")
+
     let allHashTypes =
         typeof<HashType>
-            |> FSharpType.GetUnionCases
-            |> Array.map (fun info -> info.Name.ToLower())
+        |> FSharpType.GetUnionCases
+        |> Array.map (fun info -> info.Name.ToLower())
+
     hashAlgOption.FromAmong(allHashTypes) |> ignore
     root.AddOption hashAlgOption
 
