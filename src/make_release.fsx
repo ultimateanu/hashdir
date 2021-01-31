@@ -93,7 +93,7 @@ let printColor color str =
 let ensure exp msg =
     if not exp then
         printColor ConsoleColor.Red (sprintf "ERROR: %s" msg)
-        Environment.Exit(1)
+        exit 1
 
 let runProcess cmd (args: string) =
     printColor ConsoleColor.Yellow (sprintf "RUNNING: %s %s" cmd args)
@@ -210,11 +210,20 @@ let makeChecksumFile () =
         Directory.GetFiles(releaseDir)
         |> Array.filter (fun f -> f.StartsWith(Path.Combine(releaseDir, "hashdir_")))
         |> Array.sort
-        |> Array.map (fun f -> sprintf "%s  %s" (computeHashStringFromFile f) (Path.GetFileName f))
+        |> Array.map (fun f -> sprintf "%s  %s" (computeHashOfFile HashType.SHA256 f) (Path.GetFileName f))
 
     File.WriteAllLines(checksumFilename, hashLines)
 
+let main () =
+    let argErrorMsg =
+        "Expected a single argument: < build | hash >"
 
-// MAIN
-buildRelease ()
-// makeChecksumFile ()
+    ensure (fsi.CommandLineArgs.Length = 2) argErrorMsg
+
+    match fsi.CommandLineArgs.[1] with
+    | "build" -> buildRelease ()
+    | "hash" -> makeChecksumFile ()
+    | _ -> ensure false argErrorMsg
+
+
+main ()

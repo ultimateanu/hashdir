@@ -1,4 +1,5 @@
-﻿open HashUtil.FS
+﻿open HashUtil.Checksum
+open HashUtil.FS
 open System
 open System.IO
 open System.Runtime.InteropServices
@@ -127,7 +128,7 @@ type HashStructureTests(fsSetupFixture: FsSetupFixture, output:ITestOutputHelper
         let includeEmptyDir = true
         let oneFileDirHash =
             Path.Combine(fsSetupFixture.RootDir, "dir_zero")
-                |> makeHashStructure false includeEmptyDir
+                |> makeHashStructure SHA256 false includeEmptyDir
                 |> makeOption
         Assert.True(oneFileDirHash.IsSome)
         Assert.Equal(
@@ -140,7 +141,7 @@ type HashStructureTests(fsSetupFixture: FsSetupFixture, output:ITestOutputHelper
         let includeEmptyDir = false
         let oneFileDirHash =
             Path.Combine(fsSetupFixture.RootDir, "dir_zero")
-                |> makeHashStructure false includeEmptyDir
+                |> makeHashStructure SHA256 false includeEmptyDir
                 |> makeOption
         Assert.True(oneFileDirHash.IsNone)
 
@@ -148,7 +149,7 @@ type HashStructureTests(fsSetupFixture: FsSetupFixture, output:ITestOutputHelper
     member _.``Dir with 1 file`` () =
         let oneFileDirHash =
             Path.Combine(fsSetupFixture.RootDir, "dir_one")
-                |> makeHashStructure false false
+                |> makeHashStructure SHA256 false false
                 |> makeOption
         Assert.True(oneFileDirHash.IsSome)
         Assert.Equal(
@@ -159,7 +160,7 @@ type HashStructureTests(fsSetupFixture: FsSetupFixture, output:ITestOutputHelper
     member _.``Dir with 2 files`` () =
         let twoFileDirHash =
             Path.Combine(fsSetupFixture.RootDir, "dir_two")
-                |> makeHashStructure false false
+                |> makeHashStructure SHA256 false false
                 |> makeOption
         Assert.True(twoFileDirHash.IsSome)
         Assert.Equal(
@@ -172,7 +173,7 @@ type HashStructureTests(fsSetupFixture: FsSetupFixture, output:ITestOutputHelper
         let includeEmptyDir = true
         let rootHash =
             Path.Combine(fsSetupFixture.RootDir, ".fakerc")
-                |> makeHashStructure includeHiddenFiles includeEmptyDir
+                |> makeHashStructure SHA256 includeHiddenFiles includeEmptyDir
                 |> makeOption
         Assert.True(rootHash.IsSome)
         Assert.Equal(
@@ -185,7 +186,7 @@ type HashStructureTests(fsSetupFixture: FsSetupFixture, output:ITestOutputHelper
         let includeEmptyDir = true
         let rootHash =
             Path.Combine(fsSetupFixture.RootDir, ".fakerc")
-                |> makeHashStructure includeHiddenFiles includeEmptyDir
+                |> makeHashStructure SHA256 includeHiddenFiles includeEmptyDir
                 |> makeOption
         Assert.True(rootHash.IsNone)
 
@@ -194,7 +195,7 @@ type HashStructureTests(fsSetupFixture: FsSetupFixture, output:ITestOutputHelper
         let includeEmptyDir = true
         let rootHash =
             fsSetupFixture.RootDir
-                |> makeHashStructure false includeEmptyDir
+                |> makeHashStructure SHA256 false includeEmptyDir
                 |> makeOption
         Assert.True(rootHash.IsSome)
         Assert.Equal(
@@ -206,7 +207,7 @@ type HashStructureTests(fsSetupFixture: FsSetupFixture, output:ITestOutputHelper
         let includeEmptyDir = false
         let rootHash =
             fsSetupFixture.RootDir
-                |> makeHashStructure false includeEmptyDir
+                |> makeHashStructure SHA256 false includeEmptyDir
                 |> makeOption
         Assert.True(rootHash.IsSome)
         Assert.Equal(
@@ -219,7 +220,7 @@ type HashStructureTests(fsSetupFixture: FsSetupFixture, output:ITestOutputHelper
         let includeEmptyDir = true
         let rootHash =
             fsSetupFixture.RootDir
-                |> makeHashStructure includeHiddenFiles includeEmptyDir
+                |> makeHashStructure SHA256 includeHiddenFiles includeEmptyDir
                 |> makeOption
         Assert.True(rootHash.IsSome)
         Assert.Equal(
@@ -232,7 +233,7 @@ type HashStructureTests(fsSetupFixture: FsSetupFixture, output:ITestOutputHelper
         let includeEmptyDir = true
         let rootHash =
             fsSetupFixture.RootDir
-                |> makeHashStructure includeHiddenFiles includeEmptyDir
+                |> makeHashStructure SHA256 includeHiddenFiles includeEmptyDir
                 |> makeOption
         Assert.True(rootHash.IsSome)
         Assert.Equal(

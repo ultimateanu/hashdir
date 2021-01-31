@@ -1,39 +1,68 @@
-open CommandLine
+open HashUtil.Checksum
 open HashUtil.FS
+open Microsoft.FSharp.Reflection
+open System.CommandLine
+open System.CommandLine.Invocation
 open System.IO
 
-type Options =
-    { [<Option('t', "tree", Default = false, HelpText = "Print directory tree.")>]
-      Tree: bool
-      [<Option('h', "include-hidden-files", Default = false, HelpText = "Include hidden files.")>]
-      IncludeHiddenFiles: bool
-      [<Option('e', "skip-empty-dir", Default = false, HelpText = "Skip empty directories.")>]
-      SkipEmptyDir: bool
-      [<Value(0, Required = true, MetaName = "input", HelpText = "Input directories or files.")>]
-      Input: seq<string> }
+
+type Opt(item, tree, includeHiddenFiles, skipEmptyDir, algorithm) =
+    // Arguments
+    member val items: string [] = item
+
+    // Options
+    member val printTree: bool = tree
+    member val includeHiddenFiles: bool = includeHiddenFiles
+    member val skipEmptyDir: bool = skipEmptyDir
+    member val algorithm: string = algorithm
 
 
-let run (o: Options) =
-    for item in o.Input do
+let cmdHandler (opt: Opt) =
+    // Parse requested algorithm. System.CommandLine should have already verified.
+    let algorithmMaybe = parseHashType opt.algorithm
+    assert algorithmMaybe.IsSome
+    let hashAlgorithm = algorithmMaybe.Value
+
+    for item in opt.items do
         let optHashStructure =
-            makeHashStructure o.IncludeHiddenFiles (not o.SkipEmptyDir) item
+            makeHashStructure hashAlgorithm opt.includeHiddenFiles (not opt.skipEmptyDir) item
 
         let strWriter = new StringWriter()
 
         match optHashStructure with
         | Error e -> printfn "Error: %s" e
         | Ok hashStructure ->
-            printHashStructure hashStructure o.Tree strWriter
+            printHashStructure hashStructure opt.printTree strWriter
             printf "%s" (strWriter.ToString())
 
 
 [<EntryPoint>]
-let main argv =
-    let parsedResult =
-        CommandLine.Parser.Default.ParseArguments<Options>(argv)
+let main args =
+    let root =
+        RootCommand("A command-line utility to checksum directories and files.")
 
-    match parsedResult with
-    | :? (Parsed<Options>) as parsed -> run parsed.Value
-    | _ -> ()
+    // ARGS
+    let itemArg =
+        Argument<string []>("item", "Directory or file to hash.")
 
-    0
+    itemArg.Arity <- ArgumentArity.OneOrMore
+    root.AddArgument itemArg
+
+    // OPTIONS
+    root.AddOption(Option<bool>([| "-t"; "--tree" |], "Print directory tree."))
+    root.AddOption(Option<bool>([| "-i"; "--include-hidden-files" |], "Include hidden files."))
+    root.AddOption(Option<bool>([| "-e"; "--skip-empty-dir" |], "Skip empty directories."))
+    // Hash Algorithm
+    let hashAlgOption =
+        Option<string>([| "-a"; "--algorithm" |], (fun () -> "sha1"), "The hash function to use.")
+
+    let allHashTypes =
+        typeof<HashType>
+        |> FSharpType.GetUnionCases
+        |> Array.map (fun info -> info.Name.ToLower())
+
+    hashAlgOption.FromAmong(allHashTypes) |> ignore
+    root.AddOption hashAlgOption
+
+    root.Handler <- CommandHandler.Create(cmdHandler)
+    root.Invoke args
