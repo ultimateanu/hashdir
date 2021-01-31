@@ -214,7 +214,13 @@ let makeChecksumFile () =
 
     File.WriteAllLines(checksumFilename, hashLines)
 
+let main() =
+    let argErrorMsg = "Expected a single argument: < build | hash >"
+    ensure (fsi.CommandLineArgs.Length = 2) argErrorMsg
+    match fsi.CommandLineArgs.[1] with
+        | "build" -> buildRelease()
+        | "hash"  -> makeChecksumFile()
+        | _ -> ensure false argErrorMsg
 
-// MAIN
-buildRelease ()
-// makeChecksumFile ()
+
+main()
