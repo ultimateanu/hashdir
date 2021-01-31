@@ -54,7 +54,7 @@ let main args =
     root.AddOption(Option<bool>([| "-e"; "--skip-empty-dir" |], "Skip empty directories."))
     // Hash Algorithm
     let hashAlgOption =
-        Option<string>([| "-a"; "--algorithm" |], (fun () -> "sha256"), "The hash function to use.")
+        Option<string>([| "-a"; "--algorithm" |], (fun () -> "sha1"), "The hash function to use.")
 
     let allHashTypes =
         typeof<HashType>
