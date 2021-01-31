@@ -8,31 +8,31 @@ open System.IO
 
 type Opt(item, tree, includeHiddenFiles, skipEmptyDir, algorithm) =
     // Arguments
-    member val items: string [] = item
+    member val Items: string [] = item
 
     // Options
-    member val printTree: bool = tree
-    member val includeHiddenFiles: bool = includeHiddenFiles
-    member val skipEmptyDir: bool = skipEmptyDir
-    member val algorithm: string = algorithm
+    member val PrintTree: bool = tree
+    member val IncludeHiddenFiles: bool = includeHiddenFiles
+    member val SkipEmptyDir: bool = skipEmptyDir
+    member val Algorithm: string = algorithm
 
 
 let cmdHandler (opt: Opt) =
     // Parse requested algorithm. System.CommandLine should have already verified.
-    let algorithmMaybe = parseHashType opt.algorithm
+    let algorithmMaybe = parseHashType opt.Algorithm
     assert algorithmMaybe.IsSome
     let hashAlgorithm = algorithmMaybe.Value
 
-    for item in opt.items do
+    for item in opt.Items do
         let optHashStructure =
-            makeHashStructure hashAlgorithm opt.includeHiddenFiles (not opt.skipEmptyDir) item
+            makeHashStructure hashAlgorithm opt.IncludeHiddenFiles (not opt.SkipEmptyDir) item
 
         let strWriter = new StringWriter()
 
         match optHashStructure with
         | Error e -> printfn "Error: %s" e
         | Ok hashStructure ->
-            printHashStructure hashStructure opt.printTree strWriter
+            printHashStructure hashStructure opt.PrintTree strWriter
             printf "%s" (strWriter.ToString())
 
 
