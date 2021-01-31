@@ -1,5 +1,6 @@
 open HashUtil.Checksum
 open HashUtil.FS
+open Microsoft.FSharp.Reflection
 open System.CommandLine
 open System.CommandLine.Invocation
 open System.IO
@@ -17,16 +18,14 @@ type Opt(item, tree, includeHiddenFiles, skipEmptyDir, algorithm) =
 
 
 let cmdHandler(opt: Opt) =
-    printfn "In handler()"
-    printfn "arg Name:%A" opt.items
-    printfn "option --printTree:%A" opt.printTree
-    printfn "option --includeHiddenFiles:%A" opt.includeHiddenFiles
-    printfn "option --skipEmptyDir:%A" opt.skipEmptyDir
-    printfn "option --algorithm:%A" opt.algorithm
+    // Parse requested algorithm. System.CommandLine should have already verified.
+    let algorithmMaybe = parseHashType opt.algorithm
+    assert algorithmMaybe.IsSome
+    let hashAlgorithm = algorithmMaybe.Value
 
     for item in opt.items do
         let optHashStructure =
-            makeHashStructure SHA256 opt.includeHiddenFiles (not opt.skipEmptyDir) item
+            makeHashStructure hashAlgorithm opt.includeHiddenFiles (not opt.skipEmptyDir) item
 
         let strWriter = new StringWriter()
 
@@ -39,21 +38,24 @@ let cmdHandler(opt: Opt) =
 
 [<EntryPoint>]
 let main args =
-    let root = new RootCommand()
+    let root = new RootCommand("A command-line utility to checksum directories and files.")
 
-    // File or dir arguments
+    // ARGS
     let itemArg = new Argument<string[]>("item", "Directory or file to hash.")
     itemArg.Arity <- ArgumentArity.OneOrMore
     root.AddArgument itemArg
 
-    // Options
+    // OPTIONS
     root.AddOption (Option<bool>([|"-t"; "--tree"|], "Print directory tree."))
     root.AddOption (Option<bool>([|"-i"; "--include-hidden-files"|], "Include hidden files."))
     root.AddOption (Option<bool>([|"-e"; "--skip-empty-dir"|], "Skip empty directories."))
-    // Hash Algorithm Option
+    // Hash Algorithm
     let hashAlgOption = new Option<string>([|"-a"; "--algorithm"|], (fun () -> "sha256"), "The hash function to use.")
-    //let b = new Option<string>()
-    hashAlgOption.FromAmong([|"md5"; "sha1"; "sha256"|]) |> ignore
+    let allHashTypes =
+        typeof<HashType>
+            |> FSharpType.GetUnionCases
+            |> Array.map (fun info -> info.Name.ToLower())
+    hashAlgOption.FromAmong(allHashTypes) |> ignore
     root.AddOption hashAlgOption
 
     root.Handler <- CommandHandler.Create(cmdHandler)

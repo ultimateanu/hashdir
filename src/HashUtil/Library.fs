@@ -9,6 +9,13 @@ module Checksum =
         | MD5
         | SHA256
 
+    let parseHashType (input:string) =
+        let hashTypeStr = input.ToLower().Trim()
+        match hashTypeStr with
+            | "md5" -> Some MD5
+            | "sha256" -> Some SHA256
+            | _ -> None
+
     let private getHashAlgorithm hashType =
         let hashTypeStr =
             match hashType with
