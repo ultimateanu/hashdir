@@ -7,21 +7,30 @@ open System.Text
 module Checksum =
     type HashType =
         | MD5
+        | SHA1
         | SHA256
+        | SHA384
+        | SHA512
 
     let parseHashType (input: string) =
-        let hashTypeStr = input.ToLower().Trim()
+        let hashTypeStr = input.ToUpper().Trim()
 
         match hashTypeStr with
-        | "md5" -> Some MD5
-        | "sha256" -> Some SHA256
+        | "MD5" -> Some MD5
+        | "SHA1" -> Some SHA1
+        | "SHA256" -> Some SHA256
+        | "SHA384" -> Some SHA384
+        | "SHA512" -> Some SHA512
         | _ -> None
 
     let private getHashAlgorithm hashType =
         let hashTypeStr =
             match hashType with
             | MD5 -> "MD5"
+            | SHA1 -> "SHA1"
             | SHA256 -> "SHA256"
+            | SHA384 -> "SHA384"
+            | SHA512 -> "SHA512"
 
         hashTypeStr |> HashAlgorithm.Create
 
