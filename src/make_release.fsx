@@ -210,7 +210,7 @@ let makeChecksumFile () =
         Directory.GetFiles(releaseDir)
         |> Array.filter (fun f -> f.StartsWith(Path.Combine(releaseDir, "hashdir_")))
         |> Array.sort
-        |> Array.map (fun f -> sprintf "%s  %s" (computeHashStringFromFile f) (Path.GetFileName f))
+        |> Array.map (fun f -> sprintf "%s  %s" (computeHashOfFile HashType.SHA256 f) (Path.GetFileName f))
 
     File.WriteAllLines(checksumFilename, hashLines)
 
