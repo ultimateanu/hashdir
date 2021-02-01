@@ -5,12 +5,12 @@
 #load "HashUtil/Util.fs"
 #load "HashUtil/Library.fs"
 
+open HashUtil.Checksum
 open System
 open System.Diagnostics
 open System.IO
 open System.IO.Compression
 open System.Runtime.InteropServices
-open HashUtil.Checksum
 
 // Configuration ----------------------------------------------------
 let versionStr = "0.1.0"
@@ -199,6 +199,7 @@ let buildRelease () =
         makeDotnetRelease ()
 
 let makeChecksumFile () =
+    let hashAlg = getHashAlgorithm SHA256
     let checksumFilename =
         Path.Combine(releaseDir, sprintf "%s_checksums_sha256.txt" nameAndVersion)
 
@@ -210,7 +211,7 @@ let makeChecksumFile () =
         Directory.GetFiles(releaseDir)
         |> Array.filter (fun f -> f.StartsWith(Path.Combine(releaseDir, "hashdir_")))
         |> Array.sort
-        |> Array.map (fun f -> sprintf "%s  %s" (computeHashOfFile HashType.SHA256 f) (Path.GetFileName f))
+        |> Array.map (fun f -> sprintf "%s  %s" (computeHashOfFile hashAlg f) (Path.GetFileName f))
 
     File.WriteAllLines(checksumFilename, hashLines)
 
