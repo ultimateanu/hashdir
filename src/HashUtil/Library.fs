@@ -23,16 +23,13 @@ module Checksum =
         | "SHA512" -> Some SHA512
         | _ -> None
 
-    let private getHashAlgorithm hashType =
-        let hashTypeStr =
-            match hashType with
-            | MD5 -> "MD5"
-            | SHA1 -> "SHA1"
-            | SHA256 -> "SHA256"
-            | SHA384 -> "SHA384"
-            | SHA512 -> "SHA512"
-
-        hashTypeStr |> HashAlgorithm.Create
+    let private getHashAlgorithm hashType: HashAlgorithm =
+        match hashType with
+        | MD5 -> upcast MD5.Create()
+        | SHA1 -> upcast SHA1.Create()
+        | SHA256 -> upcast SHA256.Create()
+        | SHA384 -> upcast SHA384.Create()
+        | SHA512 -> upcast SHA512.Create()
 
     let computeHashOfString hashType (str: string) =
         str
