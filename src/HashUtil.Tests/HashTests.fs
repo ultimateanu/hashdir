@@ -1,5 +1,6 @@
 ﻿module HashTests
 
+open HashUtil
 open HashUtil.Checksum
 open Xunit
 open Xunit.Abstractions
@@ -19,7 +20,8 @@ type ChecksumTests(output: ITestOutputHelper) =
 
     [<Theory; MemberData("emptyHashes")>]
     member _.``hash empty string``(hashType, expectedHash) =
-        let emptyStrHash = computeHashOfString hashType ""
+        let hashAlg = Checksum.getHashAlgorithm hashType
+        let emptyStrHash = computeHashOfString hashAlg ""
         Assert.Equal(expectedHash, emptyStrHash)
 
     static member simpleStringHashes: obj [] seq =
@@ -41,5 +43,6 @@ type ChecksumTests(output: ITestOutputHelper) =
 
     [<Theory; MemberData("simpleStringHashes")>]
     member _.``hash simple string``(hashType, inputStr, expectedHash) =
-        let strHash = computeHashOfString hashType inputStr
+        let hashAlg = Checksum.getHashAlgorithm hashType
+        let strHash = computeHashOfString hashAlg inputStr
         Assert.Equal(expectedHash, strHash)
