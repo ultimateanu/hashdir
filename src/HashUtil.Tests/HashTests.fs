@@ -49,13 +49,18 @@ type ChecksumTests(output: ITestOutputHelper) =
         Assert.Equal(expectedHash, strHash)
 
     static member hashTypeStrings: obj [] seq =
-        Seq.ofList [ [| ["md5"; " md5   "; "MD5 "] ; Some MD5 |]
-                     [| ["sha1"; " Sha1   ";  "SHA1 "] ; Some SHA1 |]
-                     [| ["sha256"; " Sha256   "; "SHA256 "] ; Some SHA256 |]
-                     [| ["sha384"; " Sha384   "; "SHA384 "] ; Some SHA384 |]
-                     [| ["sha512"; " Sha512   "; "SHA512 "] ; Some SHA512 |]
-                     [| ["asha1"; " md6   "; "SHA513 "] ; None |]
-                    ]
+        Seq.ofList [ [| [ "md5"; " md5   "; "MD5 " ]
+                        Some MD5 |]
+                     [| [ "sha1"; " Sha1   "; "SHA1 " ]
+                        Some SHA1 |]
+                     [| [ "sha256"; " Sha256   "; "SHA256 " ]
+                        Some SHA256 |]
+                     [| [ "sha384"; " Sha384   "; "SHA384 " ]
+                        Some SHA384 |]
+                     [| [ "sha512"; " Sha512   "; "SHA512 " ]
+                        Some SHA512 |]
+                     [| [ "asha1"; " md6   "; "SHA513 " ]
+                        None |] ]
 
     [<Theory; MemberData("hashTypeStrings")>]
     member _.``parse HashType``(inputStrs, expectedType) =
@@ -67,8 +72,8 @@ type ChecksumTests(output: ITestOutputHelper) =
     member _.``parse all possible types``() =
         let parsedHashTypes =
             typeof<HashType>
-                |> FSharpType.GetUnionCases
-                |> Array.map (fun info -> info.Name)
-                |> Array.map parseHashType
+            |> FSharpType.GetUnionCases
+            |> Array.map (fun info -> info.Name)
+            |> Array.map parseHashType
 
         Assert.All(parsedHashTypes, (fun parsedHashType -> Assert.True(parsedHashType.IsSome)))
