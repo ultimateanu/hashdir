@@ -4,7 +4,7 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net5.0</TargetFramework>
     <AssemblyName>hashdir</AssemblyName>
-    <Version>0.1.0</Version>
+    <Version>0.2.0</Version>
     <Company></Company>
     <Authors>Anu Bandi</Authors>
     <PackageProjectUrl>https://ultimateanu.github.io/hashdir</PackageProjectUrl>

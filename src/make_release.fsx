@@ -13,7 +13,7 @@ open System.IO.Compression
 open System.Runtime.InteropServices
 
 // Configuration ----------------------------------------------------
-let versionStr = "0.1.0"
+let versionStr = "0.2.0"
 // ------------------------------------------------------------------
 
 let releaseDir = "release"
@@ -200,6 +200,7 @@ let buildRelease () =
 
 let makeChecksumFile () =
     let hashAlg = getHashAlgorithm SHA256
+
     let checksumFilename =
         Path.Combine(releaseDir, sprintf "%s_checksums_sha256.txt" nameAndVersion)
 
