@@ -5,6 +5,7 @@ open HashUtil.FS
 open HashUtil.Util
 open System
 open System.IO
+open System.Runtime.InteropServices
 open Xunit
 open Xunit.Abstractions
 
@@ -13,15 +14,15 @@ type FsTempDirSetupFixture() =
     let tempDir =
         Path.GetFullPath(Path.Combine(Path.GetTempPath(), "hashdir_test_" + Guid.NewGuid().ToString()))
 
+    // SETUP
     do Directory.CreateDirectory(tempDir) |> ignore
 
-    member _.TempDir = tempDir
-
-    // Clean up temp dir when finished.
+    // CLEANUP
     interface IDisposable with
         member this.Dispose() =
             Directory.Delete(tempDir, true)
-            ()
+
+    member _.TempDir = tempDir
 
 
 type FilenameInHash(fsTempDirSetupFixture: FsTempDirSetupFixture, output: ITestOutputHelper) =
@@ -29,9 +30,10 @@ type FilenameInHash(fsTempDirSetupFixture: FsTempDirSetupFixture, output: ITestO
     let rootDir =
         Path.Combine(fsTempDirSetupFixture.TempDir, "filename_in_hash_root_dir")
 
+    // SETUP
     do Directory.CreateDirectory(rootDir) |> ignore
 
-    // Clean up root dir after each test.
+    // CLEANUP
     interface IDisposable with
         member this.Dispose() = Directory.Delete(rootDir, true)
 
@@ -140,11 +142,12 @@ type FilenameInHash(fsTempDirSetupFixture: FsTempDirSetupFixture, output: ITestO
 type HashProperties(fsTempDirSetupFixture: FsTempDirSetupFixture, output: ITestOutputHelper) =
     // Create root dir for each test.
     let rootDir =
-        Path.Combine(fsTempDirSetupFixture.TempDir, "filename_in_hash_root_dir")
+        Path.Combine(fsTempDirSetupFixture.TempDir, "hash_properties")
 
+    // SETUP
     do Directory.CreateDirectory(rootDir) |> ignore
 
-    // Clean up root dir after each test.
+    // CLEANUP
     interface IDisposable with
         member this.Dispose() = Directory.Delete(rootDir, true)
 
@@ -176,3 +179,125 @@ type HashProperties(fsTempDirSetupFixture: FsTempDirSetupFixture, output: ITestO
         Assert.True(dirHash.IsSome)
         Assert.True(fileHash.IsSome)
         Assert.Equal(getHash dirHash.Value, getHash fileHash.Value)
+
+
+type FileHashes(fsTempDirSetupFixture: FsTempDirSetupFixture, output: ITestOutputHelper) =
+    let hiddenFilePath = Path.Combine(fsTempDirSetupFixture.TempDir, ".fakerc")
+
+    // SETUP
+    do
+        File.WriteAllText(hiddenFilePath, "config");
+        if RuntimeInformation.IsOSPlatform(OSPlatform.Windows) then
+            File.SetAttributes(hiddenFilePath, FileAttributes.Hidden);
+
+    // CLEANUP
+    interface IDisposable with
+        member this.Dispose() =
+            File.Delete(hiddenFilePath)
+
+    interface IClassFixture<FsTempDirSetupFixture>
+
+    [<Fact>]
+    member _.``Hidden file (include)`` () =
+        // Compute hash (including this hidden file)
+        let includeHiddenFiles = true
+        let fileHash =
+            hiddenFilePath
+                |> makeHashStructure SHA256 includeHiddenFiles true
+                |> makeOption
+
+        // Hash should exist and match
+        Assert.True(fileHash.IsSome)
+        Assert.Equal(
+            "b79606fb3afea5bd1609ed40b622142f1c98125abcfe89a76a661b0e8e343910",
+            getHash fileHash.Value)
+
+    [<Fact>]
+    member _.``Hidden file (exclude)`` () =
+        // Compute hash (excluding this hidden file)
+        let includeHiddenFiles = false
+        let fileHash =
+            hiddenFilePath
+                |> makeHashStructure SHA256 includeHiddenFiles true
+                |> makeOption
+
+        // Hash should exist and match
+        Assert.True(fileHash.IsNone)
+
+
+type DirHashes(fsTempDirSetupFixture: FsTempDirSetupFixture, output: ITestOutputHelper) =
+    interface IClassFixture<FsTempDirSetupFixture>
+
+    [<Fact>]
+    member _.``Dir with 0 files (include empty dir)`` () =
+        // Setup dir with 0 files
+        let dirZero = Path.Combine(fsTempDirSetupFixture.TempDir, "dir_zero")
+        Directory.CreateDirectory(dirZero) |> ignore;
+
+        // Compute hash (including this empty dir)
+        let includeEmptyDir = true
+        let zeroFileDirHash =
+            dirZero
+                |> makeHashStructure SHA256 false includeEmptyDir
+                |> makeOption
+
+        // Hash should exist and match
+        Assert.True(zeroFileDirHash.IsSome)
+        Assert.Equal(
+            "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            getHash zeroFileDirHash.Value)
+
+    [<Fact>]
+    member _.``Dir with 0 files (exclude empty dir)`` () =
+        // Setup dir with 0 files
+        let dirZero = Path.Combine(fsTempDirSetupFixture.TempDir, "dir_zero")
+        Directory.CreateDirectory(dirZero) |> ignore;
+
+        // Compute hash (excluding this empty dir)
+        let includeEmptyDir = false
+        let zeroFileDirHash =
+            dirZero
+                |> makeHashStructure SHA256 false includeEmptyDir
+                |> makeOption
+
+        // Hash should exist and match
+        Assert.True(zeroFileDirHash.IsNone)
+
+    [<Fact>]
+    member _.``Dir with 1 file``() =
+        // Setup dir with 1 file
+        let dirOne = Path.Combine(fsTempDirSetupFixture.TempDir, "dir_one")
+        Directory.CreateDirectory(dirOne) |> ignore;
+        File.WriteAllText(Path.Combine(dirOne, "file1.txt"), "1");
+
+        // Compute hash
+        let oneFileDirHash =
+            dirOne
+                |> makeHashStructure SHA256 false false
+                |> makeOption
+
+        // Hash should exist and match
+        Assert.True(oneFileDirHash.IsSome)
+        Assert.Equal(
+            "c0b9c17c8ac302513644256d06d1518a50c0c349e28023c2795a17dfa5479e1f",
+            getHash oneFileDirHash.Value)
+
+    [<Fact>]
+    member _.``Dir with 2 files`` () =
+        // Setup dir with 2 files
+        let dirTwo = Path.Combine(fsTempDirSetupFixture.TempDir, "dir_two")
+        Directory.CreateDirectory(dirTwo) |> ignore;
+        File.WriteAllText(Path.Combine(dirTwo, "file1.txt"), "1");
+        File.WriteAllText(Path.Combine(dirTwo, "file2.txt"), "2");
+
+        // Compute hash
+        let twoFileDirHash =
+            dirTwo
+                |> makeHashStructure SHA256 false false
+                |> makeOption
+
+        // Hash should exist and match
+        Assert.True(twoFileDirHash.IsSome)
+        Assert.Equal(
+            "072d85c3b6926317ee8c340d4e989c9588c75408e63b5674571624a096faf9b5",
+            getHash twoFileDirHash.Value)

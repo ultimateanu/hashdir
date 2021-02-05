@@ -1,5 +1,6 @@
 ﻿open HashUtil.Checksum
 open HashUtil.FS
+open HashUtil.Util
 open System
 open System.IO
 open System.Runtime.InteropServices
@@ -40,79 +41,7 @@ type FsSetupFixture() =
 
 
 type HashStructureTests(fsSetupFixture: FsSetupFixture, output:ITestOutputHelper) =
-    let makeOption x =
-        match x with
-            | Error _ -> None
-            | Ok v -> Some(v)
-
     interface IClassFixture<FsSetupFixture>
-
-    [<Fact>]
-    member _.``Dir with 0 files (include empty dir)`` () =
-        let includeEmptyDir = true
-        let oneFileDirHash =
-            Path.Combine(fsSetupFixture.RootDir, "dir_zero")
-                |> makeHashStructure SHA256 false includeEmptyDir
-                |> makeOption
-        Assert.True(oneFileDirHash.IsSome)
-        Assert.Equal(
-            "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-            getHash oneFileDirHash.Value)
-        output.WriteLine("a root:" + fsSetupFixture.RootDir)
-
-    [<Fact>]
-    member _.``Dir with 0 files (exclude empty dir)`` () =
-        let includeEmptyDir = false
-        let oneFileDirHash =
-            Path.Combine(fsSetupFixture.RootDir, "dir_zero")
-                |> makeHashStructure SHA256 false includeEmptyDir
-                |> makeOption
-        Assert.True(oneFileDirHash.IsNone)
-
-    [<Fact>]
-    member _.``Dir with 1 file`` () =
-        let oneFileDirHash =
-            Path.Combine(fsSetupFixture.RootDir, "dir_one")
-                |> makeHashStructure SHA256 false false
-                |> makeOption
-        Assert.True(oneFileDirHash.IsSome)
-        Assert.Equal(
-            "c0b9c17c8ac302513644256d06d1518a50c0c349e28023c2795a17dfa5479e1f",
-            getHash oneFileDirHash.Value)
-
-    [<Fact>]
-    member _.``Dir with 2 files`` () =
-        let twoFileDirHash =
-            Path.Combine(fsSetupFixture.RootDir, "dir_two")
-                |> makeHashStructure SHA256 false false
-                |> makeOption
-        Assert.True(twoFileDirHash.IsSome)
-        Assert.Equal(
-            "072d85c3b6926317ee8c340d4e989c9588c75408e63b5674571624a096faf9b5",
-            getHash twoFileDirHash.Value)
-
-    [<Fact>]
-    member _.``Empty file (include)`` () =
-        let includeHiddenFiles = true
-        let includeEmptyDir = true
-        let rootHash =
-            Path.Combine(fsSetupFixture.RootDir, ".fakerc")
-                |> makeHashStructure SHA256 includeHiddenFiles includeEmptyDir
-                |> makeOption
-        Assert.True(rootHash.IsSome)
-        Assert.Equal(
-            "b79606fb3afea5bd1609ed40b622142f1c98125abcfe89a76a661b0e8e343910",
-            getHash rootHash.Value)
-
-    [<Fact>]
-    member _.``Empty file (exclude)`` () =
-        let includeHiddenFiles = false
-        let includeEmptyDir = true
-        let rootHash =
-            Path.Combine(fsSetupFixture.RootDir, ".fakerc")
-                |> makeHashStructure SHA256 includeHiddenFiles includeEmptyDir
-                |> makeOption
-        Assert.True(rootHash.IsNone)
 
     [<Fact>]
     member _.``Root hash (include empty dir)`` () =
