@@ -301,3 +301,100 @@ type DirHashes(fsTempDirSetupFixture: FsTempDirSetupFixture, output: ITestOutput
         Assert.Equal(
             "072d85c3b6926317ee8c340d4e989c9588c75408e63b5674571624a096faf9b5",
             getHash twoFileDirHash.Value)
+
+type FullTreeHash(fsTempDirSetupFixture: FsTempDirSetupFixture, output: ITestOutputHelper) =
+    let rootDir = Path.Combine(fsTempDirSetupFixture.TempDir, "root")
+
+    // SETUP
+    do
+        // Root dir has a single file
+        Directory.CreateDirectory(rootDir) |> ignore;
+        File.WriteAllText(Path.Combine(rootDir, "shakespeare.txt"), "To be or not to be...");
+        // Dir A has sub dirs
+        let dirA = Path.Combine(rootDir, "dir_a")
+        let dirAInner = Path.Combine(dirA, "inner")
+        Directory.CreateDirectory(dirA) |> ignore
+        Directory.CreateDirectory(dirAInner) |> ignore
+        File.WriteAllText(Path.Combine(dirAInner, "inner_1.txt"), "inner file 1");
+        // Dir B has multiple files
+        let dirB = Path.Combine(rootDir, "dir_b")
+        Directory.CreateDirectory(dirB) |> ignore
+        File.WriteAllText(Path.Combine(dirB, "file_1.txt"), "b file 1");
+        File.WriteAllText(Path.Combine(dirB, "file_2.txt"), "b file 2");
+        File.WriteAllText(Path.Combine(dirB, "image_a.txt"), "b image");
+        File.WriteAllText(Path.Combine(dirB, "song_a.txt"), "b song");
+        // Dir C is empty
+        let dirC = Path.Combine(rootDir, "dir_c")
+        Directory.CreateDirectory(dirC) |> ignore
+        // Dir D has hidden files
+        let dirD = Path.Combine(rootDir, "dir_d")
+        Directory.CreateDirectory(dirD) |> ignore
+        let hiddenFilePath1 = Path.Combine(dirD, ".config")
+        File.WriteAllText(hiddenFilePath1, "config stuff");
+        if RuntimeInformation.IsOSPlatform(OSPlatform.Windows) then
+            File.SetAttributes(hiddenFilePath1, FileAttributes.Hidden);
+        let hiddenFilePath2 = Path.Combine(dirD, ".vimrc")
+        File.WriteAllText(hiddenFilePath2, "vim stuff");
+        if RuntimeInformation.IsOSPlatform(OSPlatform.Windows) then
+            File.SetAttributes(hiddenFilePath2, FileAttributes.Hidden);
+        File.WriteAllText(Path.Combine(dirB, "info.txt"), "info");
+
+
+    // CLEANUP
+    interface IDisposable with
+        member this.Dispose() =
+            Directory.Delete(rootDir, true)
+
+    interface IClassFixture<FsTempDirSetupFixture>
+
+    [<Fact>]
+    member _.``Full tree hash (include hidden, include empty dir)`` () =
+        let includeHiddenFiles = true
+        let includeEmptyDir = true
+        let rootHash =
+            rootDir
+                |> makeHashStructure SHA256 includeHiddenFiles includeEmptyDir
+                |> makeOption
+        Assert.True(rootHash.IsSome)
+        Assert.Equal(
+            "a7bd95e3686bf708684575ad945e6ad999bbf71e811c108bdce1e39b6d6cd66f",
+            getHash rootHash.Value)
+
+    [<Fact>]
+    member _.``Full tree hash (include hidden, exclude empty dir)`` () =
+        let includeHiddenFiles = true
+        let includeEmptyDir = false
+        let rootHash =
+            rootDir
+                |> makeHashStructure SHA256 includeHiddenFiles includeEmptyDir
+                |> makeOption
+        Assert.True(rootHash.IsSome)
+        Assert.Equal(
+            "316f1288632d00417e849505d8a70e3cf368fe4714e24bded2425655995fe601",
+            getHash rootHash.Value)
+
+    [<Fact>]
+    member _.``Full tree hash (exclude hidden, include empty dir)`` () =
+        let includeHiddenFiles = false
+        let includeEmptyDir = true
+        let rootHash =
+            rootDir
+                |> makeHashStructure SHA256 includeHiddenFiles includeEmptyDir
+                |> makeOption
+        Assert.True(rootHash.IsSome)
+        Assert.Equal(
+            "82268ca33494bec2d17e1bcad8ac73744544183ef1d6b2c25b0988f88064f180",
+            getHash rootHash.Value)
+
+    [<Fact>]
+    member _.``Full tree hash (exclude hidden, exclude empty dir)`` () =
+        let includeHiddenFiles = false
+        let includeEmptyDir = false
+        let rootHash =
+            rootDir
+                |> makeHashStructure SHA256 includeHiddenFiles includeEmptyDir
+                |> makeOption
+        Assert.True(rootHash.IsSome)
+        Assert.Equal(
+            "1ae01db575f5965c003d47c026cb0bc141de0fb4897713a54a5296651ad743db",
+            getHash rootHash.Value)
