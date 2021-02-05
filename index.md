@@ -67,17 +67,24 @@ dotnet src/App/bin/Release/net5.0/publish/hashdir.dll --help
 
 
 ## Usage
-hashdir [options] item
+```
+hashdir:
+  A command-line utility to checksum directories and files.
 
-**Options:**  
+Usage:
+  hashdir [options] <item>...
 
-| Flag                       | Description                  |
-|----------------------------|------------------------------|
-| -t, --tree                 | Print directory tree.        |
-| -h, --include-hidden-files | Include hidden files.        |
-| -e, --skip-empty-dir       | Skip empty directories.      |
-| --help                     | Display help screen.         |
-| --version                  | Display version information. |
+Arguments:
+  <item>    Directory or file to hash.
+
+Options:
+  -t, --tree                                         Print directory tree.
+  -i, --include-hidden-files                         Include hidden files.
+  -e, --skip-empty-dir                               Skip empty directories.
+  -a, --algorithm <md5|sha1|sha256|sha384|sha512>    The hash function to use. [default: sha1]
+  --version                                          Show version information
+  -?, -h, --help                                     Show help and usage information
+```
 
 ### Examples
 1. Get the checksum of a file or directory.
@@ -88,9 +95,9 @@ hashdir ~/Desktop/project/
 ```
 hashdir --include-hidden-files --tree ~/Desktop/project 
 ```
-3. Get the checksum of multiple items.
+3. Get the MD5 checksum of multiple items.
 ```
-hashdir song.mp3 info.txt report.pdf
+hashdir -a md5 song.mp3 info.txt report.pdf
 ```
 
 
