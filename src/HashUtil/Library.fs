@@ -150,3 +150,6 @@ module FS =
     let makeHashStructure (hashType: Checksum.HashType) includeHiddenFiles includeEmptyDir path =
         let hashAlg = Checksum.getHashAlgorithm hashType
         makeHashStructureHelper hashAlg includeHiddenFiles includeEmptyDir path
+
+    let verifyHashFile (hashType: Checksum.HashType option) (path:string) =
+        Ok true

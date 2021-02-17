@@ -16,6 +16,12 @@ type Opt(item, tree, includeHiddenFiles, skipEmptyDir, algorithm) =
     member val SkipEmptyDir: bool = skipEmptyDir
     member val Algorithm: string = algorithm
 
+type VerifyOpt(item, algorithm) =
+    // Arguments
+    member val Items: string [] = item
+
+    // Options
+    member val Algorithm: string = algorithm
 
 let cmdHandler (opt: Opt) =
     // Parse requested algorithm. System.CommandLine should have already verified.
@@ -30,10 +36,53 @@ let cmdHandler (opt: Opt) =
         let strWriter = new StringWriter()
 
         match optHashStructure with
-        | Error e -> printfn "Error: %s" e
+        | Error err -> printfn "Error: %s" err
         | Ok hashStructure ->
             printHashStructure hashStructure opt.PrintTree strWriter
             printf "%s" (strWriter.ToString())
+
+
+let verifyCmdHandler (opt: VerifyOpt) =
+    printfn "verifyCmdHandler items:%A" (opt.Items)
+
+    let algorithm =
+        match opt.Algorithm with
+        | null -> None
+        | str ->
+            let algorithmMaybe = parseHashType str
+            assert algorithmMaybe.IsSome
+            Some algorithmMaybe.Value
+    printfn "verifyCmdHandler algF:%A" (algorithm)
+
+    for item in opt.Items do
+        let verifyResult = verifyHashFile algorithm item
+
+        match verifyResult with
+        | Error err -> printfn "Error: %s" err
+        | Ok matches -> printf "Match: %A" matches
+
+
+let verifyCmd =
+    let verifyCmd = Command("check", "Verify that the specified hash is valid for the corresponding items.")
+
+    // Items arg
+    let itemArg =
+        Argument<string []>("item", "Directory or file to hash.")
+    itemArg.Arity <- ArgumentArity.OneOrMore
+    verifyCmd.AddArgument itemArg
+
+    // Algorithm option
+    let hashAlgOption =
+        Option<string>([| "-a"; "--algorithm" |], "The hash function to use. If unspecified, will try to use the appropriate function based on hash length.")
+    let allHashTypes =
+        typeof<HashType>
+        |> FSharpType.GetUnionCases
+        |> Array.map (fun info -> info.Name.ToLower())
+    hashAlgOption.FromAmong(allHashTypes) |> ignore
+    verifyCmd.AddOption hashAlgOption
+
+    verifyCmd.Handler <- CommandHandler.Create(verifyCmdHandler)
+    verifyCmd
 
 
 [<EntryPoint>]
@@ -41,12 +90,20 @@ let main args =
     let root =
         RootCommand("A command-line utility to checksum directories and files.")
 
+    // Compute Command
+    let computeCmd = Command("hash", "Compute the hash for selected files/directories.")
+    computeCmd.AddOption(Option<bool>([| "-t"; "--tree" |], "Print directory tree."))
+    root.AddCommand computeCmd
+
+    // Verify Command
+    root.AddCommand verifyCmd
+
     // ARGS
     let itemArg =
         Argument<string []>("item", "Directory or file to hash.")
 
     itemArg.Arity <- ArgumentArity.OneOrMore
-    root.AddArgument itemArg
+    //root.AddArgument itemArg
 
     // OPTIONS
     root.AddOption(Option<bool>([| "-t"; "--tree" |], "Print directory tree."))
@@ -62,7 +119,7 @@ let main args =
         |> Array.map (fun info -> info.Name.ToLower())
 
     hashAlgOption.FromAmong(allHashTypes) |> ignore
-    root.AddOption hashAlgOption
+    //root.AddOption hashAlgOption
 
     root.Handler <- CommandHandler.Create(cmdHandler)
     root.Invoke args
