@@ -23,6 +23,8 @@ type VerifyOpt(item, algorithm) =
     // Options
     member val Algorithm: string = algorithm
 
+let private allHashTypesStr = allHashTypes |> Array.map(fun hashType -> hashType.ToString().ToLower())
+
 let cmdHandler (opt: Opt) =
     // Parse requested algorithm. System.CommandLine should have already verified.
     let algorithmMaybe = parseHashType opt.Algorithm
@@ -74,11 +76,7 @@ let verifyCmd =
     // Algorithm option
     let hashAlgOption =
         Option<string>([| "-a"; "--algorithm" |], "The hash function to use. If unspecified, will try to use the appropriate function based on hash length.")
-    let allHashTypes =
-        typeof<HashType>
-        |> FSharpType.GetUnionCases
-        |> Array.map (fun info -> info.Name.ToLower())
-    hashAlgOption.FromAmong(allHashTypes) |> ignore
+    hashAlgOption.FromAmong(allHashTypesStr) |> ignore
     verifyCmd.AddOption hashAlgOption
 
     verifyCmd.Handler <- CommandHandler.Create(verifyCmdHandler)
@@ -113,12 +111,7 @@ let main args =
     let hashAlgOption =
         Option<string>([| "-a"; "--algorithm" |], (fun () -> "sha1"), "The hash function to use.")
 
-    let allHashTypes =
-        typeof<HashType>
-        |> FSharpType.GetUnionCases
-        |> Array.map (fun info -> info.Name.ToLower())
-
-    hashAlgOption.FromAmong(allHashTypes) |> ignore
+    hashAlgOption.FromAmong(allHashTypesStr) |> ignore
     //root.AddOption hashAlgOption
 
     root.Handler <- CommandHandler.Create(cmdHandler)
