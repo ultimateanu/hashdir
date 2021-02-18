@@ -1,5 +1,7 @@
 ﻿namespace HashUtil
 
+open Microsoft.FSharp.Reflection
+open System
 open System.IO
 open System.Security.Cryptography
 open System.Text
@@ -11,6 +13,11 @@ module Checksum =
         | SHA256
         | SHA384
         | SHA512
+
+    let allHashTypes : HashType[] =
+        typeof<HashType>
+        |> FSharpType.GetUnionCases
+        |> Array.map(fun info -> FSharpValue.MakeUnion(info,[||]) :?> HashType)
 
     let parseHashType (input: string) =
         let hashTypeStr = input.ToUpper().Trim()
@@ -49,6 +56,11 @@ module Checksum =
 
 
 module FS =
+    let private bSpacer = "    "
+    let private iSpacer = "│   "
+    let private tSpacer = "├── "
+    let private lSpacer = "└── "
+
     type ItemHash =
         | File of path: string * hash: string
         | Dir of path: string * hash: string * children: List<ItemHash>
@@ -111,14 +123,14 @@ module FS =
             let parentSpacer =
                 parentsActive
                 |> List.rev
-                |> List.map (fun isActive -> if isActive then "│   " else "    ")
+                |> List.map (fun isActive -> if isActive then iSpacer else bSpacer)
                 |> System.String.Concat
 
             let curSpacer =
                 if lastLevelActive then
-                    "├── "
+                    tSpacer
                 else
-                    "└── "
+                    lSpacer
 
             parentSpacer + curSpacer
 
@@ -151,5 +163,68 @@ module FS =
         let hashAlg = Checksum.getHashAlgorithm hashType
         makeHashStructureHelper hashAlg includeHiddenFiles includeEmptyDir path
 
-    let verifyHashFile (hashType: Checksum.HashType option) (path:string) =
+    let hashLengths =
+        let hashTypesAndLengths =
+            Checksum.allHashTypes
+            |> Array.map(fun t ->
+                (t,Checksum.computeHashOfString (Checksum.getHashAlgorithm t) "str"))
+            |> Array.map(fun (t,hash) -> (t,hash.Length))
+        let uniqueLengths =
+            hashTypesAndLengths
+            |> Array.map snd
+            |> Array.distinct
+        assert (uniqueLengths.Length = Checksum.allHashTypes.Length)
+        hashTypesAndLengths
+
+
+    let verifyHashAndItem (hashType: Checksum.HashType) (hash:string) (path:string): Result<bool,string> =
+        printfn "Verifying [%A] '%s'='%s'" hashType hash path
         Ok true
+
+
+    // TODO: change from tuple to seperate args
+    let verifyHashAndItemByGuessing (hashType: Checksum.HashType option) (hashAndItem:string * string): Result<bool,string> =
+        match hashType with
+        | Some t ->
+            // Use specified hashType
+            verifyHashAndItem t (fst hashAndItem) (snd hashAndItem)
+        | None ->
+            // Try to guess the hashtype based on hash length
+            let matchedHashType =
+                hashLengths
+                |> Array.filter(fun (t,len) -> len = fst(hashAndItem).Length)
+            assert (matchedHashType.Length <= 1)
+            if matchedHashType.Length = 1 then
+                verifyHashAndItem (fst matchedHashType.[0]) (fst hashAndItem) (snd hashAndItem)
+            else
+                Error("Cannot determine which hash algorithm to use")
+
+
+    let verifyHashFile (hashType: Checksum.HashType option) (path:string) =
+        if File.Exists(path) then
+            let isTopLevelItem (line:string): bool =
+                match line with
+                | txt when txt.StartsWith(bSpacer) -> false
+                | txt when txt.StartsWith(iSpacer) -> false
+                | txt when txt.StartsWith(tSpacer) -> false
+                | txt when txt.StartsWith(lSpacer) -> false
+                | _ -> true
+
+            let getHashAndItem (line:string) =
+                let pieces = line.Split "  "
+                assert (pieces.Length = 2)
+                (pieces.[0], pieces.[1])
+
+            let topLevelHashes =
+                path
+                |> File.ReadLines
+                |> Seq.filter isTopLevelItem
+                |> Seq.map getHashAndItem
+
+
+            let zz = topLevelHashes |> Seq.map (verifyHashAndItemByGuessing hashType)
+            printfn "zz:%A" zz
+
+            Ok "bob"
+        else
+            Error(sprintf "'%s' is not a valid hash file" path)
