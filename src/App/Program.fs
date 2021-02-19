@@ -1,6 +1,5 @@
 open HashUtil.Checksum
 open HashUtil.FS
-open Microsoft.FSharp.Reflection
 open System.CommandLine
 open System.CommandLine.Invocation
 open System.IO
@@ -45,8 +44,6 @@ let cmdHandler (opt: Opt) =
 
 
 let verifyCmdHandler (opt: VerifyOpt) =
-    printfn "verifyCmdHandler items:%A" (opt.Items)
-
     let algorithm =
         match opt.Algorithm with
         | null -> None
@@ -54,14 +51,17 @@ let verifyCmdHandler (opt: VerifyOpt) =
             let algorithmMaybe = parseHashType str
             assert algorithmMaybe.IsSome
             Some algorithmMaybe.Value
-    printfn "verifyCmdHandler algF:%A" (algorithm)
 
     for item in opt.Items do
         let verifyResult = verifyHashFile algorithm item
 
+        let strWriter = new StringWriter()
+
         match verifyResult with
         | Error err -> printfn "Error: %s" err
-        | Ok matches -> printf "Match: %A" matches
+        | Ok matches ->
+            printVerificationResults matches strWriter
+            printf "%s" (strWriter.ToString())
 
 
 let verifyCmd =

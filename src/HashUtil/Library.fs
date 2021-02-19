@@ -182,7 +182,6 @@ module FS =
 
 
     let verifyHashAndItem (hashType: Checksum.HashType) (expectedHash:string) (path:string): Result<VerificationResult, string> =
-        printfn "Verifying [%A] '%s'='%s'" hashType expectedHash path
         let itemHashResult = makeHashStructure hashType true true path
         match itemHashResult with
             | Error err -> Error err
@@ -242,3 +241,15 @@ module FS =
             Ok allVerificationResults
         else
             Error(sprintf "'%s' is not a valid hash file" path)
+
+    let printVerificationResults
+        (results:seq<Result<VerificationResult,string>>)
+        (outputWriter: TextWriter) =
+
+        for result in results do
+            match result with
+            | Error err -> printfn "Error: %s" err
+            | Ok verificationResult ->
+                match verificationResult with
+                | Matches(path, hash) -> printfn "Matches: %s" path
+                | Differs(path,expectedHash,actualHash) -> printfn "Differs: %s" path
