@@ -225,7 +225,12 @@ module FS =
             let getHashAndItem (line:string) =
                 let pieces = line.Split "  "
                 assert (pieces.Length = 2)
-                (pieces.[0], pieces.[1])
+                let item = pieces.[1]
+                let baseDirPath = Path.GetDirectoryName path
+                let fullPath =
+                    Path.Join(baseDirPath,
+                        if item.StartsWith('/') then item.[1..] else item)
+                (pieces.[0], fullPath)
 
             let topLevelHashes =
                 path
@@ -233,10 +238,7 @@ module FS =
                 |> Seq.filter isTopLevelItem
                 |> Seq.map getHashAndItem
 
-
-            let zz = topLevelHashes |> Seq.map (verifyHashAndItemByGuessing hashType)
-            printfn "zz:%A" zz
-
-            Ok zz
+            let allVerificationResults = topLevelHashes |> Seq.map (verifyHashAndItemByGuessing hashType)
+            Ok allVerificationResults
         else
             Error(sprintf "'%s' is not a valid hash file" path)
