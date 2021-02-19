@@ -184,8 +184,13 @@ module FS =
         hashTypesAndLengths
 
 
-    let verifyHashAndItem (hashType: Checksum.HashType) (expectedHash:string) (path:string): Result<VerificationResult, string> =
-        let itemHashResult = makeHashStructure hashType true true path
+    let verifyHashAndItem (hashType: Checksum.HashType) (basePath:string) (expectedHash:string) (path:string): Result<VerificationResult, string> =
+        let fullPath =
+            Path.Join(basePath,
+                if path.StartsWith('/') then path.[1..] else path)
+        // TODO: pass up these options in check also.
+        let itemHashResult = makeHashStructure hashType true true fullPath
+
         match itemHashResult with
             | Error err -> Error err
             | Ok itemHash ->
@@ -197,11 +202,11 @@ module FS =
 
 
     // TODO: change from tuple to seperate args
-    let verifyHashAndItemByGuessing (hashType: Checksum.HashType option) (hashAndItem:string * string): Result<VerificationResult, string> =
+    let verifyHashAndItemByGuessing (hashType: Checksum.HashType option) (basePath:string) (hashAndItem:string * string): Result<VerificationResult, string> =
         match hashType with
         | Some t ->
             // Use specified hashType
-            verifyHashAndItem t (fst hashAndItem) (snd hashAndItem)
+            verifyHashAndItem t basePath (fst hashAndItem) (snd hashAndItem)
         | None ->
             // Try to guess the hashtype based on hash length
             let matchedHashType =
@@ -209,13 +214,15 @@ module FS =
                 |> Array.filter(fun (t,len) -> len = fst(hashAndItem).Length)
             assert (matchedHashType.Length <= 1)
             if matchedHashType.Length = 1 then
-                verifyHashAndItem (fst matchedHashType.[0]) (fst hashAndItem) (snd hashAndItem)
+                verifyHashAndItem (fst matchedHashType.[0]) basePath (fst hashAndItem) (snd hashAndItem)
             else
                 Error("Cannot determine which hash algorithm to use")
 
 
     let verifyHashFile (hashType: Checksum.HashType option) (path:string) : Result<seq<Result<VerificationResult,string>>, string> =
         if File.Exists(path) then
+            let baseDirPath = Path.GetDirectoryName path
+
             let isTopLevelItem (line:string): bool =
                 match line with
                 | txt when txt.StartsWith(bSpacer) -> false
@@ -227,12 +234,7 @@ module FS =
             let getHashAndItem (line:string) =
                 let pieces = line.Split "  "
                 assert (pieces.Length = 2)
-                let item = pieces.[1]
-                let baseDirPath = Path.GetDirectoryName path
-                let fullPath =
-                    Path.Join(baseDirPath,
-                        if item.StartsWith('/') then item.[1..] else item)
-                (pieces.[0], fullPath)
+                (pieces.[0], pieces.[1])
 
             let topLevelHashes =
                 path
@@ -240,7 +242,9 @@ module FS =
                 |> Seq.filter isTopLevelItem
                 |> Seq.map getHashAndItem
 
-            let allVerificationResults = topLevelHashes |> Seq.map (verifyHashAndItemByGuessing hashType)
+            let allVerificationResults =
+                topLevelHashes
+                |> Seq.map (verifyHashAndItemByGuessing hashType baseDirPath)
             Ok allVerificationResults
         else
             Error(sprintf "'%s' is not a valid hash file" path)
