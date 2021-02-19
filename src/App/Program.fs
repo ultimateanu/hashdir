@@ -52,16 +52,23 @@ let verifyCmdHandler (opt: VerifyOpt) =
             assert algorithmMaybe.IsSome
             Some algorithmMaybe.Value
 
+    let mutable allMatches = true
     for item in opt.Items do
         let verifyResult = verifyHashFile algorithm item
-
         let strWriter = new StringWriter()
-
         match verifyResult with
-        | Error err -> printfn "Error: %s" err
-        | Ok matches ->
-            printVerificationResults matches strWriter
+        | Error err ->
+            allMatches <- false
+            printfn "Error: %s" err
+            exit 1
+        | Ok itemResults ->
+            if not (allItemsMatch itemResults) then allMatches <- false
+            printVerificationResults itemResults strWriter
             printf "%s" (strWriter.ToString())
+
+    // Return error code 2, if anything is different than expected hash.
+    if not allMatches then
+        exit 2
 
 
 let verifyCmd =

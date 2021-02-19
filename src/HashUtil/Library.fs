@@ -74,6 +74,9 @@ module FS =
         | Matches of path: string * hash: string
         | Differs of path: string * expectedHash: string * actualHash: string
 
+    let allItemsMatch (results: seq<Result<VerificationResult, string>>) : bool =
+        true
+
     let rec private makeDirHashStructure (hashAlg: HashAlgorithm) includeHiddenFiles includeEmptyDir dirPath =
         assert Directory.Exists(dirPath)
 
