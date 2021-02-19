@@ -70,6 +70,10 @@ module FS =
         | File (_, hash) -> hash
         | Dir (_, hash, _) -> hash
 
+    type VerificationResult =
+        | Matches of path: string * hash: string
+        | Differs of path: string * expectedHash: string * actualHash: string
+
     let rec private makeDirHashStructure (hashAlg: HashAlgorithm) includeHiddenFiles includeEmptyDir dirPath =
         assert Directory.Exists(dirPath)
 
@@ -177,13 +181,21 @@ module FS =
         hashTypesAndLengths
 
 
-    let verifyHashAndItem (hashType: Checksum.HashType) (hash:string) (path:string): Result<bool,string> =
-        printfn "Verifying [%A] '%s'='%s'" hashType hash path
-        Ok true
+    let verifyHashAndItem (hashType: Checksum.HashType) (expectedHash:string) (path:string): Result<VerificationResult, string> =
+        printfn "Verifying [%A] '%s'='%s'" hashType expectedHash path
+        let itemHashResult = makeHashStructure hashType true true path
+        match itemHashResult with
+            | Error err -> Error err
+            | Ok itemHash ->
+                let actualHash = getHash itemHash
+                if actualHash = expectedHash then
+                    Ok (VerificationResult.Matches(path, actualHash))
+                else
+                    Ok (VerificationResult.Differs(path, expectedHash, actualHash))
 
 
     // TODO: change from tuple to seperate args
-    let verifyHashAndItemByGuessing (hashType: Checksum.HashType option) (hashAndItem:string * string): Result<bool,string> =
+    let verifyHashAndItemByGuessing (hashType: Checksum.HashType option) (hashAndItem:string * string): Result<VerificationResult, string> =
         match hashType with
         | Some t ->
             // Use specified hashType
@@ -200,7 +212,7 @@ module FS =
                 Error("Cannot determine which hash algorithm to use")
 
 
-    let verifyHashFile (hashType: Checksum.HashType option) (path:string) =
+    let verifyHashFile (hashType: Checksum.HashType option) (path:string) : Result<seq<Result<VerificationResult,string>>, string> =
         if File.Exists(path) then
             let isTopLevelItem (line:string): bool =
                 match line with
@@ -225,6 +237,6 @@ module FS =
             let zz = topLevelHashes |> Seq.map (verifyHashAndItemByGuessing hashType)
             printfn "zz:%A" zz
 
-            Ok "bob"
+            Ok zz
         else
             Error(sprintf "'%s' is not a valid hash file" path)
