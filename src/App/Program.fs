@@ -2,12 +2,16 @@ open HashUtil.Checksum
 open HashUtil.FS
 open System.CommandLine
 open System.CommandLine.Invocation
+open System.Diagnostics
 open System.IO
 
 
-type Opt(item, tree, includeHiddenFiles, skipEmptyDir, algorithm) =
+type RootOpt(item, tree, includeHiddenFiles, skipEmptyDir, algorithm) =
     // Arguments
-    member val Items: string [] = item
+    member val Items: string [] =
+        match item with
+            | null -> Debug.Assert(false, "Root command not given item(s)") ; [||]
+            | _ -> item
 
     // Options
     member val PrintTree: bool = tree
@@ -15,16 +19,29 @@ type Opt(item, tree, includeHiddenFiles, skipEmptyDir, algorithm) =
     member val SkipEmptyDir: bool = skipEmptyDir
     member val Algorithm: string = algorithm
 
-type VerifyOpt(item, algorithm) =
+    override x.ToString() =
+        sprintf "RootOpt[Items:%A PrintTree:%A IncludeHiddenFiles:%A SkipEmptyDir:%A Algorithm:%A]"
+            x.Items x.PrintTree x.IncludeHiddenFiles x.SkipEmptyDir x.Algorithm
+
+
+type CheckOpt(item, includeHiddenFiles, skipEmptyDir, algorithm) =
     // Arguments
-    member val Items: string [] = item
+    member val Items: string [] =
+        match item with
+            | null -> Debug.Assert(false, "Check command not given item(s)") ; [||]
+            | _ -> item
 
     // Options
+    member val IncludeHiddenFiles: bool = includeHiddenFiles
+    member val SkipEmptyDir: bool = skipEmptyDir
     member val Algorithm: string = algorithm
 
-let private allHashTypesStr = allHashTypes |> Array.map(fun hashType -> hashType.ToString().ToLower())
+    override x.ToString() =
+        sprintf "VerifyOpt[Items:%A IncludeHiddenFiles:%A SkipEmptyDir:%A Algorithm:%A]"
+            x.Items x.IncludeHiddenFiles x.SkipEmptyDir x.Algorithm
 
-let cmdHandler (opt: Opt) =
+
+let rootHandler (opt: RootOpt) =
     // Parse requested algorithm. System.CommandLine should have already verified.
     let algorithmMaybe = parseHashType opt.Algorithm
     assert algorithmMaybe.IsSome
@@ -43,7 +60,7 @@ let cmdHandler (opt: Opt) =
             printf "%s" (strWriter.ToString())
 
 
-let verifyCmdHandler (opt: VerifyOpt) =
+let checkHandler (opt: CheckOpt) =
     let algorithm =
         match opt.Algorithm with
         | null -> None
@@ -71,22 +88,47 @@ let verifyCmdHandler (opt: VerifyOpt) =
         exit 2
 
 
+let itemArg =
+    let arg =
+        Argument<string []>("item", "Directory or file to hash/check.")
+    arg.Arity <- ArgumentArity.OneOrMore
+    arg
+
+
+let algorithmOpt forCheck =
+    let hashAlgOption =
+        match forCheck with
+        | true ->
+            Option<string>([| "-a"; "--algorithm" |],
+                "The hash function to use. If unspecified, will try to " +
+                "use the appropriate function based on hash length.")
+        | false ->
+            Option<string>([| "-a"; "--algorithm" |], (fun () -> "sha1"),
+                "The hash function to use.")
+
+    let allHashTypesStr =
+        allHashTypes |> Array.map(fun hashType -> hashType.ToString().ToLower())
+    hashAlgOption.FromAmong(allHashTypesStr) |> ignore
+    hashAlgOption
+
+let hiddenFilesOpt =
+    Option<bool>([| "-i"; "--include-hidden-files" |], "Include hidden files.")
+
+let skipEmptyOpt =
+    Option<bool>([| "-e"; "--skip-empty-dir" |], "Skip empty directories.")
+
 let verifyCmd =
     let verifyCmd = Command("check", "Verify that the specified hash is valid for the corresponding items.")
 
-    // Items arg
-    let itemArg =
-        Argument<string []>("item", "Directory or file to hash.")
-    itemArg.Arity <- ArgumentArity.OneOrMore
+    // ARGS
     verifyCmd.AddArgument itemArg
 
-    // Algorithm option
-    let hashAlgOption =
-        Option<string>([| "-a"; "--algorithm" |], "The hash function to use. If unspecified, will try to use the appropriate function based on hash length.")
-    hashAlgOption.FromAmong(allHashTypesStr) |> ignore
-    verifyCmd.AddOption hashAlgOption
+    // OPTIONS
+    verifyCmd.AddOption hiddenFilesOpt
+    verifyCmd.AddOption skipEmptyOpt
+    verifyCmd.AddOption (algorithmOpt true)
+    verifyCmd.Handler <- CommandHandler.Create(checkHandler)
 
-    verifyCmd.Handler <- CommandHandler.Create(verifyCmdHandler)
     verifyCmd
 
 
@@ -95,31 +137,17 @@ let main args =
     let root =
         RootCommand("A command-line utility to checksum directories and files.")
 
-    // Compute Command
-    let computeCmd = Command("hash", "Compute the hash for selected files/directories.")
-    computeCmd.AddOption(Option<bool>([| "-t"; "--tree" |], "Print directory tree."))
-    root.AddCommand computeCmd
-
     // Verify Command
     root.AddCommand verifyCmd
 
     // ARGS
-    let itemArg =
-        Argument<string []>("item", "Directory or file to hash.")
-
-    itemArg.Arity <- ArgumentArity.OneOrMore
-    //root.AddArgument itemArg
+    root.AddArgument itemArg
 
     // OPTIONS
     root.AddOption(Option<bool>([| "-t"; "--tree" |], "Print directory tree."))
-    root.AddOption(Option<bool>([| "-i"; "--include-hidden-files" |], "Include hidden files."))
-    root.AddOption(Option<bool>([| "-e"; "--skip-empty-dir" |], "Skip empty directories."))
-    // Hash Algorithm
-    let hashAlgOption =
-        Option<string>([| "-a"; "--algorithm" |], (fun () -> "sha1"), "The hash function to use.")
+    root.AddOption hiddenFilesOpt
+    root.AddOption skipEmptyOpt
+    root.AddOption (algorithmOpt false)
 
-    hashAlgOption.FromAmong(allHashTypesStr) |> ignore
-    //root.AddOption hashAlgOption
-
-    root.Handler <- CommandHandler.Create(cmdHandler)
+    root.Handler <- CommandHandler.Create(rootHandler)
     root.Invoke args
