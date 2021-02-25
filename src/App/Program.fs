@@ -131,9 +131,7 @@ let verifyCmd =
 
     verifyCmd
 
-
-[<EntryPoint>]
-let main args =
+let rootCmd =
     let root =
         RootCommand("A command-line utility to checksum directories and files.")
 
@@ -150,4 +148,9 @@ let main args =
     root.AddOption (algorithmOpt false)
 
     root.Handler <- CommandHandler.Create(rootHandler)
-    root.Invoke args
+    root
+
+
+[<EntryPoint>]
+let main args =
+    rootCmd.Invoke args
