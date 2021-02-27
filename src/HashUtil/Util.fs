@@ -1,8 +1,15 @@
 ﻿namespace HashUtil
 
+open System
 open System.IO
 
+
 module Util =
+    let printColor color str =
+        Console.ForegroundColor <- color
+        printf "%s" str
+        Console.ResetColor()
+
     let getDirName path = DirectoryInfo(path).Name
 
     let makeOption x =

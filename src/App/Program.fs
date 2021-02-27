@@ -80,8 +80,7 @@ let checkHandler (opt: CheckOpt) =
             exit 1
         | Ok itemResults ->
             if not (allItemsMatch itemResults) then allMatches <- false
-            printVerificationResults itemResults strWriter
-            printf "%s" (strWriter.ToString())
+            printVerificationResults itemResults
 
     // Return error code 2, if anything is different than expected hash.
     if not allMatches then

@@ -75,6 +75,7 @@ module FS =
         | Differs of path: string * expectedHash: string * actualHash: string
 
     let allItemsMatch (results: seq<Result<VerificationResult, string>>) : bool =
+        // TODO: finish
         true
 
     let rec private makeDirHashStructure (hashAlg: HashAlgorithm) includeHiddenFiles includeEmptyDir dirPath =
@@ -121,7 +122,7 @@ module FS =
         else if Directory.Exists(path) then
             makeDirHashStructure hashAlg includeHiddenFiles includeEmptyDir path
         else
-            Error(sprintf "'%s' is not a valid path" path)
+            Error(sprintf "%s is not a valid path" path)
 
     let private makeLeftSpacer levels =
         match levels with
@@ -250,13 +251,24 @@ module FS =
             Error(sprintf "'%s' is not a valid hash file" path)
 
     let printVerificationResults
-        (results:seq<Result<VerificationResult,string>>)
-        (outputWriter: TextWriter) =
+        (results : seq<Result<VerificationResult,string>>) =
+
+        let printSuccess path =
+            Util.printColor ConsoleColor.DarkGreen "MATCHES"
+            printfn "%s%s" bSpacer path
+
+        let printDiffer path =
+            Util.printColor ConsoleColor.DarkYellow "DIFFERS"
+            printfn "%s%s" bSpacer path
+
+        let printError path =
+            Util.printColor ConsoleColor.DarkRed "ERROR  "
+            printfn "%s%s" bSpacer path
 
         for result in results do
             match result with
-            | Error err -> printfn "Error: %s" err
+            | Error err -> printError err
             | Ok verificationResult ->
                 match verificationResult with
-                | Matches(path, hash) -> printfn "Matches: %s" path
-                | Differs(path,expectedHash,actualHash) -> printfn "Differs: %s" path
+                | Matches(path, hash) -> printSuccess path
+                | Differs(path, expectedHash, actualHash) -> printDiffer path
