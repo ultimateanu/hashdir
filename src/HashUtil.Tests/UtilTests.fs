@@ -40,4 +40,3 @@ type UtilTests(output: ITestOutputHelper) =
         let printOutput = out.GetStringBuilder().ToString()
 
         Assert.Equal("MATCHES", printOutput)
-        Assert.Equal(ConsoleColor.Gray, Console.ForegroundColor)
