@@ -12,8 +12,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Util.fs" />
+    <Compile Include="Checksum.fs" />
     <Compile Include="Library.fs" />
+    <Compile Include="Verification.fs" />
+    <Compile Include="Util.fs" />
   </ItemGroup>
 
 </Project>

@@ -1,59 +1,7 @@
 ﻿namespace HashUtil
 
-open Microsoft.FSharp.Reflection
-open System
 open System.IO
 open System.Security.Cryptography
-open System.Text
-
-module Checksum =
-    type HashType =
-        | MD5
-        | SHA1
-        | SHA256
-        | SHA384
-        | SHA512
-
-    let allHashTypes : HashType[] =
-        typeof<HashType>
-        |> FSharpType.GetUnionCases
-        |> Array.map(fun info -> FSharpValue.MakeUnion(info,[||]) :?> HashType)
-
-    let parseHashType (input: string) =
-        let hashTypeStr = input.ToUpper().Trim()
-
-        match hashTypeStr with
-        | "MD5" -> Some MD5
-        | "SHA1" -> Some SHA1
-        | "SHA256" -> Some SHA256
-        | "SHA384" -> Some SHA384
-        | "SHA512" -> Some SHA512
-        | _ -> None
-
-    let getHashAlgorithm hashType: HashAlgorithm =
-        match hashType with
-        | MD5 -> upcast MD5.Create()
-        | SHA1 -> upcast SHA1.Create()
-        | SHA256 -> upcast SHA256.Create()
-        | SHA384 -> upcast SHA384.Create()
-        | SHA512 -> upcast SHA512.Create()
-
-    let computeHashOfString (hashAlg: HashAlgorithm) (str: string) =
-        str
-        |> Encoding.ASCII.GetBytes
-        |> hashAlg.ComputeHash
-        |> Seq.map (fun c -> c.ToString("x2"))
-        |> Seq.reduce (+)
-
-    let computeHashOfFile (hashAlg: HashAlgorithm) filePath =
-        assert File.Exists filePath
-        use file = File.OpenRead filePath
-
-        file
-        |> hashAlg.ComputeHash
-        |> Seq.map (fun c -> c.ToString("x2"))
-        |> Seq.reduce (+)
-
 
 module FS =
     let private bSpacer = "    "
@@ -69,22 +17,6 @@ module FS =
         match itemHash with
         | File (_, hash) -> hash
         | Dir (_, hash, _) -> hash
-
-    type VerificationResult =
-        | Matches of path: string * hash: string
-        | Differs of path: string * expectedHash: string * actualHash: string
-
-    let allItemsMatch (results: seq<Result<VerificationResult, string>>) : bool =
-        let resultMatches result =
-            match result with
-                | Ok r ->
-                    match r with
-                        | VerificationResult.Matches _ -> true
-                        | _ -> false
-                | Error _ -> false
-
-        Seq.forall resultMatches results
-
 
     let rec private makeDirHashStructure (hashAlg: HashAlgorithm) includeHiddenFiles includeEmptyDir dirPath =
         assert Directory.Exists(dirPath)
@@ -178,105 +110,3 @@ module FS =
     let makeHashStructure (hashType: Checksum.HashType) includeHiddenFiles includeEmptyDir path =
         let hashAlg = Checksum.getHashAlgorithm hashType
         makeHashStructureHelper hashAlg includeHiddenFiles includeEmptyDir path
-
-    let hashLengths =
-        let hashTypesAndLengths =
-            Checksum.allHashTypes
-            |> Array.map(fun t ->
-                (t,Checksum.computeHashOfString (Checksum.getHashAlgorithm t) "str"))
-            |> Array.map(fun (t,hash) -> (t,hash.Length))
-        let uniqueLengths =
-            hashTypesAndLengths
-            |> Array.map snd
-            |> Array.distinct
-        assert (uniqueLengths.Length = Checksum.allHashTypes.Length)
-        hashTypesAndLengths
-
-
-    let verifyHashAndItem (hashType: Checksum.HashType) (basePath:string) (expectedHash:string) (path:string): Result<VerificationResult, string> =
-        let fullPath =
-            Path.Join(basePath,
-                if path.StartsWith('/') then path.[1..] else path)
-        // TODO: pass up these options in check also.
-        let itemHashResult = makeHashStructure hashType true true fullPath
-
-        match itemHashResult with
-            | Error err -> Error err
-            | Ok itemHash ->
-                let actualHash = getHash itemHash
-                if actualHash = expectedHash then
-                    Ok (VerificationResult.Matches(path, actualHash))
-                else
-                    Ok (VerificationResult.Differs(path, expectedHash, actualHash))
-
-
-    // TODO: change from tuple to seperate args
-    let verifyHashAndItemByGuessing (hashType: Checksum.HashType option) (basePath:string) (hashAndItem:string * string): Result<VerificationResult, string> =
-        match hashType with
-        | Some t ->
-            // Use specified hashType
-            verifyHashAndItem t basePath (fst hashAndItem) (snd hashAndItem)
-        | None ->
-            // Try to guess the hashtype based on hash length
-            let matchedHashType =
-                hashLengths
-                |> Array.filter(fun (t,len) -> len = fst(hashAndItem).Length)
-            assert (matchedHashType.Length <= 1)
-            if matchedHashType.Length = 1 then
-                verifyHashAndItem (fst matchedHashType.[0]) basePath (fst hashAndItem) (snd hashAndItem)
-            else
-                Error("Cannot determine which hash algorithm to use")
-
-
-    let verifyHashFile (hashType: Checksum.HashType option) (path:string) : Result<seq<Result<VerificationResult,string>>, string> =
-        if File.Exists(path) then
-            let baseDirPath = Path.GetDirectoryName path
-
-            let isTopLevelItem (line:string): bool =
-                match line with
-                | txt when txt.StartsWith(bSpacer) -> false
-                | txt when txt.StartsWith(iSpacer) -> false
-                | txt when txt.StartsWith(tSpacer) -> false
-                | txt when txt.StartsWith(lSpacer) -> false
-                | _ -> true
-
-            let getHashAndItem (line:string) =
-                let pieces = line.Split "  "
-                assert (pieces.Length = 2)
-                (pieces.[0], pieces.[1])
-
-            let topLevelHashes =
-                path
-                |> File.ReadLines
-                |> Seq.filter isTopLevelItem
-                |> Seq.map getHashAndItem
-
-            let allVerificationResults =
-                topLevelHashes
-                |> Seq.map (verifyHashAndItemByGuessing hashType baseDirPath)
-            Ok allVerificationResults
-        else
-            Error(sprintf "'%s' is not a valid hash file" path)
-
-    let printVerificationResults
-        (results : seq<Result<VerificationResult,string>>) =
-
-        let printSuccess path =
-            Util.printColor ConsoleColor.DarkGreen "MATCHES"
-            printfn "%s%s" bSpacer path
-
-        let printDiffer path =
-            Util.printColor ConsoleColor.DarkYellow "DIFFERS"
-            printfn "%s%s" bSpacer path
-
-        let printError path =
-            Util.printColor ConsoleColor.DarkRed "ERROR  "
-            printfn "%s%s" bSpacer path
-
-        for result in results do
-            match result with
-            | Error err -> printError err
-            | Ok verificationResult ->
-                match verificationResult with
-                | Matches(path, hash) -> printSuccess path
-                | Differs(path, expectedHash, actualHash) -> printDiffer path

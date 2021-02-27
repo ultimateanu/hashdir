@@ -1,6 +1,7 @@
 open HashUtil.Checksum
 open HashUtil.FS
 open HashUtil.Util
+open HashUtil.Verification
 open Microsoft.FSharp.Reflection
 open System.CommandLine
 open System.CommandLine.Invocation
