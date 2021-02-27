@@ -5,6 +5,9 @@ open System.IO
 
 
 module Util =
+    let toStrLower x =
+        x.ToString().ToLower()
+
     let printColor color str =
         Console.ForegroundColor <- color
         printf "%s" str

@@ -1,9 +1,23 @@
 open HashUtil.Checksum
 open HashUtil.FS
+open HashUtil.Util
+open Microsoft.FSharp.Reflection
 open System.CommandLine
 open System.CommandLine.Invocation
 open System.Diagnostics
 open System.IO
+
+
+type PrintVerbosity =
+    | Quiet
+    | Normal
+    | Detailed
+
+
+let allPrintVerbosity : PrintVerbosity[] =
+    typeof<PrintVerbosity>
+    |> FSharpType.GetUnionCases
+    |> Array.map(fun info -> FSharpValue.MakeUnion(info,[||]) :?> PrintVerbosity)
 
 
 type RootOpt(item, tree, includeHiddenFiles, skipEmptyDir, algorithm) =
@@ -24,7 +38,7 @@ type RootOpt(item, tree, includeHiddenFiles, skipEmptyDir, algorithm) =
             x.Items x.PrintTree x.IncludeHiddenFiles x.SkipEmptyDir x.Algorithm
 
 
-type CheckOpt(item, includeHiddenFiles, skipEmptyDir, algorithm) =
+type CheckOpt(item, includeHiddenFiles, skipEmptyDir, algorithm, verbosity) =
     // Arguments
     member val Items: string [] =
         match item with
@@ -35,6 +49,8 @@ type CheckOpt(item, includeHiddenFiles, skipEmptyDir, algorithm) =
     member val IncludeHiddenFiles: bool = includeHiddenFiles
     member val SkipEmptyDir: bool = skipEmptyDir
     member val Algorithm: string = algorithm
+    member val Verbosity: string = verbosity
+
 
     override x.ToString() =
         sprintf "VerifyOpt[Items:%A IncludeHiddenFiles:%A SkipEmptyDir:%A Algorithm:%A]"
@@ -89,7 +105,7 @@ let checkHandler (opt: CheckOpt) =
 
 let itemArg =
     let arg =
-        Argument<string []>("item", "Directory or file to hash/check.")
+        Argument<string []>("item", "Directory or file to hash/check")
     arg.Arity <- ArgumentArity.OneOrMore
     arg
 
@@ -100,24 +116,34 @@ let algorithmOpt forCheck =
         | true ->
             Option<string>([| "-a"; "--algorithm" |],
                 "The hash function to use. If unspecified, will try to " +
-                "use the appropriate function based on hash length.")
+                "use the appropriate function based on hash length")
         | false ->
             Option<string>([| "-a"; "--algorithm" |], (fun () -> "sha1"),
-                "The hash function to use.")
+                "The hash function to use")
 
     let allHashTypesStr =
-        allHashTypes |> Array.map(fun hashType -> hashType.ToString().ToLower())
+        allHashTypes |> Array.map toStrLower
     hashAlgOption.FromAmong(allHashTypesStr) |> ignore
     hashAlgOption
 
 let hiddenFilesOpt =
-    Option<bool>([| "-i"; "--include-hidden-files" |], "Include hidden files.")
+    Option<bool>([| "-i"; "--include-hidden-files" |], "Include hidden files")
 
 let skipEmptyOpt =
-    Option<bool>([| "-e"; "--skip-empty-dir" |], "Skip empty directories.")
+    Option<bool>([| "-e"; "--skip-empty-dir" |], "Skip empty directories")
+
+let verbosityOpt =
+    let opt =
+        Option<string>(
+            [| "-v"; "--verbosity" |],
+            (fun () -> toStrLower PrintVerbosity.Normal),
+            "Sets the verbosity level for the output")
+
+    opt.FromAmong(allPrintVerbosity |> Array.map toStrLower) |> ignore
+    opt
 
 let verifyCmd =
-    let verifyCmd = Command("check", "Verify that the specified hash is valid for the corresponding items.")
+    let verifyCmd = Command("check", "Verify that the specified hash is valid for the corresponding items")
 
     // ARGS
     verifyCmd.AddArgument itemArg
@@ -126,6 +152,7 @@ let verifyCmd =
     verifyCmd.AddOption hiddenFilesOpt
     verifyCmd.AddOption skipEmptyOpt
     verifyCmd.AddOption (algorithmOpt true)
+    verifyCmd.AddOption verbosityOpt
     verifyCmd.Handler <- CommandHandler.Create(checkHandler)
 
     verifyCmd
@@ -141,7 +168,7 @@ let rootCmd =
     root.AddArgument itemArg
 
     // OPTIONS
-    root.AddOption(Option<bool>([| "-t"; "--tree" |], "Print directory tree."))
+    root.AddOption(Option<bool>([| "-t"; "--tree" |], "Print directory tree"))
     root.AddOption hiddenFilesOpt
     root.AddOption skipEmptyOpt
     root.AddOption (algorithmOpt false)
