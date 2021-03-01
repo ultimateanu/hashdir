@@ -2,23 +2,10 @@ open HashUtil.Checksum
 open HashUtil.FS
 open HashUtil.Util
 open HashUtil.Verification
-open Microsoft.FSharp.Reflection
 open System.CommandLine
 open System.CommandLine.Invocation
 open System.Diagnostics
 open System.IO
-
-
-type PrintVerbosity =
-    | Quiet
-    | Normal
-    | Detailed
-
-
-let allPrintVerbosity : PrintVerbosity[] =
-    typeof<PrintVerbosity>
-    |> FSharpType.GetUnionCases
-    |> Array.map(fun info -> FSharpValue.MakeUnion(info,[||]) :?> PrintVerbosity)
 
 
 type RootOpt(item, tree, includeHiddenFiles, skipEmptyDir, algorithm) =
@@ -86,6 +73,11 @@ let checkHandler (opt: CheckOpt) =
             assert algorithmMaybe.IsSome
             Some algorithmMaybe.Value
 
+    // Parse verbosity. System.CommandLine should have already verified.
+    let verbosityMaybe = parsePrintVerbosity opt.Verbosity
+    assert verbosityMaybe.IsSome
+    let verbosity = verbosityMaybe.Value
+
     let mutable allMatches = true
     for item in opt.Items do
         let verifyResult = verifyHashFile algorithm item
@@ -97,7 +89,7 @@ let checkHandler (opt: CheckOpt) =
             exit 1
         | Ok itemResults ->
             if not (allItemsMatch itemResults) then allMatches <- false
-            printVerificationResults itemResults
+            printVerificationResults verbosity itemResults
 
     // Return error code 2, if anything is different than expected hash.
     if not allMatches then

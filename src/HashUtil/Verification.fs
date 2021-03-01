@@ -2,6 +2,7 @@
 
 open System
 open System.IO
+open Microsoft.FSharp.Reflection
 
 module Verification =
     // TODO: put in common place
@@ -26,6 +27,25 @@ module Verification =
     type VerificationResult =
         | Matches of path: string * hash: string
         | Differs of path: string * expectedHash: string * actualHash: string
+
+    type PrintVerbosity =
+        | Quiet
+        | Normal
+        | Detailed
+
+    let allPrintVerbosity : PrintVerbosity[] =
+        typeof<PrintVerbosity>
+        |> FSharpType.GetUnionCases
+        |> Array.map(fun info -> FSharpValue.MakeUnion(info,[||]) :?> PrintVerbosity)
+
+    let parsePrintVerbosity (input: string) =
+        let printVerbosityStr = input.Trim().ToLower()
+
+        match printVerbosityStr with
+        | "quiet" -> Some Quiet
+        | "normal" -> Some Normal
+        | "detailed" -> Some Detailed
+        | _ -> None
 
     let allItemsMatch (results: seq<Result<VerificationResult, string>>) : bool =
         let resultMatches result =
@@ -103,25 +123,41 @@ module Verification =
             Error(sprintf "'%s' is not a valid hash file" path)
 
 
-    let printVerificationResults //results =
+    let printVerificationResults
+        verbosity
         (results : seq<Result<VerificationResult,string>>) =
 
-        let printSuccess path =
-            Util.printColor ConsoleColor.Green "MATCHES"
-            printfn "%s%s" bSpacer path
+        let printSuccess path hash =
+            match verbosity with
+                | Quiet -> ()
+                | Normal ->
+                    Util.printColor ConsoleColor.Green "MATCHES"
+                    printfn "%s%s" bSpacer path
+                | Detailed ->
+                    Util.printColor ConsoleColor.Green "MATCHES"
+                    printfn "%s%s (%s)" bSpacer path hash
 
-        let printDiffer path =
-            Util.printColor ConsoleColor.DarkYellow "DIFFERS"
-            printfn "%s%s" bSpacer path
+        let printDiffer path actualHash expectedHash =
+            match verbosity with
+            | Quiet -> ()
+            | Normal ->
+                Util.printColor ConsoleColor.DarkYellow "DIFFERS"
+                printfn "%s%s" bSpacer path
+            | Detailed ->
+                Util.printColor ConsoleColor.DarkYellow "DIFFERS"
+                printfn "%s%s (%s, expected: %s)" bSpacer path actualHash expectedHash
 
         let printError path =
-            Util.printColor ConsoleColor.Red "ERROR  "
-            printfn "%s%s" bSpacer path
+            match verbosity with
+            | Quiet -> ()
+            | _ ->
+                Util.printColor ConsoleColor.Red "ERROR  "
+                printfn "%s%s" bSpacer path
 
         for result in results do
             match result with
             | Error err -> printError err
             | Ok verificationResult ->
                 match verificationResult with
-                | Matches(path, hash) -> printSuccess path
-                | Differs(path, expectedHash, actualHash) -> printDiffer path
+                | Matches(path, hash) -> printSuccess path hash
+                | Differs(path, expectedHash, actualHash) -> printDiffer path actualHash expectedHash
