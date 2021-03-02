@@ -5,12 +5,6 @@ open System.IO
 open Microsoft.FSharp.Reflection
 
 module Verification =
-    // TODO: put in common place
-    let private bSpacer = "    "
-    let private iSpacer = "│   "
-    let private tSpacer = "├── "
-    let private lSpacer = "└── "
-
     let hashLengths =
         let hashTypesAndLengths =
             Checksum.allHashTypes
@@ -102,10 +96,10 @@ module Verification =
 
             let isTopLevelItem (line:string): bool =
                 match line with
-                | txt when txt.StartsWith(bSpacer) -> false
-                | txt when txt.StartsWith(iSpacer) -> false
-                | txt when txt.StartsWith(tSpacer) -> false
-                | txt when txt.StartsWith(lSpacer) -> false
+                | txt when txt.StartsWith(Common.bSpacer) -> false
+                | txt when txt.StartsWith(Common.iSpacer) -> false
+                | txt when txt.StartsWith(Common.tSpacer) -> false
+                | txt when txt.StartsWith(Common.lSpacer) -> false
                 | _ -> true
 
             let getHashAndItem (line:string) =
@@ -143,27 +137,27 @@ module Verification =
                 | Quiet -> ()
                 | Normal ->
                     Util.printColor ConsoleColor.Green "MATCHES"
-                    printfn "%s%s" bSpacer path
+                    printfn "%s%s" Common.bSpacer path
                 | Detailed ->
                     Util.printColor ConsoleColor.Green "MATCHES"
-                    printfn "%s%s (%s)" bSpacer path hash
+                    printfn "%s%s (%s)" Common.bSpacer path hash
 
         let printDiffer path actualHash expectedHash =
             match verbosity with
             | Quiet -> ()
             | Normal ->
                 Util.printColor ConsoleColor.DarkYellow "DIFFERS"
-                printfn "%s%s" bSpacer path
+                printfn "%s%s" Common.bSpacer path
             | Detailed ->
                 Util.printColor ConsoleColor.DarkYellow "DIFFERS"
-                printfn "%s%s (%s, expected: %s)" bSpacer path actualHash expectedHash
+                printfn "%s%s (%s, expected: %s)" Common.bSpacer path actualHash expectedHash
 
         let printError path =
             match verbosity with
             | Quiet -> ()
             | _ ->
                 Util.printColor ConsoleColor.Red "ERROR  "
-                printfn "%s%s" bSpacer path
+                printfn "%s%s" Common.bSpacer path
 
         for result in results do
             match result with

@@ -4,11 +4,6 @@ open System.IO
 open System.Security.Cryptography
 
 module FS =
-    let private bSpacer = "    "
-    let private iSpacer = "│   "
-    let private tSpacer = "├── "
-    let private lSpacer = "└── "
-
     type ItemHash =
         | File of path: string * hash: string
         | Dir of path: string * hash: string * children: List<ItemHash>
@@ -71,14 +66,14 @@ module FS =
             let parentSpacer =
                 parentsActive
                 |> List.rev
-                |> List.map (fun isActive -> if isActive then iSpacer else bSpacer)
+                |> List.map (fun isActive -> if isActive then Common.iSpacer else Common.bSpacer)
                 |> System.String.Concat
 
             let curSpacer =
                 if lastLevelActive then
-                    tSpacer
+                    Common.tSpacer
                 else
-                    lSpacer
+                    Common.lSpacer
 
             parentSpacer + curSpacer
 

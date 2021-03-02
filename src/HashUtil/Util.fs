@@ -3,6 +3,14 @@
 open System
 open System.IO
 
+
+module Common =
+    let bSpacer = "    "
+    let iSpacer = "│   "
+    let tSpacer = "├── "
+    let lSpacer = "└── "
+
+
 module Util =
     let toStrLower x =
         x.ToString().ToLower()
