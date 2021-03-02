@@ -74,21 +74,21 @@ module Verification =
                 else
                     Ok (VerificationResult.Differs(path, expectedHash, actualHash))
 
-    // TODO: change from tuple to seperate args
     let verifyHashAndItemByGuessing (hashType: Checksum.HashType option) includeHiddenFiles
-        includeEmptyDir basePath (hashAndItem:string * string): Result<VerificationResult, string> =
+        includeEmptyDir basePath hash itemPath: Result<VerificationResult, string> =
         match hashType with
         | Some t ->
             // Use specified hashType
-            verifyHashAndItem t includeHiddenFiles includeEmptyDir basePath (fst hashAndItem) (snd hashAndItem)
+            verifyHashAndItem t includeHiddenFiles includeEmptyDir basePath hash itemPath
         | None ->
             // Try to guess the hashtype based on hash length
             let matchedHashType =
                 hashLengths
-                |> Array.filter(fun (t,len) -> len = fst(hashAndItem).Length)
+                |> Array.filter(fun (_, len) -> len = hash.Length)
+                |> Array.map (fun (t, _) -> t)
             assert (matchedHashType.Length <= 1)
             if matchedHashType.Length = 1 then
-                verifyHashAndItem (fst matchedHashType.[0]) includeHiddenFiles includeEmptyDir basePath (fst hashAndItem) (snd hashAndItem)
+                verifyHashAndItem matchedHashType.[0] includeHiddenFiles includeEmptyDir basePath hash itemPath
             else
                 Error("Cannot determine which hash algorithm to use")
 
@@ -121,7 +121,14 @@ module Verification =
 
             let allVerificationResults =
                 topLevelHashes
-                |> Seq.map (verifyHashAndItemByGuessing hashType includeHiddenFiles includeEmptyDir baseDirPath)
+                |> Seq.map (fun (hash, itemPath) ->
+                    verifyHashAndItemByGuessing
+                        hashType
+                        includeHiddenFiles
+                        includeEmptyDir
+                        baseDirPath
+                        hash
+                        itemPath)
             Ok allVerificationResults
         else
             Error(sprintf "'%s' is not a valid hash file" path)
