@@ -80,8 +80,10 @@ let checkHandler (opt: CheckOpt) =
 
     let mutable allMatches = true
     for item in opt.Items do
-        let verifyResult = verifyHashFile algorithm item
-        let strWriter = new StringWriter()
+        let verifyResult =
+            verifyHashFile algorithm opt.IncludeHiddenFiles
+                (not opt.SkipEmptyDir) item
+
         match verifyResult with
         | Error err ->
             allMatches <- false

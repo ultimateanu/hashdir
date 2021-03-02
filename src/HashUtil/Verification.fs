@@ -47,7 +47,7 @@ module Verification =
         | "detailed" -> Some Detailed
         | _ -> None
 
-    let allItemsMatch (results: seq<Result<VerificationResult, string>>) : bool =
+    let allItemsMatch (results: seq<Result<VerificationResult, string>>) =
         let resultMatches result =
             match result with
                 | Ok r ->
@@ -58,12 +58,12 @@ module Verification =
 
         Seq.forall resultMatches results
 
-    let verifyHashAndItem (hashType: Checksum.HashType) (basePath:string) (expectedHash:string) (path:string): Result<VerificationResult, string> =
+    let verifyHashAndItem (hashType: Checksum.HashType) includeHiddenFiles
+        includeEmptyDir basePath expectedHash (path:string): Result<VerificationResult, string> =
         let fullPath =
             Path.Join(basePath,
                 if path.StartsWith('/') then path.[1..] else path)
-        // TODO: pass up these options in check also.
-        let itemHashResult = FS.makeHashStructure hashType true true fullPath
+        let itemHashResult = FS.makeHashStructure hashType includeHiddenFiles includeEmptyDir fullPath
 
         match itemHashResult with
             | Error err -> Error err
@@ -75,11 +75,12 @@ module Verification =
                     Ok (VerificationResult.Differs(path, expectedHash, actualHash))
 
     // TODO: change from tuple to seperate args
-    let verifyHashAndItemByGuessing (hashType: Checksum.HashType option) (basePath:string) (hashAndItem:string * string): Result<VerificationResult, string> =
+    let verifyHashAndItemByGuessing (hashType: Checksum.HashType option) includeHiddenFiles
+        includeEmptyDir basePath (hashAndItem:string * string): Result<VerificationResult, string> =
         match hashType with
         | Some t ->
             // Use specified hashType
-            verifyHashAndItem t basePath (fst hashAndItem) (snd hashAndItem)
+            verifyHashAndItem t includeHiddenFiles includeEmptyDir basePath (fst hashAndItem) (snd hashAndItem)
         | None ->
             // Try to guess the hashtype based on hash length
             let matchedHashType =
@@ -87,12 +88,15 @@ module Verification =
                 |> Array.filter(fun (t,len) -> len = fst(hashAndItem).Length)
             assert (matchedHashType.Length <= 1)
             if matchedHashType.Length = 1 then
-                verifyHashAndItem (fst matchedHashType.[0]) basePath (fst hashAndItem) (snd hashAndItem)
+                verifyHashAndItem (fst matchedHashType.[0]) includeHiddenFiles includeEmptyDir basePath (fst hashAndItem) (snd hashAndItem)
             else
                 Error("Cannot determine which hash algorithm to use")
 
 
-    let verifyHashFile (hashType: Checksum.HashType option) (path:string) : Result<seq<Result<VerificationResult,string>>, string> =
+    let verifyHashFile (hashType: Checksum.HashType option)
+        includeHiddenFiles
+        includeEmptyDir
+        path : Result<seq<Result<VerificationResult,string>>, string> =
         if File.Exists(path) then
             let baseDirPath = Path.GetDirectoryName path
 
@@ -117,7 +121,7 @@ module Verification =
 
             let allVerificationResults =
                 topLevelHashes
-                |> Seq.map (verifyHashAndItemByGuessing hashType baseDirPath)
+                |> Seq.map (verifyHashAndItemByGuessing hashType includeHiddenFiles includeEmptyDir baseDirPath)
             Ok allVerificationResults
         else
             Error(sprintf "'%s' is not a valid hash file" path)
