@@ -138,7 +138,8 @@ let verbosityOpt =
     opt
 
 let verifyCmd =
-    let verifyCmd = Command("check", "Verify that the specified hash is valid for the corresponding items")
+    let verifyCmd =
+        Command("check", "Verify that the specified hash file is valid.")
 
     // ARGS
     verifyCmd.AddArgument itemArg
