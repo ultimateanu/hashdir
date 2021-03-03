@@ -12,6 +12,7 @@
     <Compile Include="IOTests.fs" />
     <Compile Include="FsTests.fs" />
     <Compile Include="HashTests.fs" />
+    <Compile Include="Program.fs" />
   </ItemGroup>
 
   <ItemGroup>
