@@ -1,9 +1,7 @@
 #!/usr/bin/env dotnet fsi
 
 #r "System.IO.Compression.FileSystem.dll"
-
-#load "HashUtil/Util.fs"
-#load "HashUtil/Library.fs"
+#load "HashUtil/Checksum.fs"
 
 open HashUtil.Checksum
 open System
