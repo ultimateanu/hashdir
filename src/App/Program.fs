@@ -94,8 +94,8 @@ let checkHandler (opt: CheckOpt) =
             printVerificationResults verbosity itemResults
 
     // Return error code 2, if anything is different than expected hash.
-    if not allMatches then
-        exit 2
+    let returnCode = if allMatches then 0 else 2
+    returnCode
 
 
 let itemArg =
@@ -175,4 +175,5 @@ let rootCmd =
 
 [<EntryPoint>]
 let main args =
-    rootCmd.Invoke args
+    let returnCode = rootCmd.Invoke args
+    returnCode
