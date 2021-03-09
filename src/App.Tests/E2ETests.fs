@@ -77,7 +77,7 @@ type CheckHashfile(fsTempDirSetupFixture: FsTempDirSetupFixture, debugOutput: IT
 
 
     [<Fact>]
-    member _.``check hash file (no empty dir)``() =
+    member _.``check hash file``() =
         // Simple hashfile with sha1 hash for project dir.
         let hashFilePath = Path.Combine(fsTempDirSetupFixture.TempDir, "project_standard.sha1.txt")
         File.WriteAllText(hashFilePath, "264aba9860d3dc213423759991dad98259bbf0c5  /project")
@@ -91,13 +91,43 @@ type CheckHashfile(fsTempDirSetupFixture: FsTempDirSetupFixture, debugOutput: IT
         Assert.Equal(expectedOutput, stdOutBuffer())
 
     [<Fact>]
-    member _.``check hash file (allow empty dir)``() =
-        // Simple hashfile with sha1 hash for project dir (including empty dirs).
-        let hashFilePath = Path.Combine(fsTempDirSetupFixture.TempDir, "project_allow_empty.sha1.txt")
+    member _.``check hash file (include hidden files)``() =
+        // Simple hashfile with sha1 hash for project dir (including hidden files).
+        let hashFilePath = Path.Combine(fsTempDirSetupFixture.TempDir, "project_include_hidden.sha1.txt")
         File.WriteAllText(hashFilePath, "ea60ecdab5f999ef34fd19825ce63fac83a0c75b  /project")
 
         // Run program and ask to check the hashfile.
         let returnCode = Program.main [|"check"; hashFilePath; "--include-hidden-files"|]
+        Assert.Equal(0, returnCode)
+
+        // Expect output to say matches.
+        let expectedOutput = sprintf "MATCHES    /project%s" Environment.NewLine
+        Assert.Equal(expectedOutput, stdOutBuffer())
+
+    [<Fact>]
+    member _.``check hash file (skip empty dir)``() =
+        // Simple hashfile with sha1 hash for project dir (including empty dirs).
+        let hashFilePath = Path.Combine(fsTempDirSetupFixture.TempDir, "project_skip_empty_dir.sha1.txt")
+        File.WriteAllText(hashFilePath, "d4efa40abcb6ec73ee83df4c532aad568e7160a5  /project")
+
+        // Run program and ask to check the hashfile.
+        let returnCode = Program.main [|"check"; hashFilePath; "--skip-empty-dir"|]
+        Assert.Equal(0, returnCode)
+
+        // Expect output to say matches.
+        let expectedOutput = sprintf "MATCHES    /project%s" Environment.NewLine
+        Assert.Equal(expectedOutput, stdOutBuffer())
+
+    [<Fact>]
+    member _.``check hash file (include hidden files, skip empty dir)``() =
+        // Simple hashfile with sha1 hash for project dir (including empty dirs).
+        let hashFilePath =
+            Path.Combine(fsTempDirSetupFixture.TempDir,
+                "project_include_hidden_and_skip_empty_dir.sha1.txt")
+        File.WriteAllText(hashFilePath, "16e6570418dba2f4589c8972b9cfe4bb9e5c449c  /project")
+
+        // Run program and ask to check the hashfile.
+        let returnCode = Program.main [|"check"; hashFilePath; "--include-hidden-files"; "--skip-empty-dir"|]
         Assert.Equal(0, returnCode)
 
         // Expect output to say matches.
