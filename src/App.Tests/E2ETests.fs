@@ -48,19 +48,23 @@ type FsTempDirSetupFixture() =
 
 
 type CheckHashfile(fsTempDirSetupFixture: FsTempDirSetupFixture, debugOutput: ITestOutputHelper) =
+    let hashFile = Path.Combine(fsTempDirSetupFixture.TempDir, "project_hash.txt")
     let oldStdOut = Console.Out
     let customStdOut = new IO.StringWriter()
-    let stdOutBuffer() = customStdOut.GetStringBuilder().ToString()
-    let stdOutClear() = customStdOut.GetStringBuilder().Clear()
+    let getStdOut() = customStdOut.GetStringBuilder().ToString()
+    let clearStdOut() = customStdOut.GetStringBuilder().Clear()
 
     // SETUP
     do
         Console.SetOut(customStdOut)
+        File.WriteAllText(hashFile, "")
+
 
     // CLEANUP
     interface IDisposable with
         member _.Dispose() =
             Console.SetOut(oldStdOut)
+            File.Delete(hashFile)
 
     interface IClassFixture<FsTempDirSetupFixture>
 
@@ -71,87 +75,76 @@ type CheckHashfile(fsTempDirSetupFixture: FsTempDirSetupFixture, debugOutput: IT
         let returnCode = Program.main [|"--help"|]
         Assert.Equal(0, returnCode)
 
-        // Expect output to say matches.
+        // Expect output to have help info.
         Assert.Contains(
             "A command-line utility to checksum directories and files.",
-            stdOutBuffer())
+            getStdOut())
 
 
     [<Fact>]
     member _.``check hash file``() =
         // Simple hashfile with sha1 hash for project dir.
-        let hashFilePath = Path.Combine(fsTempDirSetupFixture.TempDir, "project_standard.sha1.txt")
-        File.WriteAllText(hashFilePath, "264aba9860d3dc213423759991dad98259bbf0c5  /project")
+        File.WriteAllText(hashFile, "264aba9860d3dc213423759991dad98259bbf0c5  /project")
 
         // Run program and ask to check the hashfile.
-        let returnCode = Program.main [|"check"; hashFilePath|]
+        let returnCode = Program.main [|"check"; hashFile|]
         Assert.Equal(0, returnCode)
 
         // Expect output to say matches.
         let expectedOutput = sprintf "MATCHES    /project%s" Environment.NewLine
-        Assert.Equal(expectedOutput, stdOutBuffer())
+        Assert.Equal(expectedOutput, getStdOut())
 
     [<Fact>]
     member _.``check hash file (include hidden files)``() =
         // Simple hashfile with sha1 hash for project dir (including hidden files).
-        let hashFilePath = Path.Combine(fsTempDirSetupFixture.TempDir, "project_include_hidden.sha1.txt")
-        File.WriteAllText(hashFilePath, "ea60ecdab5f999ef34fd19825ce63fac83a0c75b  /project")
+        File.WriteAllText(hashFile, "ea60ecdab5f999ef34fd19825ce63fac83a0c75b  /project")
 
         // Run program and ask to check the hashfile.
-        let returnCode = Program.main [|"check"; hashFilePath; "--include-hidden-files"|]
+        let returnCode = Program.main [|"check"; hashFile; "--include-hidden-files"|]
         Assert.Equal(0, returnCode)
 
         // Expect output to say matches.
         let expectedOutput = sprintf "MATCHES    /project%s" Environment.NewLine
-        Assert.Equal(expectedOutput, stdOutBuffer())
+        Assert.Equal(expectedOutput, getStdOut())
 
     [<Fact>]
     member _.``check hash file (skip empty dir)``() =
         // Simple hashfile with sha1 hash for project dir (including empty dirs).
-        let hashFilePath = Path.Combine(fsTempDirSetupFixture.TempDir, "project_skip_empty_dir.sha1.txt")
-        File.WriteAllText(hashFilePath, "d4efa40abcb6ec73ee83df4c532aad568e7160a5  /project")
+        File.WriteAllText(hashFile, "d4efa40abcb6ec73ee83df4c532aad568e7160a5  /project")
 
         // Run program and ask to check the hashfile.
-        let returnCode = Program.main [|"check"; hashFilePath; "--skip-empty-dir"|]
+        let returnCode = Program.main [|"check"; hashFile; "--skip-empty-dir"|]
         Assert.Equal(0, returnCode)
 
         // Expect output to say matches.
         let expectedOutput = sprintf "MATCHES    /project%s" Environment.NewLine
-        Assert.Equal(expectedOutput, stdOutBuffer())
+        Assert.Equal(expectedOutput, getStdOut())
 
     [<Fact>]
     member _.``check hash file (include hidden files, skip empty dir)``() =
         // Simple hashfile with sha1 hash for project dir (including empty dirs).
-        let hashFilePath =
-            Path.Combine(fsTempDirSetupFixture.TempDir,
-                "project_include_hidden_and_skip_empty_dir.sha1.txt")
-        File.WriteAllText(hashFilePath, "16e6570418dba2f4589c8972b9cfe4bb9e5c449c  /project")
+        File.WriteAllText(hashFile, "16e6570418dba2f4589c8972b9cfe4bb9e5c449c  /project")
 
         // Run program and ask to check the hashfile.
-        let returnCode = Program.main [|"check"; hashFilePath; "--include-hidden-files"; "--skip-empty-dir"|]
+        let returnCode = Program.main [|"check"; hashFile; "--include-hidden-files"; "--skip-empty-dir"|]
         Assert.Equal(0, returnCode)
 
         // Expect output to say matches.
         let expectedOutput = sprintf "MATCHES    /project%s" Environment.NewLine
-        Assert.Equal(expectedOutput, stdOutBuffer())
+        Assert.Equal(expectedOutput, getStdOut())
 
     [<Fact>]
     member _.``check hash file matches hashing output``() =
+        // Write output of hashing to hashFile.
         let projectDirPath = Path.Combine(fsTempDirSetupFixture.TempDir, "project")
         Assert.Equal(0, Program.main [|projectDirPath|])
-        let hashOutput = stdOutBuffer()
-        stdOutClear() |> ignore
-        let hashFilePath =
-            Path.Combine(fsTempDirSetupFixture.TempDir, "project.sha1.txt")
-        File.WriteAllText(hashFilePath, hashOutput)
+        File.WriteAllText(hashFile, getStdOut())
+        clearStdOut() |> ignore
 
         // Run program and ask to check the hashfile.
-        let returnCode = Program.main [|"check"; hashFilePath|]
+        let returnCode = Program.main [|"check"; hashFile|]
         Assert.Equal(0, returnCode)
 
         // Expect output to say matches.
         let expectedOutput = sprintf "MATCHES    /project%s" Environment.NewLine
-        Assert.Equal(expectedOutput, stdOutBuffer())
-
-        // Delete hashfile as cleanup.
-        File.Delete(hashFilePath)
+        Assert.Equal(expectedOutput, getStdOut())
