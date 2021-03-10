@@ -51,6 +51,7 @@ type CheckHashfile(fsTempDirSetupFixture: FsTempDirSetupFixture, debugOutput: IT
     let oldStdOut = Console.Out
     let customStdOut = new IO.StringWriter()
     let stdOutBuffer() = customStdOut.GetStringBuilder().ToString()
+    let stdOutClear() = customStdOut.GetStringBuilder().Clear()
 
     // SETUP
     do
@@ -133,3 +134,24 @@ type CheckHashfile(fsTempDirSetupFixture: FsTempDirSetupFixture, debugOutput: IT
         // Expect output to say matches.
         let expectedOutput = sprintf "MATCHES    /project%s" Environment.NewLine
         Assert.Equal(expectedOutput, stdOutBuffer())
+
+    [<Fact>]
+    member _.``check hash file matches hashing output``() =
+        let projectDirPath = Path.Combine(fsTempDirSetupFixture.TempDir, "project")
+        Assert.Equal(0, Program.main [|projectDirPath|])
+        let hashOutput = stdOutBuffer()
+        stdOutClear() |> ignore
+        let hashFilePath =
+            Path.Combine(fsTempDirSetupFixture.TempDir, "project.sha1.txt")
+        File.WriteAllText(hashFilePath, hashOutput)
+
+        // Run program and ask to check the hashfile.
+        let returnCode = Program.main [|"check"; hashFilePath|]
+        Assert.Equal(0, returnCode)
+
+        // Expect output to say matches.
+        let expectedOutput = sprintf "MATCHES    /project%s" Environment.NewLine
+        Assert.Equal(expectedOutput, stdOutBuffer())
+
+        // Delete hashfile as cleanup.
+        File.Delete(hashFilePath)
