@@ -21,6 +21,7 @@ type HashingConfigs() =
     inherit BaseTestData()
     override _.data = Seq.ofList [
         [| box [||] |];
+        [| box [|"--algorithm"; "md5"|] |];
         [| box [|"--include-hidden-files"|] |];
         [| box [|"--skip-empty-dir"|] |];
         [| box [|"--skip-empty-dir"; "--include-hidden-files"|] |];
