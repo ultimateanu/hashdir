@@ -1,43 +1,64 @@
 ﻿module E2ETests
 
 open System
+open System.Collections
+open System.Collections.Generic
 open System.IO
 open System.Runtime.InteropServices
 open Xunit
 open Xunit.Abstractions
 
+
+[<AbstractClass>]
+type BaseTestData() =
+    abstract member data: seq<obj[]>
+    interface IEnumerable<obj[]> with
+        member this.GetEnumerator() : IEnumerator<obj[]> = this.data.GetEnumerator()
+        member this.GetEnumerator() : IEnumerator = this.data.GetEnumerator() :> IEnumerator
+
+
+type HashingConfigs() =
+    inherit BaseTestData()
+    override _.data = Seq.ofList [
+        [| box [||] |];
+        [| box [|"--include-hidden-files"|] |];
+        [| box [|"--skip-empty-dir"|] |];
+        [| box [|"--skip-empty-dir"; "--include-hidden-files"|] |];
+    ]
+
+
 type FsTempDirSetupFixture() =
     // Single temp dir which always gets cleaned up.
     let tempDir =
         Path.GetFullPath(Path.Combine(Path.GetTempPath(), "hashdir_test_" + Guid.NewGuid().ToString()))
+    let projectDir = Path.Combine(tempDir, "project")
 
     // SETUP
     do
         Directory.CreateDirectory(tempDir) |> ignore
-        let dirProject = Path.Combine(tempDir, "project")
-        Directory.CreateDirectory(dirProject) |> ignore
-        File.WriteAllText(Path.Combine(dirProject, "project1.txt"), "project1")
+        Directory.CreateDirectory(projectDir) |> ignore
+        File.WriteAllText(Path.Combine(projectDir, "project1.txt"), "project1")
 
         // Dir a has a couple of files.
-        Directory.CreateDirectory(Path.Combine(dirProject, "a")) |> ignore
-        File.WriteAllText(Path.Combine(dirProject, "a", "a1.txt"), "a1")
-        File.WriteAllText(Path.Combine(dirProject, "a", "a2.txt"), "a2")
-        File.WriteAllText(Path.Combine(dirProject, "a", "a2.txt"), "a2")
+        Directory.CreateDirectory(Path.Combine(projectDir, "a")) |> ignore
+        File.WriteAllText(Path.Combine(projectDir, "a", "a1.txt"), "a1")
+        File.WriteAllText(Path.Combine(projectDir, "a", "a2.txt"), "a2")
+        File.WriteAllText(Path.Combine(projectDir, "a", "a2.txt"), "a2")
 
         // Dir b has a sub dir and a file within that.
-        Directory.CreateDirectory(Path.Combine(dirProject, "b")) |> ignore
-        Directory.CreateDirectory(Path.Combine(dirProject, "b", "bb")) |> ignore
-        File.WriteAllText(Path.Combine(dirProject, "b", "bb", "b1.txt"), "b1")
+        Directory.CreateDirectory(Path.Combine(projectDir, "b")) |> ignore
+        Directory.CreateDirectory(Path.Combine(projectDir, "b", "bb")) |> ignore
+        File.WriteAllText(Path.Combine(projectDir, "b", "bb", "b1.txt"), "b1")
 
         // Dir c has a hidden file.
-        Directory.CreateDirectory(Path.Combine(dirProject, "c")) |> ignore
-        let hiddenFilePath = Path.Combine(dirProject, "c", ".c1.txt")
+        Directory.CreateDirectory(Path.Combine(projectDir, "c")) |> ignore
+        let hiddenFilePath = Path.Combine(projectDir, "c", ".c1.txt")
         File.WriteAllText(hiddenFilePath, "c1")
         if RuntimeInformation.IsOSPlatform(OSPlatform.Windows) then
             File.SetAttributes(hiddenFilePath, FileAttributes.Hidden)
 
         // Dir d is empty.
-        Directory.CreateDirectory(Path.Combine(dirProject, "d")) |> ignore
+        Directory.CreateDirectory(Path.Combine(projectDir, "d")) |> ignore
 
 
     // CLEANUP
@@ -45,14 +66,17 @@ type FsTempDirSetupFixture() =
         member _.Dispose() = Directory.Delete(tempDir, true)
 
     member _.TempDir = tempDir
+    member _.ProjectDir = projectDir
 
 
 type CheckHashfile(fsTempDirSetupFixture: FsTempDirSetupFixture, debugOutput: ITestOutputHelper) =
     let hashFile = Path.Combine(fsTempDirSetupFixture.TempDir, "project_hash.txt")
     let oldStdOut = Console.Out
     let customStdOut = new IO.StringWriter()
-    let getStdOut() = customStdOut.GetStringBuilder().ToString()
-    let clearStdOut() = customStdOut.GetStringBuilder().Clear()
+    let getStdOut() =
+        let buf = customStdOut.GetStringBuilder().ToString()
+        customStdOut.GetStringBuilder().Clear() |> ignore
+        buf
 
     // SETUP
     do
@@ -133,16 +157,18 @@ type CheckHashfile(fsTempDirSetupFixture: FsTempDirSetupFixture, debugOutput: IT
         let expectedOutput = sprintf "MATCHES    /project%s" Environment.NewLine
         Assert.Equal(expectedOutput, getStdOut())
 
-    [<Fact>]
-    member _.``check hash file matches hashing output``() =
+    [<Theory>]
+    [<ClassData(typeof<HashingConfigs>)>]
+    member _.``check hash file matches hashing output``(inputFlags) =
+        let hashingArgs = Array.append [|fsTempDirSetupFixture.ProjectDir|] inputFlags
+        let checkArgs = Array.append [|"check"; hashFile|] inputFlags
+
         // Write output of hashing to hashFile.
-        let projectDirPath = Path.Combine(fsTempDirSetupFixture.TempDir, "project")
-        Assert.Equal(0, Program.main [|projectDirPath|])
+        Assert.Equal(0, Program.main hashingArgs)
         File.WriteAllText(hashFile, getStdOut())
-        clearStdOut() |> ignore
 
         // Run program and ask to check the hashfile.
-        let returnCode = Program.main [|"check"; hashFile|]
+        let returnCode = Program.main checkArgs
         Assert.Equal(0, returnCode)
 
         // Expect output to say matches.
