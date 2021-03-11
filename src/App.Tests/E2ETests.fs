@@ -8,14 +8,12 @@ open System.Runtime.InteropServices
 open Xunit
 open Xunit.Abstractions
 
-
 [<AbstractClass>]
 type BaseTestData() =
     abstract member data: seq<obj[]>
     interface IEnumerable<obj[]> with
         member this.GetEnumerator() : IEnumerator<obj[]> = this.data.GetEnumerator()
         member this.GetEnumerator() : IEnumerator = this.data.GetEnumerator() :> IEnumerator
-
 
 type HashingConfigs() =
     inherit BaseTestData()
@@ -26,7 +24,6 @@ type HashingConfigs() =
         [| box [|"--skip-empty-dir"|] |];
         [| box [|"--skip-empty-dir"; "--include-hidden-files"|] |];
     ]
-
 
 type FsTempDirSetupFixture() =
     // Single temp dir which always gets cleaned up.
