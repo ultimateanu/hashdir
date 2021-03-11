@@ -21,16 +21,9 @@ jobs:
       run: dotnet build --no-restore
     - name: Test
       run: dotnet test /p:CollectCoverage=true /p:CoverletOutput=TestResults/ /p:CoverletOutputFormat=lcov --no-build --verbosity normal
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v1
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-        directory: ./src/App.Tests/TestResults/
-        flags: unittests
-        fail_ci_if_error: true
-        verbose: true
     - name: Upload coverage to Coveralls
       uses: coverallsapp/github-action@master
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         path-to-lcov: ./src/App.Tests/TestResults/coverage.info
+        path-to-lcov: ./src/HashUtil.Tests/TestResults/coverage.info
