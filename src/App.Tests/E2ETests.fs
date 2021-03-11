@@ -175,3 +175,36 @@ type CheckHashfile(fsTempDirSetupFixture: FsTempDirSetupFixture, debugOutput: IT
         // Expect output to say matches.
         let expectedOutput = sprintf "MATCHES    /project%s" Environment.NewLine
         Assert.Equal(expectedOutput, getStdOut())
+
+    [<Theory>]
+    [<InlineData("normal",
+        "MATCHES    match.txt",
+        "DIFFERS    diff.txt",
+        "ERROR")>]
+    [<InlineData("detailed",
+        "MATCHES    match.txt (ef5c844eab88bcaca779bd2f3ad67b573bbbbfca)",
+        "DIFFERS    diff.txt (75a0ee1ba911f2f5199177dfd31808a12511bbdc, expected: 1111570418dba2f4589c8972b9cfe4bb9e5caaaa)",
+        "missing.txt is not a valid path")>]
+    [<InlineData("quiet", "", "", "")>]
+    member _.``check hash file different verbosity levels``(verbosityLevel, matchOutput, diffOutput, errorOutput) =
+        // Setup to ensure 1 match, diff and missing result.
+        File.WriteAllText(Path.Combine(fsTempDirSetupFixture.TempDir, "match.txt"), "match")
+        File.WriteAllText(Path.Combine(fsTempDirSetupFixture.TempDir, "diff.txt"), "diff")
+        let hashFileContent = "\
+            ef5c844eab88bcaca779bd2f3ad67b573bbbbfca  match.txt\n\
+            1111570418dba2f4589c8972b9cfe4bb9e5caaaa  diff.txt\n\
+            1111570418dba2f4589c8972b9cfe4bb9e5caaaa  missing.txt"
+        File.WriteAllText(hashFile, hashFileContent)
+
+        // Run program and ask to check the hashfile.
+        let returnCode = Program.main [|"check"; hashFile; "--verbosity"; verbosityLevel|]
+
+        // Expect return code error due to missing file.
+        Assert.Equal(2, returnCode)
+        // Expect specific output for each of the 3 cases.
+        let checkOutput = getStdOut()
+        Assert.Contains(matchOutput, checkOutput)
+        Assert.Contains(diffOutput, checkOutput)
+        Assert.Contains(errorOutput, checkOutput)
+        if verbosityLevel = "quiet" then
+            Assert.Equal("", checkOutput)
