@@ -31,3 +31,11 @@ jobs:
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         path-to-lcov: ./src/HashUtil.Tests/TestResults/coverage.info
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v1
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: ./src/HashUtil.Tests/TestResults/coverage.info,src/App.Tests/TestResults/coverage.info
+        flags: unittests
+        fail_ci_if_error: true
+        verbose: true
