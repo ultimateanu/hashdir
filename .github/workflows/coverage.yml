@@ -21,3 +21,12 @@ jobs:
       run: dotnet build --no-restore
     - name: Test
       run: dotnet test /p:CollectCoverage=true /p:CoverletOutput=TestResults/ --no-build --verbosity normal
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v1
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: ./coverage.json
+        directory: ./src/App.Tests/TestResults/
+        flags: unittests
+        fail_ci_if_error: true
+        verbose: true
