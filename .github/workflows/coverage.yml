@@ -21,8 +21,13 @@ jobs:
       run: dotnet build --no-restore
     - name: Test
       run: dotnet test /p:CollectCoverage=true /p:CoverletOutput=TestResults/ /p:CoverletOutputFormat=lcov --no-build --verbosity normal
-    - name: Upload coverage to Coveralls
+    - name: Upload App.Tests coverage to Coveralls
       uses: coverallsapp/github-action@master
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
-        path-to-lcov: ./src/App.Tests/TestResults/coverage.info, ./src/HashUtil.Tests/TestResults/coverage.info
+        path-to-lcov: ./src/App.Tests/TestResults/coverage.info
+    - name: Upload HashUtil.Tests coverage to Coveralls
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        path-to-lcov: ./src/HashUtil.Tests/TestResults/coverage.info
