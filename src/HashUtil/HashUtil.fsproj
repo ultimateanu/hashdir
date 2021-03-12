@@ -13,7 +13,9 @@
 
   <ItemGroup>
     <Compile Include="Util.fs" />
+    <Compile Include="Checksum.fs" />
     <Compile Include="Library.fs" />
+    <Compile Include="Verification.fs" />
   </ItemGroup>
 
 </Project>

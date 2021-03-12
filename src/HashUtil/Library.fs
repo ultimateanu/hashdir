@@ -2,51 +2,6 @@
 
 open System.IO
 open System.Security.Cryptography
-open System.Text
-
-module Checksum =
-    type HashType =
-        | MD5
-        | SHA1
-        | SHA256
-        | SHA384
-        | SHA512
-
-    let parseHashType (input: string) =
-        let hashTypeStr = input.ToUpper().Trim()
-
-        match hashTypeStr with
-        | "MD5" -> Some MD5
-        | "SHA1" -> Some SHA1
-        | "SHA256" -> Some SHA256
-        | "SHA384" -> Some SHA384
-        | "SHA512" -> Some SHA512
-        | _ -> None
-
-    let getHashAlgorithm hashType: HashAlgorithm =
-        match hashType with
-        | MD5 -> upcast MD5.Create()
-        | SHA1 -> upcast SHA1.Create()
-        | SHA256 -> upcast SHA256.Create()
-        | SHA384 -> upcast SHA384.Create()
-        | SHA512 -> upcast SHA512.Create()
-
-    let computeHashOfString (hashAlg: HashAlgorithm) (str: string) =
-        str
-        |> Encoding.ASCII.GetBytes
-        |> hashAlg.ComputeHash
-        |> Seq.map (fun c -> c.ToString("x2"))
-        |> Seq.reduce (+)
-
-    let computeHashOfFile (hashAlg: HashAlgorithm) filePath =
-        assert File.Exists filePath
-        use file = File.OpenRead filePath
-
-        file
-        |> hashAlg.ComputeHash
-        |> Seq.map (fun c -> c.ToString("x2"))
-        |> Seq.reduce (+)
-
 
 module FS =
     type ItemHash =
@@ -102,7 +57,7 @@ module FS =
         else if Directory.Exists(path) then
             makeDirHashStructure hashAlg includeHiddenFiles includeEmptyDir path
         else
-            Error(sprintf "'%s' is not a valid path" path)
+            Error(sprintf "%s is not a valid path" path)
 
     let private makeLeftSpacer levels =
         match levels with
@@ -111,14 +66,14 @@ module FS =
             let parentSpacer =
                 parentsActive
                 |> List.rev
-                |> List.map (fun isActive -> if isActive then "│   " else "    ")
+                |> List.map (fun isActive -> if isActive then Common.iSpacer else Common.bSpacer)
                 |> System.String.Concat
 
             let curSpacer =
                 if lastLevelActive then
-                    "├── "
+                    Common.tSpacer
                 else
-                    "└── "
+                    Common.lSpacer
 
             parentSpacer + curSpacer
 

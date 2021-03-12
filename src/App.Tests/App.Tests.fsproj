@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
@@ -8,10 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="UtilTests.fs" />
-    <Compile Include="IOTests.fs" />
-    <Compile Include="FsTests.fs" />
-    <Compile Include="HashTests.fs" />
+    <Compile Include="E2ETests.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
@@ -33,7 +30,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\HashUtil\HashUtil.fsproj" />
+    <ProjectReference Include="..\App\App.fsproj" />
   </ItemGroup>
 
 </Project>
