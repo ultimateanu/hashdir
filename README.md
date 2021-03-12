@@ -2,7 +2,7 @@
 
 ![build](https://github.com/ultimateanu/hashdir/workflows/build/badge.svg)
 ![test](https://github.com/ultimateanu/hashdir/workflows/test/badge.svg)
-[![codecov](https://codecov.io/gh/ultimateanu/hashdir/branch/dev/graph/badge.svg?token=5RR570QEIX)](https://codecov.io/gh/ultimateanu/hashdir)
+[![codecov](https://codecov.io/gh/ultimateanu/hashdir/branch/main/graph/badge.svg?token=5RR570QEIX)](https://codecov.io/gh/ultimateanu/hashdir)
 
 ![sample terminal usage](https://ultimateanu.github.io/hashdir/assets/img/hashdir_demo.svg)
 
