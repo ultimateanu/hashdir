@@ -2,12 +2,20 @@
 
 open HashUtil
 open HashUtil.Checksum
+open HashUtil.Common
 open HashUtil.Util
 open Xunit
 open Xunit.Abstractions
 open System
 
 type UtilTests(output: ITestOutputHelper) =
+    [<Fact>]
+    member _.``check spacing literals``() =
+        Assert.Equal("    ", bSpacer)
+        Assert.Equal("│   ", iSpacer)
+        Assert.Equal("├── ", tSpacer)
+        Assert.Equal("└── ", lSpacer)
+
     [<Theory>]
     [<InlineData("The ", "the ")>]
     [<InlineData("Bruce Wayne", "bruce wayne")>]
