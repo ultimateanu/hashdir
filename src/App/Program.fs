@@ -78,24 +78,28 @@ let checkHandler (opt: CheckOpt) =
     assert verbosityMaybe.IsSome
     let verbosity = verbosityMaybe.Value
 
-    let mutable allMatches = true
-    for item in opt.Items do
+    let processHashFile hashFile =
         let verifyResult =
             verifyHashFile algorithm opt.IncludeHiddenFiles
-                (not opt.SkipEmptyDir) item
+                (not opt.SkipEmptyDir) hashFile
 
         match verifyResult with
         | Error err ->
-            allMatches <- false
             printfn "Error: %s" err
-            exit 1
+            // return exit code 1 for missing hashFile
+            1
         | Ok itemResults ->
-            if not (allItemsMatch itemResults) then allMatches <- false
             printVerificationResults verbosity itemResults
+            if (allItemsMatch itemResults) then 0 else 2
 
-    // Return error code 2, if anything is different than expected hash.
-    let returnCode = if allMatches then 0 else 2
-    returnCode
+    let resultCodes = opt.Items |> Array.toList |> List.map processHashFile
+    let hasError x = resultCodes |> List.tryFind (fun code -> code = x)
+    match (hasError 1) with
+    | Some code -> code
+    | _ ->
+        match (hasError 2) with
+        | Some code -> code
+        | _ -> 0
 
 
 let itemArg =

@@ -196,12 +196,27 @@ type CheckHashfile(fsTempDirSetupFixture: FsTempDirSetupFixture, debugOutput: IT
         // Run program and ask to check the hashfile.
         let returnCode = Program.main [|"check"; hashFile; "--verbosity"; verbosityLevel|]
 
-        // Expect return code error due to missing file.
+        // Expect return code 1 (for missing hash item) and result messages.
         Assert.Equal(2, returnCode)
-        // Expect specific output for each of the 3 cases.
         let checkOutput = getStdOut()
         Assert.Contains(matchOutput, checkOutput)
         Assert.Contains(diffOutput, checkOutput)
         Assert.Contains(errorOutput, checkOutput)
         if verbosityLevel = "quiet" then
             Assert.Equal("", checkOutput)
+
+    [<Fact>]
+    member _.``error when checking missing hash file``() =
+        // Use hashfile which doesn't exist.
+        let nonExistHashFile = hashFile + "z"
+
+        // Run program and ask to check the hashfile.
+        let returnCode = Program.main [|"check"; nonExistHashFile|]
+
+        // Expect return code 1 (for missing input) and error message.
+        Assert.Equal(1, returnCode)
+        let expectedOutput =
+            sprintf "Error: '%s' is not a valid hash file%s"
+                nonExistHashFile
+                Environment.NewLine
+        Assert.Equal(expectedOutput, getStdOut())
