@@ -79,6 +79,9 @@ let rootHandler (opt: RootOpt) =
         match optHashStructure with
         | Error err -> printfn "Error: %s" err
         | Ok hashStructure ->
+            if opt.Save then
+                saveHashStructure hashStructure opt.PrintTree
+
             printHashStructure hashStructure opt.PrintTree strWriter
             printf "%s" (strWriter.ToString())
 

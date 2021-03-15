@@ -13,7 +13,12 @@ module FS =
         | File (_, hash) -> hash
         | Dir (_, hash, _) -> hash
 
-    let rec private makeDirHashStructure (hashAlg: HashAlgorithm) includeHiddenFiles includeEmptyDir dirPath =
+    let rec private makeDirHashStructure
+        (hashAlg: HashAlgorithm)
+        includeHiddenFiles
+        includeEmptyDir
+        dirPath
+        =
         assert Directory.Exists(dirPath)
 
         let getResult (x: Result<ItemHash, string>) =
@@ -26,13 +31,18 @@ module FS =
             |> Directory.EnumerateFileSystemEntries
             |> Seq.toList
             |> List.sort
-            |> List.map (makeHashStructureHelper hashAlg includeHiddenFiles includeEmptyDir)
+            |> List.map (
+                makeHashStructureHelper
+                    hashAlg
+                    includeHiddenFiles
+                    includeEmptyDir
+            )
             |> List.choose getResult
 
         if children.IsEmpty && not includeEmptyDir then
             Error("Excluding dir because it is empty")
         else
-            let getNameAndHashString (x: ItemHash): string =
+            let getNameAndHashString (x: ItemHash) : string =
                 match x with
                 | File (path, hash) -> hash + (Path.GetFileName path)
                 | Dir (path, hash, _) -> hash + (Util.getDirName path)
@@ -46,14 +56,24 @@ module FS =
 
             Ok(Dir(path = dirPath, hash = childrenHash, children = children))
 
-    and private makeHashStructureHelper (hashAlg: HashAlgorithm) includeHiddenFiles includeEmptyDir path =
+    and private makeHashStructureHelper
+        (hashAlg: HashAlgorithm)
+        includeHiddenFiles
+        includeEmptyDir
+        path
+        =
         if File.Exists(path) then
             if ((not includeHiddenFiles)
                 && (File.GetAttributes(path) &&& FileAttributes.Hidden)
                     .Equals(FileAttributes.Hidden)) then
                 Error("Not including hidden file")
             else
-                Ok(File(path = path, hash = (Checksum.computeHashOfFile hashAlg path)))
+                Ok(
+                    File(
+                        path = path,
+                        hash = (Checksum.computeHashOfFile hashAlg path)
+                    )
+                )
         else if Directory.Exists(path) then
             makeDirHashStructure hashAlg includeHiddenFiles includeEmptyDir path
         else
@@ -66,7 +86,12 @@ module FS =
             let parentSpacer =
                 parentsActive
                 |> List.rev
-                |> List.map (fun isActive -> if isActive then Common.iSpacer else Common.bSpacer)
+                |> List.map
+                    (fun isActive ->
+                        if isActive then
+                            Common.iSpacer
+                        else
+                            Common.bSpacer)
                 |> System.String.Concat
 
             let curSpacer =
@@ -77,16 +102,30 @@ module FS =
 
             parentSpacer + curSpacer
 
-    let rec private printHashStructureHelper structure printTree levels (outputWriter: TextWriter) =
+    let rec private printHashStructureHelper
+        structure
+        printTree
+        levels
+        (outputWriter: TextWriter)
+        =
         match structure with
         | File (path, hash) ->
             let fileLine =
-                sprintf "%s%s  %s" (makeLeftSpacer levels) hash (Path.GetFileName path)
+                sprintf
+                    "%s%s  %s"
+                    (makeLeftSpacer levels)
+                    hash
+                    (Path.GetFileName path)
             // Append "\n" rather than use WriteLine() to avoid system line endings (e.g. "\r\n")
             outputWriter.Write(sprintf "%s\n" fileLine)
         | Dir (path, hash, children) ->
             let dirLine =
-                sprintf "%s%s  %c%s" (makeLeftSpacer levels) hash '/' (DirectoryInfo(path).Name)
+                sprintf
+                    "%s%s  %c%s"
+                    (makeLeftSpacer levels)
+                    hash
+                    '/'
+                    (DirectoryInfo(path).Name)
             // Append "\n" rather than use WriteLine() to avoid system line endings (e.g. "\r\n")
             outputWriter.Write(sprintf "%s\n" dirLine)
 
@@ -95,13 +134,30 @@ module FS =
                 let lastChild = List.last children
 
                 for child in allButLastChild do
-                    printHashStructureHelper child printTree (true :: levels) outputWriter
+                    printHashStructureHelper
+                        child
+                        printTree
+                        (true :: levels)
+                        outputWriter
 
-                printHashStructureHelper lastChild printTree (false :: levels) outputWriter
+                printHashStructureHelper
+                    lastChild
+                    printTree
+                    (false :: levels)
+                    outputWriter
 
     let rec printHashStructure structure printTree outputWriter =
         printHashStructureHelper structure printTree [] outputWriter
 
-    let makeHashStructure (hashType: Checksum.HashType) includeHiddenFiles includeEmptyDir path =
+    let makeHashStructure
+        (hashType: Checksum.HashType)
+        includeHiddenFiles
+        includeEmptyDir
+        path
+        =
         let hashAlg = Checksum.getHashAlgorithm hashType
         makeHashStructureHelper hashAlg includeHiddenFiles includeEmptyDir path
+
+    let saveHashStructure structure printTree =
+        printfn "Saving..."
+        ()
