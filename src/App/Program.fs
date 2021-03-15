@@ -80,7 +80,7 @@ let rootHandler (opt: RootOpt) =
         | Error err -> printfn "Error: %s" err
         | Ok hashStructure ->
             if opt.Save then
-                saveHashStructure hashStructure opt.PrintTree
+                saveHashStructure hashStructure opt.PrintTree hashAlgorithm
 
             printHashStructure hashStructure opt.PrintTree strWriter
             printf "%s" (strWriter.ToString())

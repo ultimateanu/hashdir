@@ -8,6 +8,11 @@ module FS =
         | File of path: string * hash: string
         | Dir of path: string * hash: string * children: List<ItemHash>
 
+    let getPath itemHash =
+        match itemHash with
+        | File (path, _) -> path
+        | Dir (path, _, _) -> path
+
     let getHash itemHash =
         match itemHash with
         | File (_, hash) -> hash
@@ -158,6 +163,23 @@ module FS =
         let hashAlg = Checksum.getHashAlgorithm hashType
         makeHashStructureHelper hashAlg includeHiddenFiles includeEmptyDir path
 
-    let saveHashStructure structure printTree =
-        printfn "Saving..."
+    let saveHashStructure
+        (structure: ItemHash)
+        printTree
+        (hashAlgorithm: HashUtil.Checksum.HashType)
+        =
+        // TODO: try to avoid collision (using ver #)
+        let hashFilePath =
+            sprintf
+                "%s.%s.txt"
+                (getPath structure)
+                (hashAlgorithm.ToString().ToLower())
+
+        // Get output string and write to file.
+        let strWriter = new StringWriter()
+        printHashStructure structure printTree strWriter
+        File.WriteAllText(hashFilePath, (strWriter.ToString()))
+
+        // TODO: write to output directly
+        printfn "Saving hashfile:%A" hashFilePath
         ()
