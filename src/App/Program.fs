@@ -8,30 +8,41 @@ open System.Diagnostics
 open System.IO
 
 
-type RootOpt(item, tree, includeHiddenFiles, skipEmptyDir, algorithm) =
+type RootOpt(item, tree, save, includeHiddenFiles, skipEmptyDir, algorithm) =
     // Arguments
     member val Items: string [] =
         match item with
-            | null -> Debug.Assert(false, "Root command not given item(s)") ; [||]
-            | _ -> item
+        | null ->
+            Debug.Assert(false, "Root command not given item(s)")
+            [||]
+        | _ -> item
 
     // Options
     member val PrintTree: bool = tree
+    member val Save: bool = save
     member val IncludeHiddenFiles: bool = includeHiddenFiles
     member val SkipEmptyDir: bool = skipEmptyDir
     member val Algorithm: string = algorithm
 
     override x.ToString() =
-        sprintf "RootOpt[Items:%A PrintTree:%A IncludeHiddenFiles:%A SkipEmptyDir:%A Algorithm:%A]"
-            x.Items x.PrintTree x.IncludeHiddenFiles x.SkipEmptyDir x.Algorithm
+        sprintf
+            "RootOpt[Items:%A PrintTree:%A Save:%A IncludeHiddenFiles:%A SkipEmptyDir:%A Algorithm:%A]"
+            x.Items
+            x.PrintTree
+            x.Save
+            x.IncludeHiddenFiles
+            x.SkipEmptyDir
+            x.Algorithm
 
 
 type CheckOpt(item, includeHiddenFiles, skipEmptyDir, algorithm, verbosity) =
     // Arguments
     member val Items: string [] =
         match item with
-            | null -> Debug.Assert(false, "Check command not given item(s)") ; [||]
-            | _ -> item
+        | null ->
+            Debug.Assert(false, "Check command not given item(s)")
+            [||]
+        | _ -> item
 
     // Options
     member val IncludeHiddenFiles: bool = includeHiddenFiles
@@ -41,8 +52,12 @@ type CheckOpt(item, includeHiddenFiles, skipEmptyDir, algorithm, verbosity) =
 
 
     override x.ToString() =
-        sprintf "VerifyOpt[Items:%A IncludeHiddenFiles:%A SkipEmptyDir:%A Algorithm:%A]"
-            x.Items x.IncludeHiddenFiles x.SkipEmptyDir x.Algorithm
+        sprintf
+            "VerifyOpt[Items:%A IncludeHiddenFiles:%A SkipEmptyDir:%A Algorithm:%A]"
+            x.Items
+            x.IncludeHiddenFiles
+            x.SkipEmptyDir
+            x.Algorithm
 
 
 let rootHandler (opt: RootOpt) =
@@ -53,7 +68,11 @@ let rootHandler (opt: RootOpt) =
 
     for item in opt.Items do
         let optHashStructure =
-            makeHashStructure hashAlgorithm opt.IncludeHiddenFiles (not opt.SkipEmptyDir) item
+            makeHashStructure
+                hashAlgorithm
+                opt.IncludeHiddenFiles
+                (not opt.SkipEmptyDir)
+                item
 
         let strWriter = new StringWriter()
 
@@ -80,8 +99,11 @@ let checkHandler (opt: CheckOpt) =
 
     let processHashFile hashFile =
         let verifyResult =
-            verifyHashFile algorithm opt.IncludeHiddenFiles
-                (not opt.SkipEmptyDir) hashFile
+            verifyHashFile
+                algorithm
+                opt.IncludeHiddenFiles
+                (not opt.SkipEmptyDir)
+                hashFile
 
         match verifyResult with
         | Error err ->
@@ -90,10 +112,20 @@ let checkHandler (opt: CheckOpt) =
             1
         | Ok itemResults ->
             printVerificationResults verbosity itemResults
-            if (allItemsMatch itemResults) then 0 else 2
 
-    let resultCodes = opt.Items |> Array.toList |> List.map processHashFile
-    let hasError x = resultCodes |> List.tryFind (fun code -> code = x)
+            if (allItemsMatch itemResults) then
+                0
+            else
+                2
+
+    let resultCodes =
+        opt.Items
+        |> Array.toList
+        |> List.map processHashFile
+
+    let hasError x =
+        resultCodes |> List.tryFind (fun code -> code = x)
+
     match (hasError 1) with
     | Some code -> code
     | _ ->
@@ -105,6 +137,7 @@ let checkHandler (opt: CheckOpt) =
 let itemArg =
     let arg =
         Argument<string []>("item", "Directory or file to hash/check")
+
     arg.Arity <- ArgumentArity.OneOrMore
     arg
 
@@ -113,15 +146,19 @@ let algorithmOpt forCheck =
     let hashAlgOption =
         match forCheck with
         | true ->
-            Option<string>([| "-a"; "--algorithm" |],
-                "The hash function to use. If unspecified, will try to " +
-                "use the appropriate function based on hash length")
+            Option<string>(
+                [| "-a"; "--algorithm" |],
+                "The hash function to use. If unspecified, will try to "
+                + "use the appropriate function based on hash length"
+            )
         | false ->
-            Option<string>([| "-a"; "--algorithm" |], (fun () -> "sha1"),
-                "The hash function to use")
+            Option<string>(
+                [| "-a"; "--algorithm" |],
+                (fun () -> "sha1"),
+                "The hash function to use"
+            )
 
-    let allHashTypesStr =
-        allHashTypes |> Array.map toStrLower
+    let allHashTypesStr = allHashTypes |> Array.map toStrLower
     hashAlgOption.FromAmong(allHashTypesStr) |> ignore
     hashAlgOption
 
@@ -136,9 +173,12 @@ let verbosityOpt =
         Option<string>(
             [| "-v"; "--verbosity" |],
             (fun () -> toStrLower PrintVerbosity.Normal),
-            "Sets the verbosity level for the output")
+            "Sets the verbosity level for the output"
+        )
 
-    opt.FromAmong(allPrintVerbosity |> Array.map toStrLower) |> ignore
+    opt.FromAmong(allPrintVerbosity |> Array.map toStrLower)
+    |> ignore
+
     opt
 
 let verifyCmd =
@@ -151,7 +191,7 @@ let verifyCmd =
     // OPTIONS
     verifyCmd.AddOption hiddenFilesOpt
     verifyCmd.AddOption skipEmptyOpt
-    verifyCmd.AddOption (algorithmOpt true)
+    verifyCmd.AddOption(algorithmOpt true)
     verifyCmd.AddOption verbosityOpt
     verifyCmd.Handler <- CommandHandler.Create(checkHandler)
 
@@ -169,9 +209,14 @@ let rootCmd =
 
     // OPTIONS
     root.AddOption(Option<bool>([| "-t"; "--tree" |], "Print directory tree"))
+
+    root.AddOption(
+        Option<bool>([| "-s"; "--save" |], "Save the checksum to a file")
+    )
+
     root.AddOption hiddenFilesOpt
     root.AddOption skipEmptyOpt
-    root.AddOption (algorithmOpt false)
+    root.AddOption(algorithmOpt false)
 
     root.Handler <- CommandHandler.Create(rootHandler)
     root
