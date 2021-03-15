@@ -175,11 +175,7 @@ module FS =
                 (getPath structure)
                 (hashAlgorithm.ToString().ToLower())
 
-        // Get output string and write to file.
-        let strWriter = new StringWriter()
-        printHashStructure structure printTree strWriter
-        File.WriteAllText(hashFilePath, (strWriter.ToString()))
 
-        // TODO: write to output directly
-        printfn "Saving hashfile:%A" hashFilePath
-        ()
+        use fileStream = new StreamWriter(hashFilePath)
+        printHashStructure structure printTree fileStream
+        fileStream.Flush()

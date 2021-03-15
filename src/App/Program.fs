@@ -74,7 +74,7 @@ let rootHandler (opt: RootOpt) =
                 (not opt.SkipEmptyDir)
                 item
 
-        let strWriter = new StringWriter()
+        use strWriter = new StringWriter()
 
         match optHashStructure with
         | Error err -> printfn "Error: %s" err
