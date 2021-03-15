@@ -163,11 +163,7 @@ module FS =
         let hashAlg = Checksum.getHashAlgorithm hashType
         makeHashStructureHelper hashAlg includeHiddenFiles includeEmptyDir path
 
-    let saveHashStructure
-        (structure: ItemHash)
-        printTree
-        (hashAlgorithm: HashUtil.Checksum.HashType)
-        =
+    let saveHashStructure structure printTree hashAlgorithm =
         // TODO: try to avoid collision (using ver #)
         let hashFilePath =
             sprintf
