@@ -2,6 +2,8 @@
 
 open System.IO
 open System.Security.Cryptography
+open System.Text.RegularExpressions
+open System
 
 module FS =
     type ItemHash =
@@ -164,22 +166,33 @@ module FS =
         makeHashStructureHelper hashAlg includeHiddenFiles includeEmptyDir path
 
     let saveHashStructure structure printTree hashAlgorithm =
-        // TODO: try to avoid collision (using ver #)
+        let hashAlgName = hashAlgorithm.ToString().ToLower()
+        let itemPath = getPath structure
+        let parentDir = Directory.GetParent(itemPath).FullName
+        let child = Util.getChildName itemPath
 
-        // Create hash file path. Directory needs special logic in case it
-        // ends with backslash.
-        let itemPathOrig = getPath structure
-        let itemPath =
-            if Directory.Exists(itemPathOrig) then
-                let curDir = DirectoryInfo(itemPathOrig)
-                let parentDir = curDir.Parent
-                Path.Join(parentDir.FullName, curDir.Name)
-            else
-                itemPathOrig
+        let searchPattern = sprintf "%s.*.%s.txt" child hashAlgName
+        let matchPattern = sprintf "%s\.(\d+)\.%s\.txt" child hashAlgName
 
+        // Find largest existing id.
+        let extractVersionNum hashFilePath =
+            match hashFilePath with
+                | Util.Regex matchPattern [ number ] ->
+                    match Int32.TryParse number with
+                        | true, out -> Some out
+                        | false, _ -> None
+                | _ ->
+                    None
+        let largestId =
+            Directory.GetFiles(parentDir, searchPattern)
+                |> Array.choose extractVersionNum
+                |> Array.append [|0|]   // Ensures we have id of at least 0.
+                |> Array.max
+
+        // Write to next id.
+        let newVersion = largestId + 1
         let hashFilePath =
-            sprintf "%s.%s.txt" itemPath (hashAlgorithm.ToString().ToLower())
-
+            sprintf "%s.%d.%s.txt" itemPath newVersion (hashAlgorithm.ToString().ToLower())
         use fileStream = new StreamWriter(hashFilePath)
         printHashStructure structure printTree fileStream
         fileStream.Flush()

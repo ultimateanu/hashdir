@@ -66,13 +66,14 @@ let rootHandler (opt: RootOpt) =
     assert algorithmMaybe.IsSome
     let hashAlgorithm = algorithmMaybe.Value
 
-    for item in opt.Items do
+    for pathRaw in opt.Items do
+        let path = cleanPath pathRaw
         let optHashStructure =
             makeHashStructure
                 hashAlgorithm
                 opt.IncludeHiddenFiles
                 (not opt.SkipEmptyDir)
-                item
+                path
 
         use strWriter = new StringWriter()
 
