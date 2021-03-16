@@ -165,12 +165,20 @@ module FS =
 
     let saveHashStructure structure printTree hashAlgorithm =
         // TODO: try to avoid collision (using ver #)
-        let hashFilePath =
-            sprintf
-                "%s.%s.txt"
-                (getPath structure)
-                (hashAlgorithm.ToString().ToLower())
 
+        // Create hash file path. Directory needs special logic in case it
+        // ends with backslash.
+        let itemPathOrig = getPath structure
+        let itemPath =
+            if Directory.Exists(itemPathOrig) then
+                let curDir = DirectoryInfo(itemPathOrig)
+                let parentDir = curDir.Parent
+                Path.Join(parentDir.FullName, curDir.Name)
+            else
+                itemPathOrig
+
+        let hashFilePath =
+            sprintf "%s.%s.txt" itemPath (hashAlgorithm.ToString().ToLower())
 
         use fileStream = new StreamWriter(hashFilePath)
         printHashStructure structure printTree fileStream
