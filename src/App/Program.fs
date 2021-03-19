@@ -12,12 +12,7 @@ let defaultHashAlg = HashType.SHA1
 
 type RootOpt(item, tree, save, includeHiddenFiles, skipEmptyDir, algorithm) =
     // Arguments
-    member val Items: string [] =
-        match item with
-        | null ->
-            Debug.Assert(false, "Root command not given item(s)")
-            [||]
-        | _ -> item
+    member val Items: string [] = item
 
     // Options
     member val PrintTree: bool = tree
@@ -45,12 +40,7 @@ type RootOpt(item, tree, save, includeHiddenFiles, skipEmptyDir, algorithm) =
 
 type CheckOpt(item, includeHiddenFiles, skipEmptyDir, algorithm, verbosity) =
     // Arguments
-    member val Items: string [] =
-        match item with
-        | null ->
-            Debug.Assert(false, "Check command not given item(s)")
-            [||]
-        | _ -> item
+    member val Items: string [] = item
 
     // Options
     member val IncludeHiddenFiles: bool = includeHiddenFiles
