@@ -245,3 +245,29 @@ type CheckHashfile(fsTempDirSetupFixture: FsTempDirSetupFixture, debugOutput: IT
         Assert.True(File.Exists(topAHashFile))
         Assert.Equal("80c7fac7855e00074c94782d5d85076981be0115  topA.txt\n",
             File.ReadAllText(topAHashFile))
+
+        // Cleanup
+        File.Delete(projectHashFile)
+        File.Delete(topAHashFile)
+
+    [<Fact>]
+    member _.``save hash files with correct id``() =
+        let getHashFilePath id =
+            Path.Join(fsTempDirSetupFixture.TempDir, sprintf "topA.txt.%d.sha1.txt" id)
+
+        // Run hashdir multiple times.
+        Program.main [|fsTempDirSetupFixture.TopFileA; "--save"|] |> ignore
+        Program.main [|fsTempDirSetupFixture.TopFileA; "--save"|] |> ignore
+        File.WriteAllText(getHashFilePath 42, "something")
+        Program.main [|fsTempDirSetupFixture.TopFileA; "--save"|] |> ignore
+
+        // Expect multiple hash files with correct id.
+        Assert.True(File.Exists(getHashFilePath 1))
+        Assert.True(File.Exists(getHashFilePath 2))
+        Assert.True(File.Exists(getHashFilePath 43))
+
+        // Cleanup
+        File.Delete(getHashFilePath 1)
+        File.Delete(getHashFilePath 2)
+        File.Delete(getHashFilePath 42)
+        File.Delete(getHashFilePath 43)
