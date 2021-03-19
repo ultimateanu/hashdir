@@ -30,10 +30,16 @@ type FsTempDirSetupFixture() =
     let tempDir =
         Path.GetFullPath(Path.Combine(Path.GetTempPath(), "hashdir_test_" + Guid.NewGuid().ToString()))
     let projectDir = Path.Combine(tempDir, "project")
+    let topFileA = Path.Combine(tempDir, "topA.txt")
 
     // SETUP
     do
         Directory.CreateDirectory(tempDir) |> ignore
+
+        // Create top level file.
+        File.WriteAllText(topFileA, "topA")
+
+        // Create project dir.
         Directory.CreateDirectory(projectDir) |> ignore
         File.WriteAllText(Path.Combine(projectDir, "project1.txt"), "project1")
 
@@ -65,6 +71,7 @@ type FsTempDirSetupFixture() =
 
     member _.TempDir = tempDir
     member _.ProjectDir = projectDir
+    member _.TopFileA = topFileA
 
 
 type CheckHashfile(fsTempDirSetupFixture: FsTempDirSetupFixture, debugOutput: ITestOutputHelper) =
@@ -220,3 +227,21 @@ type CheckHashfile(fsTempDirSetupFixture: FsTempDirSetupFixture, debugOutput: IT
                 nonExistHashFile
                 Environment.NewLine
         Assert.Equal(expectedOutput, getStdOut())
+
+    [<Fact>]
+    member _.``save hash files correctly``() =
+        // Run hashdir and save hash file.
+        let returnCode = Program.main [|fsTempDirSetupFixture.TopFileA;
+            fsTempDirSetupFixture.ProjectDir; "--save"|]
+        Assert.Equal(0, returnCode)
+
+        // Expect saved hash files with correct hash.
+        let projectHashFile = Path.Join(fsTempDirSetupFixture.TempDir, "project.1.sha1.txt")
+        Assert.True(File.Exists(projectHashFile))
+        Assert.Equal("264aba9860d3dc213423759991dad98259bbf0c5  /project\n",
+            File.ReadAllText(projectHashFile))
+
+        let topAHashFile = Path.Join(fsTempDirSetupFixture.TempDir, "topA.txt.1.sha1.txt")
+        Assert.True(File.Exists(topAHashFile))
+        Assert.Equal("80c7fac7855e00074c94782d5d85076981be0115  topA.txt\n",
+            File.ReadAllText(topAHashFile))
