@@ -21,13 +21,9 @@ module Util =
         | Error _ -> None
         | Ok v -> Some(v)
 
-    // TODO: can this be replaced with getChildName()
-    let getDirName path =
-        DirectoryInfo(path).Name
-
     let getChildName path =
         if Directory.Exists path then
-            getDirName path
+            DirectoryInfo(path).Name
         else
             Path.GetFileName path
 

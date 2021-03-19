@@ -52,7 +52,7 @@ module FS =
             let getNameAndHashString (x: ItemHash) : string =
                 match x with
                 | File (path, hash) -> hash + (Path.GetFileName path)
-                | Dir (path, hash, _) -> hash + (Util.getDirName path)
+                | Dir (path, hash, _) -> hash + (Util.getChildName path)
 
             let childrenHash =
                 children
