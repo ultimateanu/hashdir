@@ -30,10 +30,16 @@ type FsTempDirSetupFixture() =
     let tempDir =
         Path.GetFullPath(Path.Combine(Path.GetTempPath(), "hashdir_test_" + Guid.NewGuid().ToString()))
     let projectDir = Path.Combine(tempDir, "project")
+    let topFileA = Path.Combine(tempDir, "topA.txt")
 
     // SETUP
     do
         Directory.CreateDirectory(tempDir) |> ignore
+
+        // Create top level file.
+        File.WriteAllText(topFileA, "topA")
+
+        // Create project dir.
         Directory.CreateDirectory(projectDir) |> ignore
         File.WriteAllText(Path.Combine(projectDir, "project1.txt"), "project1")
 
@@ -65,9 +71,10 @@ type FsTempDirSetupFixture() =
 
     member _.TempDir = tempDir
     member _.ProjectDir = projectDir
+    member _.TopFileA = topFileA
 
 
-type CheckHashfile(fsTempDirSetupFixture: FsTempDirSetupFixture, debugOutput: ITestOutputHelper) =
+type FsTests(fsTempDirSetupFixture: FsTempDirSetupFixture, debugOutput: ITestOutputHelper) =
     let hashFile = Path.Combine(fsTempDirSetupFixture.TempDir, "project_hash.txt")
     let oldStdOut = Console.Out
     let customStdOut = new IO.StringWriter()
@@ -173,6 +180,20 @@ type CheckHashfile(fsTempDirSetupFixture: FsTempDirSetupFixture, debugOutput: IT
         let expectedOutput = sprintf "MATCHES    /project%s" Environment.NewLine
         Assert.Equal(expectedOutput, getStdOut())
 
+    [<Fact>]
+    member _.``check auto detects md5``() =
+        // Write output of hashing (md5) to hashFile.
+        Assert.Equal(0, Program.main [|fsTempDirSetupFixture.ProjectDir; "-a"; "md5"|])
+        File.WriteAllText(hashFile, getStdOut())
+
+        // Run program and ask to check the hashfile without specifying algorithm.
+        let returnCode = Program.main [|"check"; hashFile|]
+
+        // Expect output to say matches.
+        let expectedOutput = sprintf "MATCHES    /project%s" Environment.NewLine
+        Assert.Equal(expectedOutput, getStdOut())
+        Assert.Equal(0, returnCode)
+
     [<Theory>]
     [<InlineData("normal",
         "MATCHES    match.txt",
@@ -220,3 +241,47 @@ type CheckHashfile(fsTempDirSetupFixture: FsTempDirSetupFixture, debugOutput: IT
                 nonExistHashFile
                 Environment.NewLine
         Assert.Equal(expectedOutput, getStdOut())
+
+    [<Fact>]
+    member _.``save hash files correctly``() =
+        // Run hashdir and save hash file.
+        let returnCode = Program.main [|fsTempDirSetupFixture.TopFileA;
+            fsTempDirSetupFixture.ProjectDir; "--save"|]
+        Assert.Equal(0, returnCode)
+
+        // Expect saved hash files with correct hash.
+        let projectHashFile = Path.Join(fsTempDirSetupFixture.TempDir, "project.1.sha1.txt")
+        Assert.True(File.Exists(projectHashFile))
+        Assert.Equal("264aba9860d3dc213423759991dad98259bbf0c5  /project\n",
+            File.ReadAllText(projectHashFile))
+
+        let topAHashFile = Path.Join(fsTempDirSetupFixture.TempDir, "topA.txt.1.sha1.txt")
+        Assert.True(File.Exists(topAHashFile))
+        Assert.Equal("80c7fac7855e00074c94782d5d85076981be0115  topA.txt\n",
+            File.ReadAllText(topAHashFile))
+
+        // Cleanup
+        File.Delete(projectHashFile)
+        File.Delete(topAHashFile)
+
+    [<Fact>]
+    member _.``save hash files with correct id``() =
+        let getHashFilePath id =
+            Path.Join(fsTempDirSetupFixture.TempDir, sprintf "topA.txt.%d.sha1.txt" id)
+
+        // Run hashdir multiple times.
+        Program.main [|fsTempDirSetupFixture.TopFileA; "--save"|] |> ignore
+        Program.main [|fsTempDirSetupFixture.TopFileA; "--save"|] |> ignore
+        File.WriteAllText(getHashFilePath 42, "something")
+        Program.main [|fsTempDirSetupFixture.TopFileA; "--save"|] |> ignore
+
+        // Expect multiple hash files with correct id.
+        Assert.True(File.Exists(getHashFilePath 1))
+        Assert.True(File.Exists(getHashFilePath 2))
+        Assert.True(File.Exists(getHashFilePath 43))
+
+        // Cleanup
+        File.Delete(getHashFilePath 1)
+        File.Delete(getHashFilePath 2)
+        File.Delete(getHashFilePath 42)
+        File.Delete(getHashFilePath 43)

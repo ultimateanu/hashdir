@@ -8,71 +8,95 @@ open System.Diagnostics
 open System.IO
 
 
-type RootOpt(item, tree, includeHiddenFiles, skipEmptyDir, algorithm) =
+let defaultHashAlg = HashType.SHA1
+
+type RootOpt(item, tree, save, includeHiddenFiles, skipEmptyDir, algorithm) =
     // Arguments
     member val Items: string [] =
         match item with
-            | null -> Debug.Assert(false, "Root command not given item(s)") ; [||]
-            | _ -> item
+        | null ->
+            Debug.Assert(false, "Root command not given item(s)")
+            [||]
+        | _ -> item
 
     // Options
     member val PrintTree: bool = tree
+    member val Save: bool = save
     member val IncludeHiddenFiles: bool = includeHiddenFiles
     member val SkipEmptyDir: bool = skipEmptyDir
-    member val Algorithm: string = algorithm
+    member val Algorithm: HashType =
+        match algorithm with
+        | null -> defaultHashAlg
+        | str ->
+            let alg = parseHashType str
+            assert alg.IsSome
+            alg.Value
 
     override x.ToString() =
-        sprintf "RootOpt[Items:%A PrintTree:%A IncludeHiddenFiles:%A SkipEmptyDir:%A Algorithm:%A]"
-            x.Items x.PrintTree x.IncludeHiddenFiles x.SkipEmptyDir x.Algorithm
+        sprintf
+            "RootOpt[Items:%A PrintTree:%A Save:%A IncludeHiddenFiles:%A SkipEmptyDir:%A Algorithm:%A]"
+            x.Items
+            x.PrintTree
+            x.Save
+            x.IncludeHiddenFiles
+            x.SkipEmptyDir
+            x.Algorithm
 
 
 type CheckOpt(item, includeHiddenFiles, skipEmptyDir, algorithm, verbosity) =
     // Arguments
     member val Items: string [] =
         match item with
-            | null -> Debug.Assert(false, "Check command not given item(s)") ; [||]
-            | _ -> item
+        | null ->
+            Debug.Assert(false, "Check command not given item(s)")
+            [||]
+        | _ -> item
 
     // Options
     member val IncludeHiddenFiles: bool = includeHiddenFiles
     member val SkipEmptyDir: bool = skipEmptyDir
-    member val Algorithm: string = algorithm
+    member val Algorithm: HashType option =
+        match algorithm with
+        | null -> None
+        | str ->
+            let alg = parseHashType str
+            assert alg.IsSome
+            Some alg.Value
     member val Verbosity: string = verbosity
 
 
     override x.ToString() =
-        sprintf "VerifyOpt[Items:%A IncludeHiddenFiles:%A SkipEmptyDir:%A Algorithm:%A]"
-            x.Items x.IncludeHiddenFiles x.SkipEmptyDir x.Algorithm
+        sprintf
+            "VerifyOpt[Items:%A IncludeHiddenFiles:%A SkipEmptyDir:%A Algorithm:%A]"
+            x.Items
+            x.IncludeHiddenFiles
+            x.SkipEmptyDir
+            x.Algorithm
 
 
 let rootHandler (opt: RootOpt) =
-    // Parse requested algorithm. System.CommandLine should have already verified.
-    let algorithmMaybe = parseHashType opt.Algorithm
-    assert algorithmMaybe.IsSome
-    let hashAlgorithm = algorithmMaybe.Value
-
-    for item in opt.Items do
+    for pathRaw in opt.Items do
+        let path = cleanPath pathRaw
         let optHashStructure =
-            makeHashStructure hashAlgorithm opt.IncludeHiddenFiles (not opt.SkipEmptyDir) item
+            makeHashStructure
+                opt.Algorithm
+                opt.IncludeHiddenFiles
+                (not opt.SkipEmptyDir)
+                path
 
-        let strWriter = new StringWriter()
+        use strWriter = new StringWriter()
 
         match optHashStructure with
         | Error err -> printfn "Error: %s" err
         | Ok hashStructure ->
+            if opt.Save then
+                saveHashStructure hashStructure opt.PrintTree opt.Algorithm
+
             printHashStructure hashStructure opt.PrintTree strWriter
             printf "%s" (strWriter.ToString())
 
 
 let checkHandler (opt: CheckOpt) =
-    let algorithm =
-        match opt.Algorithm with
-        | null -> None
-        | str ->
-            let algorithmMaybe = parseHashType str
-            assert algorithmMaybe.IsSome
-            Some algorithmMaybe.Value
-
     // Parse verbosity. System.CommandLine should have already verified.
     let verbosityMaybe = parsePrintVerbosity opt.Verbosity
     assert verbosityMaybe.IsSome
@@ -80,8 +104,11 @@ let checkHandler (opt: CheckOpt) =
 
     let processHashFile hashFile =
         let verifyResult =
-            verifyHashFile algorithm opt.IncludeHiddenFiles
-                (not opt.SkipEmptyDir) hashFile
+            verifyHashFile
+                opt.Algorithm
+                opt.IncludeHiddenFiles
+                (not opt.SkipEmptyDir)
+                hashFile
 
         match verifyResult with
         | Error err ->
@@ -90,10 +117,20 @@ let checkHandler (opt: CheckOpt) =
             1
         | Ok itemResults ->
             printVerificationResults verbosity itemResults
-            if (allItemsMatch itemResults) then 0 else 2
 
-    let resultCodes = opt.Items |> Array.toList |> List.map processHashFile
-    let hasError x = resultCodes |> List.tryFind (fun code -> code = x)
+            if (allItemsMatch itemResults) then
+                0
+            else
+                2
+
+    let resultCodes =
+        opt.Items
+        |> Array.toList
+        |> List.map processHashFile
+
+    let hasError x =
+        resultCodes |> List.tryFind (fun code -> code = x)
+
     match (hasError 1) with
     | Some code -> code
     | _ ->
@@ -105,6 +142,7 @@ let checkHandler (opt: CheckOpt) =
 let itemArg =
     let arg =
         Argument<string []>("item", "Directory or file to hash/check")
+
     arg.Arity <- ArgumentArity.OneOrMore
     arg
 
@@ -113,15 +151,19 @@ let algorithmOpt forCheck =
     let hashAlgOption =
         match forCheck with
         | true ->
-            Option<string>([| "-a"; "--algorithm" |],
-                "The hash function to use. If unspecified, will try to " +
-                "use the appropriate function based on hash length")
+            Option<string>(
+                [| "-a"; "--algorithm" |],
+                "The hash function to use. If unspecified, will try to "
+                + "use the appropriate function based on hash length"
+            )
         | false ->
-            Option<string>([| "-a"; "--algorithm" |], (fun () -> "sha1"),
-                "The hash function to use")
+            Option<string>(
+                [| "-a"; "--algorithm" |],
+                sprintf "The hash function to use [default: %s]"
+                    <| defaultHashAlg.ToString().ToLower()
+            )
 
-    let allHashTypesStr =
-        allHashTypes |> Array.map toStrLower
+    let allHashTypesStr = allHashTypes |> Array.map toStrLower
     hashAlgOption.FromAmong(allHashTypesStr) |> ignore
     hashAlgOption
 
@@ -136,9 +178,12 @@ let verbosityOpt =
         Option<string>(
             [| "-v"; "--verbosity" |],
             (fun () -> toStrLower PrintVerbosity.Normal),
-            "Sets the verbosity level for the output")
+            "Sets the verbosity level for the output"
+        )
 
-    opt.FromAmong(allPrintVerbosity |> Array.map toStrLower) |> ignore
+    opt.FromAmong(allPrintVerbosity |> Array.map toStrLower)
+    |> ignore
+
     opt
 
 let verifyCmd =
@@ -151,7 +196,7 @@ let verifyCmd =
     // OPTIONS
     verifyCmd.AddOption hiddenFilesOpt
     verifyCmd.AddOption skipEmptyOpt
-    verifyCmd.AddOption (algorithmOpt true)
+    verifyCmd.AddOption(algorithmOpt true)
     verifyCmd.AddOption verbosityOpt
     verifyCmd.Handler <- CommandHandler.Create(checkHandler)
 
@@ -169,9 +214,14 @@ let rootCmd =
 
     // OPTIONS
     root.AddOption(Option<bool>([| "-t"; "--tree" |], "Print directory tree"))
+
+    root.AddOption(
+        Option<bool>([| "-s"; "--save" |], "Save the checksum to a file")
+    )
+
     root.AddOption hiddenFilesOpt
     root.AddOption skipEmptyOpt
-    root.AddOption (algorithmOpt false)
+    root.AddOption(algorithmOpt false)
 
     root.Handler <- CommandHandler.Create(rootHandler)
     root
