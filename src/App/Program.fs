@@ -8,6 +8,8 @@ open System.Diagnostics
 open System.IO
 
 
+let defaultHashAlg = HashType.SHA1
+
 type RootOpt(item, tree, save, includeHiddenFiles, skipEmptyDir, algorithm) =
     // Arguments
     member val Items: string [] =
@@ -22,7 +24,13 @@ type RootOpt(item, tree, save, includeHiddenFiles, skipEmptyDir, algorithm) =
     member val Save: bool = save
     member val IncludeHiddenFiles: bool = includeHiddenFiles
     member val SkipEmptyDir: bool = skipEmptyDir
-    member val Algorithm: string = algorithm
+    member val Algorithm: HashType =
+        match algorithm with
+        | null -> defaultHashAlg
+        | str ->
+            let alg = parseHashType str
+            assert alg.IsSome
+            alg.Value
 
     override x.ToString() =
         sprintf
@@ -47,7 +55,13 @@ type CheckOpt(item, includeHiddenFiles, skipEmptyDir, algorithm, verbosity) =
     // Options
     member val IncludeHiddenFiles: bool = includeHiddenFiles
     member val SkipEmptyDir: bool = skipEmptyDir
-    member val Algorithm: string = algorithm
+    member val Algorithm: HashType option =
+        match algorithm with
+        | null -> None
+        | str ->
+            let alg = parseHashType str
+            assert alg.IsSome
+            Some alg.Value
     member val Verbosity: string = verbosity
 
 
@@ -61,16 +75,11 @@ type CheckOpt(item, includeHiddenFiles, skipEmptyDir, algorithm, verbosity) =
 
 
 let rootHandler (opt: RootOpt) =
-    // Parse requested algorithm. System.CommandLine should have already verified.
-    let algorithmMaybe = parseHashType opt.Algorithm
-    assert algorithmMaybe.IsSome
-    let hashAlgorithm = algorithmMaybe.Value
-
     for pathRaw in opt.Items do
         let path = cleanPath pathRaw
         let optHashStructure =
             makeHashStructure
-                hashAlgorithm
+                opt.Algorithm
                 opt.IncludeHiddenFiles
                 (not opt.SkipEmptyDir)
                 path
@@ -81,21 +90,13 @@ let rootHandler (opt: RootOpt) =
         | Error err -> printfn "Error: %s" err
         | Ok hashStructure ->
             if opt.Save then
-                saveHashStructure hashStructure opt.PrintTree hashAlgorithm
+                saveHashStructure hashStructure opt.PrintTree opt.Algorithm
 
             printHashStructure hashStructure opt.PrintTree strWriter
             printf "%s" (strWriter.ToString())
 
 
 let checkHandler (opt: CheckOpt) =
-    let algorithm =
-        match opt.Algorithm with
-        | null -> None
-        | str ->
-            let algorithmMaybe = parseHashType str
-            assert algorithmMaybe.IsSome
-            Some algorithmMaybe.Value
-
     // Parse verbosity. System.CommandLine should have already verified.
     let verbosityMaybe = parsePrintVerbosity opt.Verbosity
     assert verbosityMaybe.IsSome
@@ -104,7 +105,7 @@ let checkHandler (opt: CheckOpt) =
     let processHashFile hashFile =
         let verifyResult =
             verifyHashFile
-                algorithm
+                opt.Algorithm
                 opt.IncludeHiddenFiles
                 (not opt.SkipEmptyDir)
                 hashFile
@@ -158,8 +159,8 @@ let algorithmOpt forCheck =
         | false ->
             Option<string>(
                 [| "-a"; "--algorithm" |],
-                (fun () -> "sha1"),
-                "The hash function to use"
+                sprintf "The hash function to use [default: %s]"
+                    <| defaultHashAlg.ToString().ToLower()
             )
 
     let allHashTypesStr = allHashTypes |> Array.map toStrLower
