@@ -4,7 +4,6 @@ open HashUtil.Util
 open HashUtil.Verification
 open System.CommandLine
 open System.CommandLine.Invocation
-open System.Diagnostics
 open System.IO
 
 
@@ -12,12 +11,7 @@ let defaultHashAlg = HashType.SHA1
 
 type RootOpt(item, tree, save, includeHiddenFiles, skipEmptyDir, algorithm) =
     // Arguments
-    member val Items: string [] =
-        match item with
-        | null ->
-            Debug.Assert(false, "Root command not given item(s)")
-            [||]
-        | _ -> item
+    member val Items: string [] = item
 
     // Options
     member val PrintTree: bool = tree
@@ -45,12 +39,7 @@ type RootOpt(item, tree, save, includeHiddenFiles, skipEmptyDir, algorithm) =
 
 type CheckOpt(item, includeHiddenFiles, skipEmptyDir, algorithm, verbosity) =
     // Arguments
-    member val Items: string [] =
-        match item with
-        | null ->
-            Debug.Assert(false, "Check command not given item(s)")
-            [||]
-        | _ -> item
+    member val Items: string [] = item
 
     // Options
     member val IncludeHiddenFiles: bool = includeHiddenFiles
@@ -62,12 +51,14 @@ type CheckOpt(item, includeHiddenFiles, skipEmptyDir, algorithm, verbosity) =
             let alg = parseHashType str
             assert alg.IsSome
             Some alg.Value
-    member val Verbosity: string = verbosity
-
+    member val Verbosity: PrintVerbosity =
+        let verbosityMaybe = parsePrintVerbosity verbosity
+        assert verbosityMaybe.IsSome
+        verbosityMaybe.Value
 
     override x.ToString() =
         sprintf
-            "VerifyOpt[Items:%A IncludeHiddenFiles:%A SkipEmptyDir:%A Algorithm:%A]"
+            "CheckOpt[Items:%A IncludeHiddenFiles:%A SkipEmptyDir:%A Algorithm:%A]"
             x.Items
             x.IncludeHiddenFiles
             x.SkipEmptyDir
@@ -97,11 +88,6 @@ let rootHandler (opt: RootOpt) =
 
 
 let checkHandler (opt: CheckOpt) =
-    // Parse verbosity. System.CommandLine should have already verified.
-    let verbosityMaybe = parsePrintVerbosity opt.Verbosity
-    assert verbosityMaybe.IsSome
-    let verbosity = verbosityMaybe.Value
-
     let processHashFile hashFile =
         let verifyResult =
             verifyHashFile
@@ -116,7 +102,7 @@ let checkHandler (opt: CheckOpt) =
             // return exit code 1 for missing hashFile
             1
         | Ok itemResults ->
-            printVerificationResults verbosity itemResults
+            printVerificationResults opt.Verbosity itemResults
 
             if (allItemsMatch itemResults) then
                 0

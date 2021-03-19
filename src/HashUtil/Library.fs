@@ -90,15 +90,13 @@ module FS =
         match levels with
         | [] -> ""
         | lastLevelActive :: parentsActive ->
+            let isActive x =
+                if x then Common.iSpacer else Common.bSpacer
+
             let parentSpacer =
                 parentsActive
                 |> List.rev
-                |> List.map
-                    (fun isActive ->
-                        if isActive then
-                            Common.iSpacer
-                        else
-                            Common.bSpacer)
+                |> List.map isActive
                 |> System.String.Concat
 
             let curSpacer =

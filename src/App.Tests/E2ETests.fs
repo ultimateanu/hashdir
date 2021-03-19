@@ -267,12 +267,13 @@ type FsTests(fsTempDirSetupFixture: FsTempDirSetupFixture, debugOutput: ITestOut
     [<Fact>]
     member _.``save hash files with correct id``() =
         let getHashFilePath id =
-            Path.Join(fsTempDirSetupFixture.TempDir, sprintf "topA.txt.%d.sha1.txt" id)
+            Path.Join(fsTempDirSetupFixture.TempDir, sprintf "topA.txt.%s.sha1.txt" (id.ToString()))
 
         // Run hashdir multiple times.
         Program.main [|fsTempDirSetupFixture.TopFileA; "--save"|] |> ignore
         Program.main [|fsTempDirSetupFixture.TopFileA; "--save"|] |> ignore
         File.WriteAllText(getHashFilePath 42, "something")
+        File.WriteAllText(getHashFilePath "xyz", "something")
         Program.main [|fsTempDirSetupFixture.TopFileA; "--save"|] |> ignore
 
         // Expect multiple hash files with correct id.
@@ -284,4 +285,5 @@ type FsTests(fsTempDirSetupFixture: FsTempDirSetupFixture, debugOutput: ITestOut
         File.Delete(getHashFilePath 1)
         File.Delete(getHashFilePath 2)
         File.Delete(getHashFilePath 42)
+        File.Delete(getHashFilePath "xyz")
         File.Delete(getHashFilePath 43)
