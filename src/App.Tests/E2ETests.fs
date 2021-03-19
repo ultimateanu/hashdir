@@ -74,7 +74,7 @@ type FsTempDirSetupFixture() =
     member _.TopFileA = topFileA
 
 
-type CheckHashfile(fsTempDirSetupFixture: FsTempDirSetupFixture, debugOutput: ITestOutputHelper) =
+type FsTests(fsTempDirSetupFixture: FsTempDirSetupFixture, debugOutput: ITestOutputHelper) =
     let hashFile = Path.Combine(fsTempDirSetupFixture.TempDir, "project_hash.txt")
     let oldStdOut = Console.Out
     let customStdOut = new IO.StringWriter()
@@ -179,6 +179,20 @@ type CheckHashfile(fsTempDirSetupFixture: FsTempDirSetupFixture, debugOutput: IT
         // Expect output to say matches.
         let expectedOutput = sprintf "MATCHES    /project%s" Environment.NewLine
         Assert.Equal(expectedOutput, getStdOut())
+
+    [<Fact>]
+    member _.``check auto detects md5``() =
+        // Write output of hashing (md5) to hashFile.
+        Assert.Equal(0, Program.main [|fsTempDirSetupFixture.ProjectDir; "-a"; "md5"|])
+        File.WriteAllText(hashFile, getStdOut())
+
+        // Run program and ask to check the hashfile without specifying algorithm.
+        let returnCode = Program.main [|"check"; hashFile|]
+
+        // Expect output to say matches.
+        let expectedOutput = sprintf "MATCHES    /project%s" Environment.NewLine
+        Assert.Equal(expectedOutput, getStdOut())
+        Assert.Equal(0, returnCode)
 
     [<Theory>]
     [<InlineData("normal",
