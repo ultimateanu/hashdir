@@ -216,7 +216,7 @@ let makeChecksumFile () =
 
 let main () =
     let argErrorMsg =
-        "Expected a single argument: < build | hash >"
+        "Expected a single argument: <build | hash>"
 
     ensure (fsi.CommandLineArgs.Length = 2) argErrorMsg
 
