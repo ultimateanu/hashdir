@@ -4,7 +4,7 @@
 ![test](https://github.com/ultimateanu/hashdir/workflows/test/badge.svg)
 [![codecov](https://codecov.io/gh/ultimateanu/hashdir/branch/main/graph/badge.svg?token=5RR570QEIX)](https://codecov.io/gh/ultimateanu/hashdir)
 
-![sample terminal usage](https://ultimateanu.github.io/hashdir/assets/img/hashdir_demo.svg)
+![sample terminal usage](https://ultimateanu.github.io/hashdir/assets/img/check_demo.svg)
 
 _A command-line utility to checksum directories and files._
 
@@ -24,18 +24,22 @@ hashdir:
   A command-line utility to checksum directories and files.
 
 Usage:
-  hashdir [options] <item>...
+  hashdir [options] [<item>...] [command]
 
 Arguments:
-  <item>    Directory or file to hash.
+  <item>    Directory or file to hash/check
 
 Options:
-  -t, --tree                                         Print directory tree.
-  -i, --include-hidden-files                         Include hidden files.
-  -e, --skip-empty-dir                               Skip empty directories.
-  -a, --algorithm <md5|sha1|sha256|sha384|sha512>    The hash function to use. [default: sha1]
+  -t, --tree                                         Print directory tree
+  -s, --save                                         Save the checksum to a file
+  -i, --include-hidden-files                         Include hidden files
+  -e, --skip-empty-dir                               Skip empty directories
+  -a, --algorithm <md5|sha1|sha256|sha384|sha512>    The hash function to use [default: sha1]
   --version                                          Show version information
   -?, -h, --help                                     Show help and usage information
+
+Commands:
+  check <item>    Verify that the specified hash file is valid.
 ```
 
 ### Examples
