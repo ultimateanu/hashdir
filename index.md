@@ -6,7 +6,7 @@
 
 ## Overview
 
-![sample terminal usage](assets/img/hashdir_demo.svg)
+![sample terminal usage](assets/img/check_demo.svg)
 
 **hashdir** is a simple command-line tool to checksum directories and files.
 
