@@ -19,10 +19,10 @@ type HashingObserver() =
             raise (System.NotImplementedException())
         member this.OnNext(hashingUpdate: HashingUpdate): unit =
             match hashingUpdate with
-                | FileHashStarted path ->   printfn "-> FileHashStarted   %s" path
-                | FileHashCompleted path -> printfn "-> FileHashCompleted %s" path
-                | DirHashStarted path ->    printfn "-> DirHashStarted    %s" path
-                | DirHashCompleted path ->  printfn "-> DirHashCompleted  %s" path
+                | FileHashStarted path ->   eprintfn "-> FileHashStarted   %s" path
+                | FileHashCompleted path -> eprintfn "-> FileHashCompleted %s" path
+                | DirHashStarted path ->    eprintfn "-> DirHashStarted    %s" path
+                | DirHashCompleted path ->  eprintfn "-> DirHashCompleted  %s" path
 
 
 type RootOpt(item, tree, save, includeHiddenFiles, skipEmptyDir, algorithm) =
