@@ -7,31 +7,20 @@ open System
 open System.CommandLine
 open System.CommandLine.Invocation
 open System.IO
+open System.Threading
 
 
 let defaultHashAlg = HashType.SHA1
+let slashes = [|'/';'-'; '\\'; '|'|]
 
 type HashingObserver() =
     let mutable filesHashed = 0
     let mutable hashingFile : string option = None
-
-    let printStatus() =
-        let fileWord = if filesHashed = 1 then "file" else "files"
-
-        match hashingFile with
-            | None ->
-                //Console.Write(sprintf "\r%d %s" filesHashed fileWord )
-                eprintf "\r%d %s" filesHashed fileWord |> ignore
-            | Some path ->
-                //Console.Write(sprintf "\r%d %s" filesHashed fileWord)
-                eprintf "\r%d %s" filesHashed fileWord |> ignore
-
-        ()
-
+    member this.FilesHashed = filesHashed
 
     interface IObserver<HashingUpdate> with
         member this.OnCompleted(): unit =
-            eprintfn ""
+            ()
         member this.OnError(error: exn): unit =
             raise (System.NotImplementedException())
         member this.OnNext(hashingUpdate: HashingUpdate): unit =
@@ -39,12 +28,11 @@ type HashingObserver() =
                 | FileHashStarted path ->
                     hashingFile <- Some path
                 | FileHashCompleted path ->
-                    filesHashed <- filesHashed + 1
+                    filesHashed <- this.FilesHashed + 1
                     hashingFile <- None
                 | DirHashStarted path -> ()
                 | DirHashCompleted path -> ()
-
-            printStatus()
+            ()
 
 
 type RootOpt(item, tree, save, includeHiddenFiles, skipEmptyDir, algorithm) =
@@ -108,8 +96,8 @@ let rootHandler (opt: RootOpt) =
 
     for pathRaw in opt.Items do
         let path = cleanPath pathRaw
-        let optHashStructure =
-            Async.RunSynchronously <|
+        let hashingTask =
+            Async.StartAsTask <|
                 makeHashStructureObservable
                     hashingProgressObserver
                     opt.Algorithm
@@ -117,6 +105,17 @@ let rootHandler (opt: RootOpt) =
                     (not opt.SkipEmptyDir)
                     path
 
+        // Print current progress while hashing.
+        let mutable slashIndex = 0
+        while not hashingTask.IsCompleted do
+            let slash = Array.get slashes slashIndex
+            let filesHashed = hashingProgressObserver.FilesHashed
+            eprintf "\r%c %d" slash filesHashed
+            Thread.Sleep(100);
+            slashIndex <- (slashIndex + 1) % slashes.Length
+        eprintfn ""
+
+        let optHashStructure = hashingTask.Result
         use strWriter = new StringWriter()
 
         match optHashStructure with
