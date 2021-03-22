@@ -87,7 +87,7 @@ let rootHandler (opt: RootOpt) =
     for pathRaw in opt.Items do
         let path = cleanPath pathRaw
         let optHashStructure =
-            makeHashStructure
+            makeHashStructureObservable
                 hashingProgressObserver
                 opt.Algorithm
                 opt.IncludeHiddenFiles

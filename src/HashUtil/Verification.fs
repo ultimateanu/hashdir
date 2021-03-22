@@ -58,7 +58,9 @@ module Verification =
         let fullPath =
             Path.Join(basePath,
                 if path.StartsWith('/') then path.[1..] else path)
-        let itemHashResult = Hashing.makeHashStructure progressObserver hashType includeHiddenFiles includeEmptyDir fullPath
+        let itemHashResult =
+            Hashing.makeHashStructureObservable progressObserver hashType
+                includeHiddenFiles includeEmptyDir fullPath
 
         match itemHashResult with
             | Error err -> Error err

@@ -2,6 +2,7 @@
 
 open HashUtil.Checksum
 open HashUtil.FS
+open HashUtil.Hashing
 open HashUtil.Util
 open System
 open System.IO
