@@ -95,13 +95,17 @@ module Hashing =
         includeEmptyDir
         path
         =
-        let hashAlg = Checksum.getHashAlgorithm hashType
-        makeHashStructureHelper progressObserver hashAlg includeHiddenFiles includeEmptyDir path
+        async {
+            let hashAlg = Checksum.getHashAlgorithm hashType
+            let result = makeHashStructureHelper progressObserver hashAlg includeHiddenFiles includeEmptyDir path
+            progressObserver.OnCompleted()
+            return result
+        }
 
     type EmptyHashingObserver() =
         interface IObserver<HashingUpdate> with
             member this.OnCompleted(): unit =
-                raise (System.NotImplementedException())
+                ()
             member this.OnError(error: exn): unit =
                 raise (System.NotImplementedException())
             member this.OnNext(hashingUpdate: HashingUpdate): unit =
@@ -114,4 +118,6 @@ module Hashing =
         path
         =
         let emptyHashingObserver = EmptyHashingObserver()
-        makeHashStructureObservable emptyHashingObserver hashType includeHiddenFiles includeEmptyDir path
+        Async.RunSynchronously <|
+            makeHashStructureObservable
+                emptyHashingObserver hashType includeHiddenFiles includeEmptyDir path
