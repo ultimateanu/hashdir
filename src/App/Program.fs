@@ -1,13 +1,29 @@
 open HashUtil.Checksum
 open HashUtil.FS
+open HashUtil.Hashing
 open HashUtil.Util
 open HashUtil.Verification
+open System
 open System.CommandLine
 open System.CommandLine.Invocation
 open System.IO
 
 
 let defaultHashAlg = HashType.SHA1
+
+type HashingObserver() =
+    interface IObserver<HashingUpdate> with
+        member this.OnCompleted(): unit =
+            raise (System.NotImplementedException())
+        member this.OnError(error: exn): unit =
+            raise (System.NotImplementedException())
+        member this.OnNext(hashingUpdate: HashingUpdate): unit =
+            match hashingUpdate with
+                | FileHashStarted path ->   printfn "-> FileHashStarted   %s" path
+                | FileHashCompleted path -> printfn "-> FileHashCompleted %s" path
+                | DirHashStarted path ->    printfn "-> DirHashStarted    %s" path
+                | DirHashCompleted path ->  printfn "-> DirHashCompleted  %s" path
+
 
 type RootOpt(item, tree, save, includeHiddenFiles, skipEmptyDir, algorithm) =
     // Arguments
@@ -66,10 +82,13 @@ type CheckOpt(item, includeHiddenFiles, skipEmptyDir, algorithm, verbosity) =
 
 
 let rootHandler (opt: RootOpt) =
+    let hashingProgressObserver = HashingObserver()
+
     for pathRaw in opt.Items do
         let path = cleanPath pathRaw
         let optHashStructure =
             makeHashStructure
+                hashingProgressObserver
                 opt.Algorithm
                 opt.IncludeHiddenFiles
                 (not opt.SkipEmptyDir)
@@ -88,9 +107,12 @@ let rootHandler (opt: RootOpt) =
 
 
 let checkHandler (opt: CheckOpt) =
+    let hashingProgressObserver = HashingObserver()
+
     let processHashFile hashFile =
         let verifyResult =
             verifyHashFile
+                hashingProgressObserver
                 opt.Algorithm
                 opt.IncludeHiddenFiles
                 (not opt.SkipEmptyDir)

@@ -3,6 +3,7 @@
 open System
 open System.IO
 open Microsoft.FSharp.Reflection
+open Hashing
 
 module Verification =
     let hashLengths =
@@ -52,12 +53,12 @@ module Verification =
 
         Seq.forall resultMatches results
 
-    let verifyHashAndItem (hashType: Checksum.HashType) includeHiddenFiles
+    let verifyHashAndItem (progressObserver: IObserver<HashingUpdate>) (hashType: Checksum.HashType) includeHiddenFiles
         includeEmptyDir basePath expectedHash (path:string): Result<VerificationResult, string> =
         let fullPath =
             Path.Join(basePath,
                 if path.StartsWith('/') then path.[1..] else path)
-        let itemHashResult = FS.makeHashStructure hashType includeHiddenFiles includeEmptyDir fullPath
+        let itemHashResult = Hashing.makeHashStructure progressObserver hashType includeHiddenFiles includeEmptyDir fullPath
 
         match itemHashResult with
             | Error err -> Error err
@@ -68,12 +69,12 @@ module Verification =
                 else
                     Ok (VerificationResult.Differs(path, expectedHash, actualHash))
 
-    let verifyHashAndItemByGuessing (hashType: Checksum.HashType option) includeHiddenFiles
+    let verifyHashAndItemByGuessing (progressObserver: IObserver<HashingUpdate>) (hashType: Checksum.HashType option) includeHiddenFiles
         includeEmptyDir basePath hash itemPath: Result<VerificationResult, string> =
         match hashType with
         | Some t ->
             // Use specified hashType
-            verifyHashAndItem t includeHiddenFiles includeEmptyDir basePath hash itemPath
+            verifyHashAndItem progressObserver t includeHiddenFiles includeEmptyDir basePath hash itemPath
         | None ->
             // Try to guess the hashtype based on hash length
             let matchedHashType =
@@ -82,12 +83,12 @@ module Verification =
                 |> Array.map (fun (t, _) -> t)
             assert (matchedHashType.Length <= 1)
             if matchedHashType.Length = 1 then
-                verifyHashAndItem matchedHashType.[0] includeHiddenFiles includeEmptyDir basePath hash itemPath
+                verifyHashAndItem progressObserver matchedHashType.[0] includeHiddenFiles includeEmptyDir basePath hash itemPath
             else
                 Error("Cannot determine which hash algorithm to use")
 
 
-    let verifyHashFile (hashType: Checksum.HashType option)
+    let verifyHashFile (progressObserver: IObserver<HashingUpdate>) (hashType: Checksum.HashType option)
         includeHiddenFiles
         includeEmptyDir
         path : Result<seq<Result<VerificationResult,string>>, string> =
@@ -117,6 +118,7 @@ module Verification =
                 topLevelHashes
                 |> Seq.map (fun (hash, itemPath) ->
                     verifyHashAndItemByGuessing
+                        progressObserver
                         hashType
                         includeHiddenFiles
                         includeEmptyDir
