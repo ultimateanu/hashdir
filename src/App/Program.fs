@@ -149,9 +149,10 @@ let rootHandler (opt: RootOpt) =
             Console.Error.Write(makeProgressStr slash hashingProgressObserver)
             Thread.Sleep(150)
             slashIndex <- (slashIndex + 1) % slashes.Length
-        Console.Error.Write("\r".PadRight Console.BufferWidth)
-        Console.Error.Write("\r")
-        Console.Error.Flush()
+        //Console.Error.Write("\r".PadRight Console.BufferWidth)
+        //Console.Error.Write("\r")
+        //Console.Error.Flush()
+        eprintfn ""
 
         let optHashStructure = hashingTask.Result
         use strWriter = new StringWriter()
