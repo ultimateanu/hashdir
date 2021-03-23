@@ -14,8 +14,7 @@ let defaultHashAlg = HashType.SHA1
 let slashes = [|'/';'-'; '\\'; '|'|]
 let consoleMaxWidth =
     try
-        //Console.BufferWidth
-        70
+        Console.BufferWidth
     with
         // Use a default backup width value if needed (e.g. xUnit tests)
         _ -> 60
