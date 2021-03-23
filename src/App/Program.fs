@@ -12,7 +12,7 @@ open System.Threading
 
 let defaultHashAlg = HashType.SHA1
 let slashes = [|'/';'-'; '\\'; '|'|]
-let consoleMaxWidth =
+let consoleMaxWidth() =
     let defaultWidth = 60
     try
         if Console.BufferWidth > 10 then Console.BufferWidth else defaultWidth
@@ -128,7 +128,7 @@ let rootHandler (opt: RootOpt) =
 
             let makeLine (item:string) =
                 let oldLen = (sprintf "\r%c %d %s [  ]" slash numFiles fileStr).Length
-                let remainingSpace = max 0 (consoleMaxWidth - oldLen)
+                let remainingSpace = max 0 (consoleMaxWidth() - oldLen)
                 let truncatedName =
                     if item.Length > remainingSpace then
                         // TODO: remove middle part (e.g. hello...world.txt)
@@ -146,8 +146,8 @@ let rootHandler (opt: RootOpt) =
                             | Some dirPath -> makeLine ("/" + (getChildName dirPath))
                     | Some fullPath -> fullPath |> getChildName |> makeLine
 
-            let fullStr = str.PadRight consoleMaxWidth
-            assert (fullStr.Length = consoleMaxWidth)
+            let fullStr = str.PadRight (consoleMaxWidth())
+            assert (fullStr.Length = consoleMaxWidth())
             fullStr
 
         let mutable slashIndex = 0
@@ -156,7 +156,7 @@ let rootHandler (opt: RootOpt) =
             Console.Error.Write(makeProgressStr slash hashingProgressObserver)
             Thread.Sleep(150)
             slashIndex <- (slashIndex + 1) % slashes.Length
-        Console.Error.Write("\r".PadRight consoleMaxWidth)
+        Console.Error.Write("\r".PadRight (consoleMaxWidth()))
         Console.Error.Write("\r")
         Console.Error.Flush()
 
