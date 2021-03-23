@@ -15,7 +15,7 @@ let slashes = [|'/';'-'; '\\'; '|'|]
 let consoleMaxWidth =
     let defaultWidth = 60
     try
-        if Console.BufferWidth > 10 then Console.BufferWidth else defaultWidth
+        if Console.BufferWidth = 0 then Console.BufferWidth else 77
     with
         // Use a default backup width value if needed (e.g. xUnit tests)
         _ -> defaultWidth
