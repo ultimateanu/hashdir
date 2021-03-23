@@ -117,7 +117,12 @@ let rootHandler (opt: RootOpt) =
             let numFiles = hashingObserver.FilesHashed
             let curFile = hashingObserver.HashingFile
             let curDir = hashingObserver.HashingDir
-            let maxWidth = Console.BufferWidth
+            let maxWidth =
+                try
+                    Console.WindowWidth
+                with
+                    // Use a default backup width value if needed (e.g. xUnit tests)
+                    | :? System.IO.IOException as ex -> 60
             let fileStr = if numFiles = 1 then "file" else "files"
 
             let makeLine (item:string) =
@@ -125,6 +130,7 @@ let rootHandler (opt: RootOpt) =
                 let remainingSpace = max 0 (maxWidth - oldLen)
                 let truncatedName =
                     if item.Length > remainingSpace then
+                        // TODO: remove middle part (e.g. hello...world.txt)
                         item.Substring(0,remainingSpace)
                     else
                         item
@@ -149,10 +155,9 @@ let rootHandler (opt: RootOpt) =
             Console.Error.Write(makeProgressStr slash hashingProgressObserver)
             Thread.Sleep(150)
             slashIndex <- (slashIndex + 1) % slashes.Length
-        //Console.Error.Write("\r".PadRight Console.BufferWidth)
-        //Console.Error.Write("\r")
-        //Console.Error.Flush()
-        eprintfn ""
+        Console.Error.Write("\r".PadRight Console.BufferWidth)
+        Console.Error.Write("\r")
+        Console.Error.Flush()
 
         let optHashStructure = hashingTask.Result
         use strWriter = new StringWriter()
