@@ -117,7 +117,7 @@ let rootHandler (opt: RootOpt) =
             let numFiles = hashingObserver.FilesHashed
             let curFile = hashingObserver.HashingFile
             let curDir = hashingObserver.HashingDir
-            let maxWidth = Console.WindowWidth
+            let maxWidth = Console.BufferWidth
             let fileStr = if numFiles = 1 then "file" else "files"
 
             let makeLine (item:string) =
@@ -146,10 +146,12 @@ let rootHandler (opt: RootOpt) =
         let mutable slashIndex = 0
         while not hashingTask.IsCompleted do
             let slash = Array.get slashes slashIndex
-            eprintf "%s" (makeProgressStr slash hashingProgressObserver)
+            Console.Error.Write(makeProgressStr slash hashingProgressObserver)
             Thread.Sleep(150)
             slashIndex <- (slashIndex + 1) % slashes.Length
-        eprintf "\r"
+        Console.Error.Write("\r".PadRight Console.BufferWidth)
+        Console.Error.Write("\r")
+        Console.Error.Flush()
 
         let optHashStructure = hashingTask.Result
         use strWriter = new StringWriter()
