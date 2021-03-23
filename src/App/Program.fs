@@ -16,8 +16,10 @@ let slashes = [|'/';'-'; '\\'; '|'|]
 type HashingObserver() =
     let mutable filesHashed = 0
     let mutable hashingFile : string option = None
+    let mutable hashingDir : string option = None
     member this.FilesHashed = filesHashed
     member this.HashingFile = hashingFile
+    member this.HashingDir = hashingDir
 
     interface IObserver<HashingUpdate> with
         member this.OnCompleted(): unit =
@@ -28,11 +30,15 @@ type HashingObserver() =
             match hashingUpdate with
                 | FileHashStarted path ->
                     hashingFile <- Some path
-                | FileHashCompleted path ->
+                | FileHashCompleted _ ->
                     filesHashed <- this.FilesHashed + 1
                     hashingFile <- None
-                | DirHashStarted path -> ()
-                | DirHashCompleted path -> ()
+                | DirHashStarted dirPath ->
+                    hashingDir <- Some dirPath
+                    ()
+                | DirHashCompleted _ ->
+                    hashingDir <- None
+                    ()
             ()
 
 
@@ -107,11 +113,19 @@ let rootHandler (opt: RootOpt) =
                     path
 
         // Print current progress while hashing.
-        let makeProgressStr slash numFiles (curFile:string option) =
+        let makeProgressStr slash (hashingObserver:HashingObserver)  =
+            let numFiles = hashingObserver.FilesHashed
+            let curFile = hashingObserver.HashingFile
+            let curDir = hashingObserver.HashingDir // TODO: add leading /
             let maxWidth = Console.WindowWidth
             let fileStr = if numFiles = 1 then "file" else "files"
-            let str =
+
+            let curItem =
                 match curFile with
+                    | None -> curDir
+                    | Some _ -> curFile
+            let str =
+                match curItem with
                     | None -> sprintf "\r%c %d %s" slash numFiles fileStr
                     | Some fullPath ->
                         let childPath = getChildName fullPath
@@ -131,9 +145,7 @@ let rootHandler (opt: RootOpt) =
         let mutable slashIndex = 0
         while not hashingTask.IsCompleted do
             let slash = Array.get slashes slashIndex
-            let filesHashed = hashingProgressObserver.FilesHashed
-            let curFile = hashingProgressObserver.HashingFile
-            eprintf "%s" (makeProgressStr slash filesHashed curFile)
+            eprintf "%s" (makeProgressStr slash hashingProgressObserver)
             Thread.Sleep(150)
             slashIndex <- (slashIndex + 1) % slashes.Length
         eprintf "\r"
