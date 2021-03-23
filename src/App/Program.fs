@@ -17,6 +17,7 @@ type HashingObserver() =
     let mutable filesHashed = 0
     let mutable hashingFile : string option = None
     member this.FilesHashed = filesHashed
+    member this.HashingFile = hashingFile
 
     interface IObserver<HashingUpdate> with
         member this.OnCompleted(): unit =
@@ -106,14 +107,36 @@ let rootHandler (opt: RootOpt) =
                     path
 
         // Print current progress while hashing.
+        let makeProgressStr slash numFiles (curFile:string option) =
+            let maxWidth = Console.WindowWidth
+            let fileStr = if numFiles = 1 then "file" else "files"
+            let str =
+                match curFile with
+                    | None -> sprintf "\r%c %d %s" slash numFiles fileStr
+                    | Some fullPath ->
+                        let childPath = getChildName fullPath
+                        let oldLen = (sprintf "\r%c %d %s []" slash numFiles fileStr).Length
+                        let remainingSpace = max 0 (maxWidth - oldLen)
+                        let truncatedPath =
+                            if childPath.Length > remainingSpace then
+                                childPath.Substring(0,remainingSpace)
+                            else
+                                childPath
+                        sprintf "\r%c %d %s [%s]" slash numFiles fileStr truncatedPath
+
+            let fullStr = str.PadRight maxWidth
+            assert (fullStr.Length = maxWidth)
+            fullStr
+
         let mutable slashIndex = 0
         while not hashingTask.IsCompleted do
             let slash = Array.get slashes slashIndex
             let filesHashed = hashingProgressObserver.FilesHashed
-            eprintf "\r%c %d" slash filesHashed
-            Thread.Sleep(100);
+            let curFile = hashingProgressObserver.HashingFile
+            eprintf "%s" (makeProgressStr slash filesHashed curFile)
+            Thread.Sleep(150)
             slashIndex <- (slashIndex + 1) % slashes.Length
-        eprintfn ""
+        eprintf ""
 
         let optHashStructure = hashingTask.Result
         use strWriter = new StringWriter()
