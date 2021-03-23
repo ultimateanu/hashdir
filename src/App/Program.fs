@@ -13,11 +13,12 @@ open System.Threading
 let defaultHashAlg = HashType.SHA1
 let slashes = [|'/';'-'; '\\'; '|'|]
 let consoleMaxWidth =
+    let defaultWidth = 60
     try
-        Console.BufferWidth
+        if Console.BufferWidth > 10 then Console.BufferWidth else defaultWidth
     with
         // Use a default backup width value if needed (e.g. xUnit tests)
-        _ -> 60
+        _ -> defaultWidth
 
 type HashingObserver() =
     let mutable filesHashed = 0
