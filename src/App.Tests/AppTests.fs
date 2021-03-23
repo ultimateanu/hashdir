@@ -8,8 +8,7 @@ open Xunit.Abstractions
 type AppTests(output: ITestOutputHelper) =
     [<Fact>]
     member _.``Console width is not too small``() =
-        let b = Program.consoleMaxWidth
-        Assert.True(Program.consoleMaxWidth > 10)
+        Assert.True(Program.consoleMaxWidth() > 10)
 
     [<Fact>]
     member _.``RootOpt parses md5 algorithm correctly``() =
