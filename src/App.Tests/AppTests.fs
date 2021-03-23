@@ -9,7 +9,7 @@ type AppTests(output: ITestOutputHelper) =
     [<Fact>]
     member _.``Console width``() =
         let b = Program.consoleMaxWidth
-        Assert.Equal(-1, b)
+        Assert.True(b >= 9)
         output.WriteLine("ultimateanu_debug: width-%d", b)
 
     [<Fact>]
