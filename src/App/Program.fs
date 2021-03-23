@@ -136,7 +136,7 @@ let rootHandler (opt: RootOpt) =
             eprintf "%s" (makeProgressStr slash filesHashed curFile)
             Thread.Sleep(150)
             slashIndex <- (slashIndex + 1) % slashes.Length
-        eprintf ""
+        eprintf "\r"
 
         let optHashStructure = hashingTask.Result
         use strWriter = new StringWriter()
