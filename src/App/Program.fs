@@ -116,27 +116,28 @@ let rootHandler (opt: RootOpt) =
         let makeProgressStr slash (hashingObserver:HashingObserver)  =
             let numFiles = hashingObserver.FilesHashed
             let curFile = hashingObserver.HashingFile
-            let curDir = hashingObserver.HashingDir // TODO: add leading /
+            let curDir = hashingObserver.HashingDir
             let maxWidth = Console.WindowWidth
             let fileStr = if numFiles = 1 then "file" else "files"
 
-            let curItem =
-                match curFile with
-                    | None -> curDir
-                    | Some _ -> curFile
+            let makeLine (item:string) =
+                let oldLen = (sprintf "\r%c %d %s [  ]" slash numFiles fileStr).Length
+                let remainingSpace = max 0 (maxWidth - oldLen)
+                let truncatedName =
+                    if item.Length > remainingSpace then
+                        item.Substring(0,remainingSpace)
+                    else
+                        item
+                sprintf "\r%c %d %s [ %s ]" slash numFiles fileStr truncatedName
+
             let str =
-                match curItem with
-                    | None -> sprintf "\r%c %d %s" slash numFiles fileStr
-                    | Some fullPath ->
-                        let childPath = getChildName fullPath
-                        let oldLen = (sprintf "\r%c %d %s []" slash numFiles fileStr).Length
-                        let remainingSpace = max 0 (maxWidth - oldLen)
-                        let truncatedPath =
-                            if childPath.Length > remainingSpace then
-                                childPath.Substring(0,remainingSpace)
-                            else
-                                childPath
-                        sprintf "\r%c %d %s [%s]" slash numFiles fileStr truncatedPath
+                match curFile with
+                    | None ->
+                        // No file currently, report directory.
+                        match curDir with
+                            | None -> sprintf "\r%c %d %s" slash numFiles fileStr
+                            | Some dirPath -> makeLine ("/" + (getChildName dirPath))
+                    | Some fullPath -> fullPath |> getChildName |> makeLine
 
             let fullStr = str.PadRight maxWidth
             assert (fullStr.Length = maxWidth)
