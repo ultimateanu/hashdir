@@ -9,7 +9,6 @@
 
   <ItemGroup>
     <Compile Include="AppTests.fs" />
-    <Compile Include="E2ETests.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
