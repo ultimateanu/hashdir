@@ -7,14 +7,12 @@ open Xunit.Abstractions
 
 type AppTests(output: ITestOutputHelper) =
     [<Fact>]
-    member _.``Console width``() =
+    member _.``Console width is not too small``() =
         let b = Program.consoleMaxWidth
-        Assert.True(b >= 9)
-        output.WriteLine("ultimateanu_debug: width-%d", b)
+        Assert.True(Program.consoleMaxWidth > 10)
 
     [<Fact>]
     member _.``RootOpt parses md5 algorithm correctly``() =
-
         let rootOpt =
             Program.RootOpt([|"report.pdf"; "sources.txt"|],
                 true, true, true, false, "md5")
