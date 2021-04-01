@@ -10,7 +10,7 @@ open Xunit.Abstractions
 type AppTests(output: ITestOutputHelper) =
     [<Fact>]
     member _.``Console width is not too small``() =
-        Assert.True(Progress.consoleMaxWidth() > 10)
+        Assert.True(Progress.getConsoleMaxWidth() > 10)
 
     [<Fact>]
     member _.``RootOpt parses md5 algorithm correctly``() =
@@ -62,8 +62,24 @@ type AppTests(output: ITestOutputHelper) =
 
         // Expect final string to start this way.
         Assert.Equal(1, nextIndex)
-        Assert.Equal(Progress.consoleMaxWidth(), progressStr.Length)
+        Assert.Equal(Progress.getConsoleMaxWidth(), progressStr.Length)
         Assert.Equal("\r⣷ 1 file [ second.txt ]", progressStr.TrimEnd())
+
+    [<Fact>]
+    member _.``Progress string for long file name``() =
+        // Setup observer which has long filename.
+        let observer = Progress.HashingObserver()
+        let iObserver = observer :> IObserver<HashingUpdate>
+        let filePath = sprintf "/path/to/%s.txt" (String.replicate 10 "longname")
+        iObserver.OnNext (HashingUpdate.FileHashStarted filePath)
+
+        // Create progress string.
+        let progressStr, nextIndex = Progress.makeProgressStrInternal 0 observer 50
+
+        // Expect final string to start this way.
+        Assert.Equal(1, nextIndex)
+        Assert.Equal(50, progressStr.Length)
+        Assert.Equal("\r⣷ 0 files [ longnamelongname...namelongname.txt ]", progressStr.TrimEnd())
 
     [<Fact>]
     member _.``Progress string for dir name``() =
@@ -77,5 +93,5 @@ type AppTests(output: ITestOutputHelper) =
 
         // Expect final string to start this way.
         Assert.Equal(0, nextIndex)
-        Assert.Equal(Progress.consoleMaxWidth(), progressStr.Length)
+        Assert.Equal(Progress.getConsoleMaxWidth(), progressStr.Length)
         Assert.Equal("\r⣾ 0 files [ /dir ]", progressStr.TrimEnd())

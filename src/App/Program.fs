@@ -88,7 +88,7 @@ let rootHandler (opt: RootOpt) =
             slashIndex <- nextIndex
             Console.Error.Write(progressStr)
             Thread.Sleep(200)
-        Console.Error.Write("\r".PadRight (Progress.consoleMaxWidth()))
+        Console.Error.Write("\r".PadRight (Progress.getConsoleMaxWidth()))
         Console.Error.Write("\r")
         Console.Error.Flush()
 
