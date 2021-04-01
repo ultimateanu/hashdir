@@ -58,9 +58,10 @@ type AppTests(output: ITestOutputHelper) =
         iObserver.OnNext (HashingUpdate.FileHashStarted "/path/to/second.txt")
 
         // Create progress string.
-        let progressStr = Progress.makeProgressStr 0 observer
+        let progressStr, nextIndex = Progress.makeProgressStr 0 observer
 
         // Expect final string to start this way.
+        Assert.Equal(1, nextIndex)
         Assert.Equal(Progress.consoleMaxWidth(), progressStr.Length)
         Assert.Equal("\r⣷ 1 file [ second.txt ]", progressStr.TrimEnd())
 
@@ -72,8 +73,9 @@ type AppTests(output: ITestOutputHelper) =
         iObserver.OnNext (HashingUpdate.DirHashStarted "/path/to/dir")
 
         // Create progress string.
-        let progressStr = Progress.makeProgressStr 15 observer
+        let progressStr, nextIndex = Progress.makeProgressStr 15 observer
 
         // Expect final string to start this way.
+        Assert.Equal(0, nextIndex)
         Assert.Equal(Progress.consoleMaxWidth(), progressStr.Length)
         Assert.Equal("\r⣾ 0 files [ /dir ]", progressStr.TrimEnd())

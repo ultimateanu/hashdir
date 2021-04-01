@@ -84,9 +84,10 @@ let rootHandler (opt: RootOpt) =
 
         let mutable slashIndex = 0
         while not hashingTask.IsCompleted do
-            Console.Error.Write(Progress.makeProgressStr slashIndex hashingProgressObserver)
-            Thread.Sleep(150)
-            slashIndex <- Progress.incProgressIndex slashIndex
+            let progressStr, nextIndex = Progress.makeProgressStr slashIndex hashingProgressObserver
+            slashIndex <- nextIndex
+            Console.Error.Write(progressStr)
+            Thread.Sleep(200)
         Console.Error.Write("\r".PadRight (Progress.consoleMaxWidth()))
         Console.Error.Write("\r")
         Console.Error.Flush()

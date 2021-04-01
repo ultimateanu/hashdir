@@ -34,7 +34,7 @@ type HashingObserver() =
 
 let progressSymbols = [|'⣷';  '⣯'; '⣟'; '⡿'; '⢿'; '⣻'; '⣽'; '⣾'|]
 
-let incProgressIndex slashIndex =
+let private incProgressIndex slashIndex =
     (slashIndex + 1) % progressSymbols.Length
 
 let consoleMaxWidth() =
@@ -75,4 +75,4 @@ let makeProgressStr slashIndex (hashingObserver:HashingObserver)  =
 
     let fullStr = str.PadRight (consoleMaxWidth())
     assert (fullStr.Length = consoleMaxWidth())
-    fullStr
+    (fullStr, incProgressIndex slashIndex)
