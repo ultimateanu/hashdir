@@ -21,12 +21,6 @@ module Hashing =
         =
         assert Directory.Exists(dirPath)
 
-        // TODO: factor out
-        let getResult (x: Result<ItemHash, string>) =
-            match x with
-            | Ok v -> Some v
-            | Error _ -> None
-
         let children =
             dirPath
             |> Directory.EnumerateFileSystemEntries
@@ -39,7 +33,7 @@ module Hashing =
                     includeHiddenFiles
                     includeEmptyDir
             )
-            |> List.choose getResult
+            |> List.choose Util.makeOption
 
         if children.IsEmpty && not includeEmptyDir then
             Error("Excluding dir because it is empty")
