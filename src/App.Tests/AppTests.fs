@@ -1,14 +1,16 @@
 ﻿module AppTests
 
 open HashUtil.Checksum
+open HashUtil.Hashing
 open HashUtil.Verification
+open System
 open Xunit
 open Xunit.Abstractions
 
 type AppTests(output: ITestOutputHelper) =
     [<Fact>]
     member _.``Console width is not too small``() =
-        Assert.True(Program.consoleMaxWidth() > 10)
+        Assert.True(Progress.consoleMaxWidth() > 10)
 
     [<Fact>]
     member _.``RootOpt parses md5 algorithm correctly``() =
@@ -45,3 +47,33 @@ type AppTests(output: ITestOutputHelper) =
             Program.CheckOpt([|"report.pdf"|], false, true, null, "detailed")
 
         Assert.True(checkOpt.Algorithm.IsNone)
+
+    [<Fact>]
+    member _.``Progress string for short file name``() =
+        // Setup observer which is on second file.
+        let observer = Progress.HashingObserver()
+        let iObserver = observer :> IObserver<HashingUpdate>
+        iObserver.OnNext (HashingUpdate.FileHashStarted "/path/to/first.txt")
+        iObserver.OnNext (HashingUpdate.FileHashCompleted "/path/to/first.txt")
+        iObserver.OnNext (HashingUpdate.FileHashStarted "/path/to/second.txt")
+
+        // Create progress string.
+        let progressStr = Progress.makeProgressStr 0 observer
+
+        // Expect final string to start this way.
+        Assert.Equal(Progress.consoleMaxWidth(), progressStr.Length)
+        Assert.Equal("\r⣷ 1 file [ second.txt ]", progressStr.TrimEnd())
+
+    [<Fact>]
+    member _.``Progress string for dir name``() =
+        // Setup observer which is on first dir.
+        let observer = Progress.HashingObserver()
+        let iObserver = observer :> IObserver<HashingUpdate>
+        iObserver.OnNext (HashingUpdate.DirHashStarted "/path/to/dir")
+
+        // Create progress string.
+        let progressStr = Progress.makeProgressStr 15 observer
+
+        // Expect final string to start this way.
+        Assert.Equal(Progress.consoleMaxWidth(), progressStr.Length)
+        Assert.Equal("\r⣾ 0 files [ /dir ]", progressStr.TrimEnd())

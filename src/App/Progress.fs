@@ -34,6 +34,9 @@ type HashingObserver() =
 
 let progressSymbols = [|'⣷';  '⣯'; '⣟'; '⡿'; '⢿'; '⣻'; '⣽'; '⣾'|]
 
+let incProgressIndex slashIndex =
+    (slashIndex + 1) % progressSymbols.Length
+
 let consoleMaxWidth() =
     let defaultWidth = 60
     try
@@ -43,7 +46,8 @@ let consoleMaxWidth() =
         _ -> defaultWidth
 
 // Print current progress while hashing.
-let makeProgressStr slash (hashingObserver:HashingObserver)  =
+let makeProgressStr slashIndex (hashingObserver:HashingObserver)  =
+    let slash = Array.get progressSymbols (slashIndex % progressSymbols.Length)
     let numFiles = hashingObserver.FilesHashed
     let curFile = hashingObserver.HashingFile
     let curDir = hashingObserver.HashingDir
