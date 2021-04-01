@@ -1,4 +1,4 @@
-open HashUtil.Checksum
+﻿open HashUtil.Checksum
 open HashUtil.FS
 open HashUtil.Hashing
 open HashUtil.Util
@@ -11,7 +11,7 @@ open System.Threading
 
 
 let defaultHashAlg = HashType.SHA1
-let slashes = [|'/';'-'; '\\'; '|'|]
+let progressSymbols = [|'⣷';  '⣯'; '⣟'; '⡿'; '⢿'; '⣻'; '⣽'; '⣾';|]
 let consoleMaxWidth() =
     let defaultWidth = 60
     try
@@ -152,10 +152,10 @@ let rootHandler (opt: RootOpt) =
 
         let mutable slashIndex = 0
         while not hashingTask.IsCompleted do
-            let slash = Array.get slashes slashIndex
+            let slash = Array.get progressSymbols slashIndex
             Console.Error.Write(makeProgressStr slash hashingProgressObserver)
             Thread.Sleep(150)
-            slashIndex <- (slashIndex + 1) % slashes.Length
+            slashIndex <- (slashIndex + 1) % progressSymbols.Length
         Console.Error.Write("\r".PadRight (consoleMaxWidth()))
         Console.Error.Write("\r")
         Console.Error.Flush()
@@ -304,5 +304,6 @@ let rootCmd =
 
 [<EntryPoint>]
 let main args =
+    Console.OutputEncoding <- System.Text.Encoding.UTF8;
     let returnCode = rootCmd.Invoke args
     returnCode
