@@ -1,10 +1,13 @@
-open HashUtil.Checksum
+﻿open HashUtil.Checksum
 open HashUtil.FS
+open HashUtil.Hashing
 open HashUtil.Util
 open HashUtil.Verification
+open System
 open System.CommandLine
 open System.CommandLine.Invocation
 open System.IO
+open System.Threading
 
 
 let defaultHashAlg = HashType.SHA1
@@ -67,14 +70,30 @@ type CheckOpt(item, includeHiddenFiles, skipEmptyDir, algorithm, verbosity) =
 
 let rootHandler (opt: RootOpt) =
     for pathRaw in opt.Items do
-        let path = cleanPath pathRaw
-        let optHashStructure =
-            makeHashStructure
-                opt.Algorithm
-                opt.IncludeHiddenFiles
-                (not opt.SkipEmptyDir)
-                path
+        let hashingProgressObserver = Progress.HashingObserver()
 
+        let path = cleanPath pathRaw
+        let hashingTask =
+            Async.StartAsTask <|
+                makeHashStructureObservable
+                    hashingProgressObserver
+                    opt.Algorithm
+                    opt.IncludeHiddenFiles
+                    (not opt.SkipEmptyDir)
+                    path
+
+        // Show progress while hashing happens in background.
+        let mutable slashIndex = 0
+        while not hashingTask.IsCompleted do
+            let progressStr, nextIndex = Progress.makeProgressStr slashIndex hashingProgressObserver
+            slashIndex <- nextIndex
+            Console.Error.Write(progressStr)
+            Thread.Sleep(200)
+        Console.Error.Write("\r".PadRight (Progress.getConsoleMaxWidth()))
+        Console.Error.Write("\r")
+        Console.Error.Flush()
+
+        let optHashStructure = hashingTask.Result
         use strWriter = new StringWriter()
 
         match optHashStructure with
@@ -89,22 +108,50 @@ let rootHandler (opt: RootOpt) =
 
 let checkHandler (opt: CheckOpt) =
     let processHashFile hashFile =
-        let verifyResult =
-            verifyHashFile
-                opt.Algorithm
-                opt.IncludeHiddenFiles
-                (not opt.SkipEmptyDir)
-                hashFile
+        let hashingProgressObserver = Progress.HashingObserver()
 
+        let verifyTask =
+            Async.StartAsTask <|
+                verifyHashFile
+                    hashingProgressObserver
+                    opt.Algorithm
+                    opt.IncludeHiddenFiles
+                    (not opt.SkipEmptyDir)
+                    hashFile
+
+        // Show progress while verification happens in background.
+        let mutable slashIndex = 0
+        while not verifyTask.IsCompleted do
+            let progressStr, nextIndex = Progress.makeProgressStr slashIndex hashingProgressObserver
+            slashIndex <- nextIndex
+            Console.Error.Write(progressStr)
+            Thread.Sleep(200)
+        Console.Error.Write("\r".PadRight (Progress.getConsoleMaxWidth()))
+        Console.Error.Write("\r")
+        Console.Error.Flush()
+
+        let verifyResult = verifyTask.Result
         match verifyResult with
         | Error err ->
             printfn "Error: %s" err
             // return exit code 1 for missing hashFile
             1
         | Ok itemResults ->
-            printVerificationResults opt.Verbosity itemResults
+            let printAndGetMatchResult result =
+                printVerificationResults opt.Verbosity result
+                match result with
+                | Ok r ->
+                    match r with
+                        | VerificationResult.Matches _ -> true
+                        | _ -> false
+                | Error _ -> false
 
-            if (allItemsMatch itemResults) then
+            // Make list of matched before List.forall which might short circuit.
+            let matched =
+                itemResults
+                |> List.map printAndGetMatchResult
+
+            if List.forall id matched then
                 0
             else
                 2
@@ -215,5 +262,6 @@ let rootCmd =
 
 [<EntryPoint>]
 let main args =
+    Console.OutputEncoding <- System.Text.Encoding.UTF8;
     let returnCode = rootCmd.Invoke args
     returnCode

@@ -3,6 +3,7 @@
 open System
 open System.IO
 open Microsoft.FSharp.Reflection
+open Hashing
 
 module Verification =
     let hashLengths =
@@ -41,23 +42,15 @@ module Verification =
         | "detailed" -> Some Detailed
         | _ -> None
 
-    let allItemsMatch (results: seq<Result<VerificationResult, string>>) =
-        let resultMatches result =
-            match result with
-                | Ok r ->
-                    match r with
-                        | VerificationResult.Matches _ -> true
-                        | _ -> false
-                | Error _ -> false
-
-        Seq.forall resultMatches results
-
-    let verifyHashAndItem (hashType: Checksum.HashType) includeHiddenFiles
+    let verifyHashAndItem (progressObserver: IObserver<HashingUpdate>) (hashType: Checksum.HashType) includeHiddenFiles
         includeEmptyDir basePath expectedHash (path:string): Result<VerificationResult, string> =
         let fullPath =
             Path.Join(basePath,
                 if path.StartsWith('/') then path.[1..] else path)
-        let itemHashResult = FS.makeHashStructure hashType includeHiddenFiles includeEmptyDir fullPath
+        let itemHashResult =
+            Async.RunSynchronously <|
+                Hashing.makeHashStructureObservable progressObserver hashType
+                    includeHiddenFiles includeEmptyDir fullPath
 
         match itemHashResult with
             | Error err -> Error err
@@ -68,12 +61,12 @@ module Verification =
                 else
                     Ok (VerificationResult.Differs(path, expectedHash, actualHash))
 
-    let verifyHashAndItemByGuessing (hashType: Checksum.HashType option) includeHiddenFiles
+    let verifyHashAndItemByGuessing (progressObserver: IObserver<HashingUpdate>) (hashType: Checksum.HashType option) includeHiddenFiles
         includeEmptyDir basePath hash itemPath: Result<VerificationResult, string> =
         match hashType with
         | Some t ->
             // Use specified hashType
-            verifyHashAndItem t includeHiddenFiles includeEmptyDir basePath hash itemPath
+            verifyHashAndItem progressObserver t includeHiddenFiles includeEmptyDir basePath hash itemPath
         | None ->
             // Try to guess the hashtype based on hash length
             let matchedHashType =
@@ -82,16 +75,17 @@ module Verification =
                 |> Array.map (fun (t, _) -> t)
             assert (matchedHashType.Length <= 1)
             if matchedHashType.Length = 1 then
-                verifyHashAndItem matchedHashType.[0] includeHiddenFiles includeEmptyDir basePath hash itemPath
+                verifyHashAndItem progressObserver matchedHashType.[0] includeHiddenFiles includeEmptyDir basePath hash itemPath
             else
                 Error("Cannot determine which hash algorithm to use")
 
 
-    let verifyHashFile (hashType: Checksum.HashType option)
+    let verifyHashFile (progressObserver: IObserver<HashingUpdate>) (hashType: Checksum.HashType option)
         includeHiddenFiles
         includeEmptyDir
-        path : Result<seq<Result<VerificationResult,string>>, string> =
-        if File.Exists(path) then
+        origPath =
+
+        let verifyValidHashFile (path:string) =
             let baseDirPath = Path.GetDirectoryName path
 
             let isTopLevelItem (line:string): bool =
@@ -112,25 +106,33 @@ module Verification =
                 |> File.ReadLines
                 |> Seq.filter isTopLevelItem
                 |> Seq.map getHashAndItem
+                |> List.ofSeq
 
             let allVerificationResults =
                 topLevelHashes
-                |> Seq.map (fun (hash, itemPath) ->
+                |> List.map (fun (hash, itemPath) ->
                     verifyHashAndItemByGuessing
+                        progressObserver
                         hashType
                         includeHiddenFiles
                         includeEmptyDir
                         baseDirPath
                         hash
                         itemPath)
-            Ok allVerificationResults
-        else
-            Error(sprintf "'%s' is not a valid hash file" path)
+            allVerificationResults
+
+        async {
+            return
+                if File.Exists(origPath) then
+                    Ok (verifyValidHashFile origPath)
+                else
+                    Error(sprintf "'%s' is not a valid hash file" origPath)
+        }
 
 
     let printVerificationResults
         verbosity
-        (results : seq<Result<VerificationResult,string>>) =
+        (result : Result<VerificationResult,string>) =
 
         let printSuccess path hash =
             match verbosity with
@@ -159,10 +161,9 @@ module Verification =
                 Util.printColor ConsoleColor.Red "ERROR  "
                 printfn "%s%s" Common.bSpacer path
 
-        for result in results do
-            match result with
-            | Error err -> printError err
-            | Ok verificationResult ->
-                match verificationResult with
-                | Matches(path, hash) -> printSuccess path hash
-                | Differs(path, expectedHash, actualHash) -> printDiffer path actualHash expectedHash
+        match result with
+        | Error err -> printError err
+        | Ok verificationResult ->
+            match verificationResult with
+            | Matches(path, hash) -> printSuccess path hash
+            | Differs(path, expectedHash, actualHash) -> printDiffer path actualHash expectedHash

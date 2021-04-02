@@ -1,9 +1,7 @@
 ﻿namespace HashUtil
 
-open System.IO
-open System.Security.Cryptography
-open System.Text.RegularExpressions
 open System
+open System.IO
 
 module FS =
     type ItemHash =
@@ -19,72 +17,6 @@ module FS =
         match itemHash with
         | File (_, hash) -> hash
         | Dir (_, hash, _) -> hash
-
-    let rec private makeDirHashStructure
-        (hashAlg: HashAlgorithm)
-        includeHiddenFiles
-        includeEmptyDir
-        dirPath
-        =
-        assert Directory.Exists(dirPath)
-
-        let getResult (x: Result<ItemHash, string>) =
-            match x with
-            | Ok v -> Some v
-            | Error _ -> None
-
-        let children =
-            dirPath
-            |> Directory.EnumerateFileSystemEntries
-            |> Seq.toList
-            |> List.sort
-            |> List.map (
-                makeHashStructureHelper
-                    hashAlg
-                    includeHiddenFiles
-                    includeEmptyDir
-            )
-            |> List.choose getResult
-
-        if children.IsEmpty && not includeEmptyDir then
-            Error("Excluding dir because it is empty")
-        else
-            let getNameAndHashString (x: ItemHash) : string =
-                match x with
-                | File (path, hash) -> hash + (Path.GetFileName path)
-                | Dir (path, hash, _) -> hash + (Util.getChildName path)
-
-            let childrenHash =
-                children
-                |> List.map getNameAndHashString
-                |> fun x -> "" :: x // Add empty string as a child to compute hash of empty dir.
-                |> List.reduce (+)
-                |> Checksum.computeHashOfString hashAlg
-
-            Ok(Dir(path = dirPath, hash = childrenHash, children = children))
-
-    and private makeHashStructureHelper
-        (hashAlg: HashAlgorithm)
-        includeHiddenFiles
-        includeEmptyDir
-        path
-        =
-        if File.Exists(path) then
-            if ((not includeHiddenFiles)
-                && (File.GetAttributes(path) &&& FileAttributes.Hidden)
-                    .Equals(FileAttributes.Hidden)) then
-                Error("Not including hidden file")
-            else
-                Ok(
-                    File(
-                        path = path,
-                        hash = (Checksum.computeHashOfFile hashAlg path)
-                    )
-                )
-        else if Directory.Exists(path) then
-            makeDirHashStructure hashAlg includeHiddenFiles includeEmptyDir path
-        else
-            Error(sprintf "%s is not a valid path" path)
 
     let private makeLeftSpacer levels =
         match levels with
@@ -153,15 +85,6 @@ module FS =
 
     let rec printHashStructure structure printTree outputWriter =
         printHashStructureHelper structure printTree [] outputWriter
-
-    let makeHashStructure
-        (hashType: Checksum.HashType)
-        includeHiddenFiles
-        includeEmptyDir
-        path
-        =
-        let hashAlg = Checksum.getHashAlgorithm hashType
-        makeHashStructureHelper hashAlg includeHiddenFiles includeEmptyDir path
 
     let saveHashStructure structure printTree hashAlgorithm =
         let hashAlgName = hashAlgorithm.ToString().ToLower()
