@@ -135,7 +135,7 @@ module Verification =
 
     let printVerificationResults
         verbosity
-        (results : seq<Result<VerificationResult,string>>) =
+        (result : Result<VerificationResult,string>) =
 
         let printSuccess path hash =
             match verbosity with
@@ -164,10 +164,9 @@ module Verification =
                 Util.printColor ConsoleColor.Red "ERROR  "
                 printfn "%s%s" Common.bSpacer path
 
-        for result in results do
-            match result with
-            | Error err -> printError err
-            | Ok verificationResult ->
-                match verificationResult with
-                | Matches(path, hash) -> printSuccess path hash
-                | Differs(path, expectedHash, actualHash) -> printDiffer path actualHash expectedHash
+        match result with
+        | Error err -> printError err
+        | Ok verificationResult ->
+            match verificationResult with
+            | Matches(path, hash) -> printSuccess path hash
+            | Differs(path, expectedHash, actualHash) -> printDiffer path actualHash expectedHash

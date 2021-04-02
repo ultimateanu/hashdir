@@ -123,9 +123,22 @@ let checkHandler (opt: CheckOpt) =
             // return exit code 1 for missing hashFile
             1
         | Ok itemResults ->
-            printVerificationResults opt.Verbosity itemResults
+            let printAndGetMatchResult result =
+                printVerificationResults opt.Verbosity result
+                match result with
+                | Ok r ->
+                    match r with
+                        | VerificationResult.Matches _ -> true
+                        | _ -> false
+                | Error _ -> false
 
-            if (allItemsMatch itemResults) then
+            let matched =
+                itemResults
+                |> Seq.map printAndGetMatchResult
+                // materialize after to ensure all items are processed
+                |> List.ofSeq
+
+            if Seq.forall id matched then
                 0
             else
                 2
