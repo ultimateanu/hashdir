@@ -69,9 +69,9 @@ type CheckOpt(item, includeHiddenFiles, skipEmptyDir, algorithm, verbosity) =
 
 
 let rootHandler (opt: RootOpt) =
-    let hashingProgressObserver = Progress.HashingObserver()
-
     for pathRaw in opt.Items do
+        let hashingProgressObserver = Progress.HashingObserver()
+
         let path = cleanPath pathRaw
         let hashingTask =
             Async.StartAsTask <|
