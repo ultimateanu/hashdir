@@ -82,6 +82,7 @@ let rootHandler (opt: RootOpt) =
                     (not opt.SkipEmptyDir)
                     path
 
+        // Show progress while hashing happens in background.
         let mutable slashIndex = 0
         while not hashingTask.IsCompleted do
             let progressStr, nextIndex = Progress.makeProgressStr slashIndex hashingProgressObserver
@@ -106,17 +107,30 @@ let rootHandler (opt: RootOpt) =
 
 
 let checkHandler (opt: CheckOpt) =
-    let hashingProgressObserver = Progress.HashingObserver()
-
     let processHashFile hashFile =
-        let verifyResult =
-            verifyHashFile
-                hashingProgressObserver
-                opt.Algorithm
-                opt.IncludeHiddenFiles
-                (not opt.SkipEmptyDir)
-                hashFile
+        let hashingProgressObserver = Progress.HashingObserver()
 
+        let verifyTask =
+            Async.StartAsTask <|
+                verifyHashFile
+                    hashingProgressObserver
+                    opt.Algorithm
+                    opt.IncludeHiddenFiles
+                    (not opt.SkipEmptyDir)
+                    hashFile
+
+        // Show progress while verification happens in background.
+        let mutable slashIndex = 0
+        while not verifyTask.IsCompleted do
+            let progressStr, nextIndex = Progress.makeProgressStr slashIndex hashingProgressObserver
+            slashIndex <- nextIndex
+            Console.Error.Write(progressStr)
+            Thread.Sleep(200)
+        Console.Error.Write("\r".PadRight (Progress.getConsoleMaxWidth()))
+        Console.Error.Write("\r")
+        Console.Error.Flush()
+
+        let verifyResult = verifyTask.Result
         match verifyResult with
         | Error err ->
             printfn "Error: %s" err
@@ -132,13 +146,12 @@ let checkHandler (opt: CheckOpt) =
                         | _ -> false
                 | Error _ -> false
 
+            // Make list of matched before List.forall which might short circuit.
             let matched =
                 itemResults
-                |> Seq.map printAndGetMatchResult
-                // materialize after to ensure all items are processed
-                |> List.ofSeq
+                |> List.map printAndGetMatchResult
 
-            if Seq.forall id matched then
+            if List.forall id matched then
                 0
             else
                 2

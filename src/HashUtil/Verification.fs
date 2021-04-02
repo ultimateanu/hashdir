@@ -42,17 +42,6 @@ module Verification =
         | "detailed" -> Some Detailed
         | _ -> None
 
-    let allItemsMatch (results: seq<Result<VerificationResult, string>>) =
-        let resultMatches result =
-            match result with
-                | Ok r ->
-                    match r with
-                        | VerificationResult.Matches _ -> true
-                        | _ -> false
-                | Error _ -> false
-
-        Seq.forall resultMatches results
-
     let verifyHashAndItem (progressObserver: IObserver<HashingUpdate>) (hashType: Checksum.HashType) includeHiddenFiles
         includeEmptyDir basePath expectedHash (path:string): Result<VerificationResult, string> =
         let fullPath =
@@ -94,8 +83,9 @@ module Verification =
     let verifyHashFile (progressObserver: IObserver<HashingUpdate>) (hashType: Checksum.HashType option)
         includeHiddenFiles
         includeEmptyDir
-        path : Result<seq<Result<VerificationResult,string>>, string> =
-        if File.Exists(path) then
+        origPath =
+
+        let verifyValidHashFile (path:string) =
             let baseDirPath = Path.GetDirectoryName path
 
             let isTopLevelItem (line:string): bool =
@@ -116,10 +106,11 @@ module Verification =
                 |> File.ReadLines
                 |> Seq.filter isTopLevelItem
                 |> Seq.map getHashAndItem
+                |> List.ofSeq
 
             let allVerificationResults =
                 topLevelHashes
-                |> Seq.map (fun (hash, itemPath) ->
+                |> List.map (fun (hash, itemPath) ->
                     verifyHashAndItemByGuessing
                         progressObserver
                         hashType
@@ -128,9 +119,15 @@ module Verification =
                         baseDirPath
                         hash
                         itemPath)
-            Ok allVerificationResults
-        else
-            Error(sprintf "'%s' is not a valid hash file" path)
+            allVerificationResults
+
+        async {
+            return
+                if File.Exists(origPath) then
+                    Ok (verifyValidHashFile origPath)
+                else
+                    Error(sprintf "'%s' is not a valid hash file" origPath)
+        }
 
 
     let printVerificationResults
