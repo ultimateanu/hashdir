@@ -94,17 +94,13 @@ let rootHandler (opt: RootOpt) =
         Console.Error.Flush()
 
         let optHashStructure = hashingTask.Result
-        use strWriter = new StringWriter()
-
         match optHashStructure with
         | Error err -> printfn "Error: %s" err
         | Ok hashStructure ->
             if opt.Save then
                 saveHashStructure hashStructure opt.PrintTree opt.Algorithm
 
-            printHashStructure hashStructure opt.PrintTree strWriter
-            printf "%s" (strWriter.ToString())
-
+            printHashStructure hashStructure opt.PrintTree Console.Out
 
 let checkHandler (opt: CheckOpt) =
     let processHashFile hashFile =

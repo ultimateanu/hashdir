@@ -56,15 +56,14 @@ module FS =
             // Append "\n" rather than use WriteLine() to avoid system line endings (e.g. "\r\n")
             outputWriter.Write(sprintf "%s\n" fileLine)
         | Dir (path, hash, children) ->
-            let dirLine =
-                sprintf
-                    "%s%s  %c%s"
-                    (makeLeftSpacer levels)
-                    hash
-                    '/'
-                    (DirectoryInfo(path).Name)
+            // Print dir line, with optional colors.
+            // TODO: make the colors optional
+            Util.printColorToWriter (Some ConsoleColor.DarkGray) (makeLeftSpacer levels) outputWriter
+            Util.printColorToWriter (None) hash outputWriter
+            Util.printColorToWriter (Some ConsoleColor.Cyan) "  /" outputWriter
+            Util.printColorToWriter (Some ConsoleColor.Cyan) (DirectoryInfo(path).Name) outputWriter
             // Append "\n" rather than use WriteLine() to avoid system line endings (e.g. "\r\n")
-            outputWriter.Write(sprintf "%s\n" dirLine)
+            Util.printColorToWriter (None) "\n" outputWriter
 
             if printTree && not children.IsEmpty then
                 let allButLastChild = List.take (children.Length - 1) children
