@@ -3,6 +3,7 @@
 open HashUtil.Hashing
 open HashUtil.Util
 open System
+open System.IO
 
 type HashingObserver() =
     let mutable filesHashed = 0
@@ -46,15 +47,21 @@ let getConsoleMaxWidth() =
         _ -> defaultWidth
 
 // Internal version which takes in console width for testing.
-let makeProgressStrInternal slashIndex (hashingObserver:HashingObserver) consoleMaxWidth =
+let makeProgressStrInternal slashIndex (hashingObserver:HashingObserver) consoleMaxWidth (outputWriter: TextWriter) =
     let slash = Array.get progressSymbols (slashIndex % progressSymbols.Length)
     let numFiles = hashingObserver.FilesHashed
     let curFile = hashingObserver.HashingFile
     let curDir = hashingObserver.HashingDir
     let fileStr = if numFiles = 1 then "file" else "files"
 
-    let makeLine (item:string) =
-        let oldLen = (sprintf "\r%c %d %s [  ]" slash numFiles fileStr).Length
+    printColorToWriter None "\r" outputWriter
+    printColorToWriter (Some ConsoleColor.Green) (string slash) outputWriter
+    printColorToWriter None (sprintf " %d " numFiles) outputWriter
+    printColorToWriter (Some ConsoleColor.DarkGray) (sprintf "%s " fileStr) outputWriter
+    let mutable outputCopy = sprintf "\r%c %d %s " slash numFiles fileStr;
+
+    let makeTruncatedName (item:string) =
+        let oldLen = outputCopy.Length + "[  ]".Length
         let remainingSpace = max 0 (consoleMaxWidth - oldLen)
         let truncatedName =
             if item.Length > remainingSpace then
@@ -67,21 +74,35 @@ let makeProgressStrInternal slashIndex (hashingObserver:HashingObserver) console
                 leftHalf + middlePart + rightHalf
             else
                 item
-        sprintf "\r%c %d %s [ %s ]" slash numFiles fileStr truncatedName
+        truncatedName
 
-    let str =
-        match curFile with
-            | None ->
-                // No file currently, report directory.
-                match curDir with
-                    | None -> sprintf "\r%c %d %s" slash numFiles fileStr
-                    | Some dirPath -> makeLine ("/" + (getChildName dirPath))
-            | Some fullPath -> fullPath |> getChildName |> makeLine
+    match curFile with
+        | None ->
+            // No file currently, report directory.
+            match curDir with
+                | None ->
+                    ()
+                | Some dirPath ->
+                    let dirStr = makeTruncatedName ("/" + (getChildName dirPath))
+                    printColorToWriter (Some ConsoleColor.DarkGray) "[ " outputWriter
+                    printColorToWriter (Some ConsoleColor.Cyan) dirStr outputWriter
+                    printColorToWriter (Some ConsoleColor.DarkGray) " ]" outputWriter
+                    outputCopy <- outputCopy + "[ " + dirStr + " ]"
+        | Some fullPath ->
+            let fileStr = fullPath |> getChildName |> makeTruncatedName
+            printColorToWriter (Some ConsoleColor.DarkGray) "[ " outputWriter
+            printColorToWriter None fileStr outputWriter
+            printColorToWriter (Some ConsoleColor.DarkGray) " ]" outputWriter
+            outputCopy <- outputCopy + "[ " + fileStr + " ]"
 
-    let fullStr = str.PadRight consoleMaxWidth
-    assert (fullStr.Length = consoleMaxWidth)
-    (fullStr, incProgressIndex slashIndex)
+    // Print spaces to reach end of line (to clear old output).
+    let remainingWidth = max 0 (consoleMaxWidth - outputCopy.Length)
+    printColorToWriter None (String.replicate remainingWidth " ") outputWriter
+    outputCopy <- outputCopy + (String.replicate remainingWidth " ")
+    assert (outputCopy.Length >= consoleMaxWidth)
+
+    incProgressIndex slashIndex
 
 // Print current progress while hashing.
-let makeProgressStr slashIndex (hashingObserver:HashingObserver)  =
-    makeProgressStrInternal slashIndex hashingObserver (getConsoleMaxWidth())
+let makeProgressStr slashIndex (hashingObserver:HashingObserver) (outputWriter: TextWriter)  =
+    makeProgressStrInternal slashIndex hashingObserver (getConsoleMaxWidth()) outputWriter

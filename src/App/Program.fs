@@ -85,9 +85,8 @@ let rootHandler (opt: RootOpt) =
         // Show progress while hashing happens in background.
         let mutable slashIndex = 0
         while not hashingTask.IsCompleted do
-            let progressStr, nextIndex = Progress.makeProgressStr slashIndex hashingProgressObserver
+            let nextIndex = Progress.makeProgressStr slashIndex hashingProgressObserver Console.Error
             slashIndex <- nextIndex
-            Console.Error.Write(progressStr)
             Thread.Sleep(200)
         Console.Error.Write("\r".PadRight (Progress.getConsoleMaxWidth()))
         Console.Error.Write("\r")
@@ -118,9 +117,8 @@ let checkHandler (opt: CheckOpt) =
         // Show progress while verification happens in background.
         let mutable slashIndex = 0
         while not verifyTask.IsCompleted do
-            let progressStr, nextIndex = Progress.makeProgressStr slashIndex hashingProgressObserver
+            let nextIndex = Progress.makeProgressStr slashIndex hashingProgressObserver Console.Error
             slashIndex <- nextIndex
-            Console.Error.Write(progressStr)
             Thread.Sleep(200)
         Console.Error.Write("\r".PadRight (Progress.getConsoleMaxWidth()))
         Console.Error.Write("\r")
