@@ -34,6 +34,12 @@ hashdir --help
 ### Package manager
 hashdir is available via package managers. If you already have a package manager, this allows for easy installation and upgrades.
 
+* Homebrew
+```
+brew install ultimateanu/software/hashdir
+brew upgrade ultimateanu/software/hashdir
+```
+
 * dotnet (NuGet)
 ```
 dotnet tool install --global hashdir
