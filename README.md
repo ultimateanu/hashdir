@@ -15,8 +15,9 @@ Links: [Github](https://github.com/ultimateanu/hashdir), [project site](https://
 ## Installation
 There are several ways to get hashdir. Full details can be found [here](https://ultimateanu.github.io/hashdir/#installation).
 
+- **Homebrew**: `brew install ultimateanu/software/hashdir`
+- **dotnet**: `dotnet tool install --global hashdir`
 - **Stand-alone binary**: latest version for macOS, Windows, and Linux can be found at [releases](https://github.com/ultimateanu/hashdir/releases)
-- **dotnet tool**: `dotnet tool install --global hashdir`
 
 ## Usage
 ```
