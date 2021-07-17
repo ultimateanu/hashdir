@@ -34,7 +34,7 @@ hashdir --help
 ### Package manager
 hashdir is available via package managers. If you already have a package manager, this allows for easy installation and upgrades.
 
-* Homebrew _\*_
+* Homebrew_\*_
 ```
 brew install ultimateanu/software/hashdir
 brew upgrade ultimateanu/software/hashdir
@@ -46,7 +46,7 @@ dotnet tool install --global hashdir
 dotnet tool update --global hashdir
 ```
 
-_\* Homebrew currently requires a project to have 50 stars to be included in core. So I've set up a custom tap for now that still allows easy installation. If you like this project, please consider starring on Github and adding a formula to Homebrew core eventually._
+_\*Homebrew currently requires a project to have 50 stars to be included in core. So I've set up a custom tap for now that still allows easy installation. If you like this project, please consider starring on Github and adding a formula to Homebrew core eventually._
 
 ### Cross-platform dotnet app
 If you already have the dotnet runtime on your machine, you can use the dotnet application which is a cross-platform solution. Since this relies on the dotnet platform for your system, the resulting size is significantly smaller.
