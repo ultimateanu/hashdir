@@ -15,9 +15,12 @@ Links: [Github](https://github.com/ultimateanu/hashdir), [project site](https://
 ## Installation
 There are several ways to get hashdir. Full details can be found [here](https://ultimateanu.github.io/hashdir/#installation).
 
-- **Homebrew**: `brew install ultimateanu/software/hashdir`
+- **Homebrew\***: `brew install ultimateanu/software/hashdir`
 - **dotnet**: `dotnet tool install --global hashdir`
 - **Stand-alone binary**: latest version for macOS, Windows, and Linux can be found at [releases](https://github.com/ultimateanu/hashdir/releases)
+
+\*_Homebrew currently requires a project to have 50 stars to be included in core. So I’ve set up a custom tap for now that still allows easy installation. If you like this project, please consider starring on Github and adding a formula to Homebrew core eventually._
+
 
 ## Usage
 ```
