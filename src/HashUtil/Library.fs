@@ -48,6 +48,7 @@ module FS =
         levels
         (outputWriter: TextWriter)
         =
+        // TODO: make the colors optional via cmd line flag
         match structure with
         | File (path, hash) ->
             let fileLine =
@@ -61,21 +62,18 @@ module FS =
 
         | Dir (path, hash, children) ->
             // Print dir line, with optional colors.
-            // TODO: make the colors optional via cmd line flag
-            Util.printColorToWriter
-                None
-                (makeLeftSpacer levels)
-                outputWriter
+            let firstHalf =
+                sprintf
+                    "%s%s  "
+                    (makeLeftSpacer levels)
+                    hash
+            outputWriter.Write(firstHalf)
 
-            Util.printColorToWriter (None) hash outputWriter
-            Util.printColorToWriter (Some ConsoleColor.Cyan) "  /" outputWriter
-
-            Util.printColorToWriter
-                (Some ConsoleColor.Cyan)
-                (DirectoryInfo(path).Name)
-                outputWriter
-            // Append "\n" rather than use WriteLine() to avoid system line endings (e.g. "\r\n")
-            Util.printColorToWriter (None) "\n" outputWriter
+            let secondHalf =
+                sprintf
+                    "/%s\n"
+                    (DirectoryInfo(path).Name)
+            Util.printColorToWriter (Some ConsoleColor.Cyan) secondHalf outputWriter
 
             if printTree && not children.IsEmpty then
                 let allButLastChild = List.take (children.Length - 1) children
