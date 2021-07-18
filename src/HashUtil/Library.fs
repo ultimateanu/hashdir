@@ -23,7 +23,10 @@ module FS =
         | [] -> ""
         | lastLevelActive :: parentsActive ->
             let isActive x =
-                if x then Common.iSpacer else Common.bSpacer
+                if x then
+                    Common.iSpacer
+                else
+                    Common.bSpacer
 
             let parentSpacer =
                 parentsActive
@@ -48,7 +51,11 @@ module FS =
         match structure with
         | File (path, hash) ->
             // Print file line, with optional colors.
-            Util.printColorToWriter (Some ConsoleColor.DarkGray) (makeLeftSpacer levels) outputWriter
+            Util.printColorToWriter
+                (Some ConsoleColor.Gray)
+                (makeLeftSpacer levels)
+                outputWriter
+
             Util.printColorToWriter (None) hash outputWriter
             Util.printColorToWriter (None) "  " outputWriter
             Util.printColorToWriter (None) (Path.GetFileName path) outputWriter
@@ -57,11 +64,19 @@ module FS =
 
         | Dir (path, hash, children) ->
             // Print dir line, with optional colors.
-            // TODO: make the colors optional
-            Util.printColorToWriter (Some ConsoleColor.DarkGray) (makeLeftSpacer levels) outputWriter
+            // TODO: make the colors optional via cmd line flag
+            Util.printColorToWriter
+                (Some ConsoleColor.Gray)
+                (makeLeftSpacer levels)
+                outputWriter
+
             Util.printColorToWriter (None) hash outputWriter
             Util.printColorToWriter (Some ConsoleColor.Cyan) "  /" outputWriter
-            Util.printColorToWriter (Some ConsoleColor.Cyan) (DirectoryInfo(path).Name) outputWriter
+
+            Util.printColorToWriter
+                (Some ConsoleColor.Cyan)
+                (DirectoryInfo(path).Name)
+                outputWriter
             // Append "\n" rather than use WriteLine() to avoid system line endings (e.g. "\r\n")
             Util.printColorToWriter (None) "\n" outputWriter
 
@@ -92,27 +107,35 @@ module FS =
         let child = Util.getChildName itemPath
 
         let searchPattern = sprintf "%s.*.%s.txt" child hashAlgName
-        let matchPattern = sprintf "%s\.(\d+)\.%s\.txt" child hashAlgName
+
+        let matchPattern =
+            sprintf "%s\.(\d+)\.%s\.txt" child hashAlgName
 
         // Find largest existing id.
         let extractVersionNum hashFilePath =
             match hashFilePath with
-                | Util.Regex matchPattern [ number ] ->
-                    match Int32.TryParse number with
-                        | true, out -> Some out
-                        | false, _ -> None
-                | _ ->
-                    None
+            | Util.Regex matchPattern [ number ] ->
+                match Int32.TryParse number with
+                | true, out -> Some out
+                | false, _ -> None
+            | _ -> None
+
         let largestId =
             Directory.GetFiles(parentDir, searchPattern)
-                |> Array.choose extractVersionNum
-                |> Array.append [|0|]   // Ensures we have id of at least 0.
-                |> Array.max
+            |> Array.choose extractVersionNum
+            |> Array.append [| 0 |]
+            |> Array.max
 
         // Write to next id.
         let newVersion = largestId + 1
+
         let hashFilePath =
-            sprintf "%s.%d.%s.txt" itemPath newVersion (hashAlgorithm.ToString().ToLower())
+            sprintf
+                "%s.%d.%s.txt"
+                itemPath
+                newVersion
+                (hashAlgorithm.ToString().ToLower())
+
         use fileStream = new StreamWriter(hashFilePath)
         printHashStructure structure printTree fileStream
         fileStream.Flush()
