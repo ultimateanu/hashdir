@@ -48,3 +48,19 @@ type UtilTests(output: ITestOutputHelper) =
         let printOutput = out.GetStringBuilder().ToString()
 
         Assert.Equal("MATCHES", printOutput)
+
+    [<Fact>]
+    member _.``printColorToWriter no color``() =
+        use stringWriter = new IO.StringWriter()
+        Util.printColorToWriter (None) "hello" stringWriter
+
+        let printOutput = stringWriter.GetStringBuilder().ToString()
+        Assert.Equal("hello", printOutput)
+
+    [<Fact>]
+    member _.``printColorToWriter cyan color``() =
+        use stringWriter = new IO.StringWriter()
+        Util.printColorToWriter (Some ConsoleColor.Cyan) "hello" stringWriter
+
+        let printOutput = stringWriter.GetStringBuilder().ToString()
+        Assert.Equal("hello", printOutput)
