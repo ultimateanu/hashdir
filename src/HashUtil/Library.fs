@@ -50,17 +50,14 @@ module FS =
         =
         match structure with
         | File (path, hash) ->
-            // Print file line, with optional colors.
-            Util.printColorToWriter
-                None
-                (makeLeftSpacer levels)
-                outputWriter
-
-            Util.printColorToWriter (None) hash outputWriter
-            Util.printColorToWriter (None) "  " outputWriter
-            Util.printColorToWriter (None) (Path.GetFileName path) outputWriter
-            // Append "\n" rather than use WriteLine() to avoid system line endings (e.g. "\r\n")
-            Util.printColorToWriter (None) "\n" outputWriter
+            let fileLine =
+                sprintf
+                    "%s%s  %s\n"
+                    (makeLeftSpacer levels)
+                    hash
+                    (Path.GetFileName path)
+            // Use "\n" rather than use WriteLine() to avoid system line endings (e.g. "\r\n")
+            outputWriter.Write(fileLine)
 
         | Dir (path, hash, children) ->
             // Print dir line, with optional colors.
