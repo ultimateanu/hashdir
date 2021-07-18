@@ -15,6 +15,7 @@ let versionStr = "0.5.0"
 // ------------------------------------------------------------------
 
 let releaseDir = "release"
+let binDir = "src/App/bin"
 let nameAndVersion = sprintf "hashdir_%s" versionStr
 
 type Compression =
@@ -171,6 +172,8 @@ let buildRelease () =
     Directory.CreateDirectory(releaseDir) |> ignore
 
     dotnet "clean"
+    if Directory.Exists(binDir) then
+        Directory.Delete(binDir, true)
 
     // Build single binaries for current platform.
     let binaryProfiles =
