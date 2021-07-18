@@ -52,7 +52,7 @@ module FS =
         | File (path, hash) ->
             // Print file line, with optional colors.
             Util.printColorToWriter
-                (Some ConsoleColor.Gray)
+                None
                 (makeLeftSpacer levels)
                 outputWriter
 
@@ -66,7 +66,7 @@ module FS =
             // Print dir line, with optional colors.
             // TODO: make the colors optional via cmd line flag
             Util.printColorToWriter
-                (Some ConsoleColor.Gray)
+                None
                 (makeLeftSpacer levels)
                 outputWriter
 

@@ -76,12 +76,7 @@ let makeProgressStrInternal
 
     printColorToWriter None "\r" outputWriter
     printColorToWriter (Some ConsoleColor.Green) (string slash) outputWriter
-    printColorToWriter None (sprintf " %d " numFiles) outputWriter
-
-    printColorToWriter
-        (Some ConsoleColor.Gray)
-        (sprintf "%s " fileStr)
-        outputWriter
+    printColorToWriter None (sprintf " %d %s " numFiles fileStr) outputWriter
 
     let mutable outputCopy =
         sprintf "\r%c %d %s " slash numFiles fileStr
@@ -113,17 +108,17 @@ let makeProgressStrInternal
             let dirStr =
                 makeTruncatedName ("/" + (getChildName dirPath))
 
-            printColorToWriter (Some ConsoleColor.Gray) "[ " outputWriter
+            printColorToWriter None "[ " outputWriter
             printColorToWriter (Some ConsoleColor.Cyan) dirStr outputWriter
-            printColorToWriter (Some ConsoleColor.Gray) " ]" outputWriter
+            printColorToWriter None " ]" outputWriter
             outputCopy <- outputCopy + "[ " + dirStr + " ]"
     | Some fullPath ->
         let fileStr =
             fullPath |> getChildName |> makeTruncatedName
 
-        printColorToWriter (Some ConsoleColor.Gray) "[ " outputWriter
+        printColorToWriter None "[ " outputWriter
         printColorToWriter None fileStr outputWriter
-        printColorToWriter (Some ConsoleColor.Gray) " ]" outputWriter
+        printColorToWriter None " ]" outputWriter
         outputCopy <- outputCopy + "[ " + fileStr + " ]"
 
     // Print spaces to reach end of line (to clear old output).
