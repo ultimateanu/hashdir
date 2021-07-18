@@ -4,6 +4,7 @@ open HashUtil.Checksum
 open HashUtil.Hashing
 open HashUtil.Verification
 open System
+open System.IO
 open Xunit
 open Xunit.Abstractions
 
@@ -58,7 +59,9 @@ type AppTests(output: ITestOutputHelper) =
         iObserver.OnNext (HashingUpdate.FileHashStarted "/path/to/second.txt")
 
         // Create progress string.
-        let progressStr, nextIndex = Progress.makeProgressStr 0 observer
+        use strWriter = new StringWriter()
+        let nextIndex = Progress.makeProgressStr 0 observer strWriter
+        let progressStr = strWriter.ToString()
 
         // Expect final string to start this way.
         Assert.Equal(1, nextIndex)
@@ -74,7 +77,9 @@ type AppTests(output: ITestOutputHelper) =
         iObserver.OnNext (HashingUpdate.FileHashStarted filePath)
 
         // Create progress string.
-        let progressStr, nextIndex = Progress.makeProgressStrInternal 0 observer 50
+        use strWriter = new StringWriter()
+        let nextIndex = Progress.makeProgressStrInternal 0 observer 50 strWriter
+        let progressStr = strWriter.ToString()
 
         // Expect final string to start this way.
         Assert.Equal(1, nextIndex)
@@ -89,7 +94,9 @@ type AppTests(output: ITestOutputHelper) =
         iObserver.OnNext (HashingUpdate.DirHashStarted "/path/to/dir")
 
         // Create progress string.
-        let progressStr, nextIndex = Progress.makeProgressStr 15 observer
+        use strWriter = new StringWriter()
+        let nextIndex = Progress.makeProgressStr 15 observer strWriter
+        let progressStr = strWriter.ToString()
 
         // Expect final string to start this way.
         Assert.Equal(0, nextIndex)

@@ -85,26 +85,21 @@ let rootHandler (opt: RootOpt) =
         // Show progress while hashing happens in background.
         let mutable slashIndex = 0
         while not hashingTask.IsCompleted do
-            let progressStr, nextIndex = Progress.makeProgressStr slashIndex hashingProgressObserver
+            let nextIndex = Progress.makeProgressStr slashIndex hashingProgressObserver Console.Error
             slashIndex <- nextIndex
-            Console.Error.Write(progressStr)
             Thread.Sleep(200)
         Console.Error.Write("\r".PadRight (Progress.getConsoleMaxWidth()))
         Console.Error.Write("\r")
         Console.Error.Flush()
 
         let optHashStructure = hashingTask.Result
-        use strWriter = new StringWriter()
-
         match optHashStructure with
         | Error err -> printfn "Error: %s" err
         | Ok hashStructure ->
             if opt.Save then
                 saveHashStructure hashStructure opt.PrintTree opt.Algorithm
 
-            printHashStructure hashStructure opt.PrintTree strWriter
-            printf "%s" (strWriter.ToString())
-
+            printHashStructure hashStructure opt.PrintTree Console.Out
 
 let checkHandler (opt: CheckOpt) =
     let processHashFile hashFile =
@@ -122,9 +117,8 @@ let checkHandler (opt: CheckOpt) =
         // Show progress while verification happens in background.
         let mutable slashIndex = 0
         while not verifyTask.IsCompleted do
-            let progressStr, nextIndex = Progress.makeProgressStr slashIndex hashingProgressObserver
+            let nextIndex = Progress.makeProgressStr slashIndex hashingProgressObserver Console.Error
             slashIndex <- nextIndex
-            Console.Error.Write(progressStr)
             Thread.Sleep(200)
         Console.Error.Write("\r".PadRight (Progress.getConsoleMaxWidth()))
         Console.Error.Write("\r")

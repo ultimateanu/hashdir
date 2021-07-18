@@ -32,6 +32,15 @@ module Util =
         printf "%s" str
         Console.ResetColor()
 
+    let printColorToWriter (color: ConsoleColor option) (str: string) (outputWriter: TextWriter) =
+        match color with
+        | Some c ->
+            Console.ForegroundColor <- c
+            outputWriter.Write(str)
+            Console.ResetColor()
+        | None ->
+            outputWriter.Write(str)
+
     // Removes trailing characters if path is directory.
     let cleanPath path =
         if Directory.Exists(path) then
