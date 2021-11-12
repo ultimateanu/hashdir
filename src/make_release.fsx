@@ -172,6 +172,7 @@ let buildRelease () =
     Directory.CreateDirectory(releaseDir) |> ignore
 
     dotnet "clean"
+
     if Directory.Exists(binDir) then
         Directory.Delete(binDir, true)
 
