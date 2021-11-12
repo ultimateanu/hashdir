@@ -131,7 +131,7 @@ let buildSingleBinary (profile: PublishSpec) =
         sprintf "%s_%s" nameAndVersion profile.Name
 
     let oldProfileDir =
-        "src/App/bin/Release/net5.0/publish/binary"
+        "src/App/bin/Release/net6.0/publish/binary"
 
     let newProfileDir = Path.Combine(releaseDir, releaseName)
 
@@ -160,7 +160,7 @@ let makeNuGetRelease () =
 let makeDotnetRelease () =
     dotnet "publish -c Release -p:PublishProfile=dotnet src/App/App.fsproj"
     let releaseName = sprintf "%s_dotnet" nameAndVersion
-    Directory.Move("src/App/bin/Release/net5.0/publish/dotnet", Path.Combine(releaseDir, releaseName))
+    Directory.Move("src/App/bin/Release/net6.0/publish/dotnet", Path.Combine(releaseDir, releaseName))
     compressDir Zip releaseName
     compressDir TarGz releaseName
 
