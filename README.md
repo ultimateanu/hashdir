@@ -1,7 +1,7 @@
 # hashdir
 
-![build](https://github.com/ultimateanu/hashdir/workflows/build/badge.svg)
-![test](https://github.com/ultimateanu/hashdir/workflows/test/badge.svg)
+[![build](https://github.com/ultimateanu/hashdir/actions/workflows/build.yml/badge.svg)](https://github.com/ultimateanu/hashdir/actions/workflows/build.yml)
+[![test](https://github.com/ultimateanu/hashdir/actions/workflows/test.yml/badge.svg)](https://github.com/ultimateanu/hashdir/actions/workflows/test.yml)
 [![codecov](https://codecov.io/gh/ultimateanu/hashdir/branch/main/graph/badge.svg?token=5RR570QEIX)](https://codecov.io/gh/ultimateanu/hashdir)
 
 ![sample terminal usage](https://ultimateanu.github.io/hashdir/assets/img/check_demo.svg)
