@@ -1,0 +1,33 @@
+name: release
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-11, windows-latest]
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 6.0.101
+
+    - name: Build binaries
+      run: dotnet fsi ./src/make_release.fsx build
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: release-binaries
+        path: |
+          release/*.tar.gz
+          release/*.zip
