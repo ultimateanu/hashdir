@@ -17,6 +17,9 @@ jobs:
       with:
         dotnet-version: 6.0.100
 
+    - name: Build binaries
+      run: dotnet fsi ./src/make_release.fsx build
+
     - uses: actions/upload-artifact@v2
       with:
         name: release-binaries
