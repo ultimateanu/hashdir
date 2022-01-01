@@ -14,12 +14,16 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 6.0.100
+        dotnet-version: 6.0.101
+
     - name: Restore dependencies
       run: dotnet restore
+
     - name: Build
       run: dotnet build --no-restore /p:ContinuousIntegrationBuild=true
+
     - name: Test
       run: dotnet test --no-build /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
+
     - name: Codecov
       uses: codecov/codecov-action@v1
