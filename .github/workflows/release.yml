@@ -23,3 +23,8 @@ jobs:
       run: dotnet test --no-build --verbosity normal
     - name: Build binaries
       run: dotnet fsi ./src/make_release.fsx build
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: release-binaries
+        path: release/
