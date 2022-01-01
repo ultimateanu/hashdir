@@ -31,3 +31,30 @@ jobs:
         path: |
           release/*.tar.gz
           release/*.zip
+
+  checksum:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 6.0.101
+
+    - uses: actions/download-artifact@v2
+      with:
+        name: release-binaries
+
+    - name: Checksum binaries
+      run: dotnet fsi ./src/make_release.fsx hash
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: release-binariesz
+        path: |
+          release/*.tar.gz
+          release/*.zip
+          release/*.txt
