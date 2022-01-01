@@ -25,6 +25,7 @@ type Compression =
 type RuntimeIdentifier =
     // MacOS
     | Mac64
+    | MacArm
     // Windows
     | Win86
     | Win64
@@ -43,6 +44,9 @@ type PublishSpec =
 let macProfiles =
     [ { Name = "macOS_64bit"
         Rid = Mac64
+        Compression = TarGz }
+      { Name = "macOS_ARM"
+        Rid = MacArm
         Compression = TarGz } ]
 
 let windowsProfiles =
@@ -74,6 +78,7 @@ let RuntimeIdentifierString id =
     match id with
     // MacOS
     | Mac64 -> "osx-x64"
+    | MacArm -> "osx-arm64"
     // Windows
     | Win86 -> "win-x86"
     | Win64 -> "win-x64"
