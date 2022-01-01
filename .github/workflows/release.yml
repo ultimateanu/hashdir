@@ -52,7 +52,7 @@ jobs:
 
     - uses: actions/upload-artifact@v2
       with:
-        name: release-binariesz
+        name: release-binaries
         path: |
           release/*.tar.gz
           release/*.zip
