@@ -11,20 +11,13 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+
     - name: Setup .NET
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 6.0.100
-    - name: Restore dependencies
-      run: dotnet restore
-    - name: Build
-      run: dotnet build --no-restore
-    - name: Test
-      run: dotnet test --no-build --verbosity normal
-    - name: Build binaries
-      run: dotnet fsi ./src/make_release.fsx build
 
     - uses: actions/upload-artifact@v2
       with:
         name: release-binaries
-        path: release/
+        path: release/*.tar.gz
