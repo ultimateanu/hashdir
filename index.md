@@ -27,7 +27,7 @@ This is a single executable file with no external dependencies. It is available 
 2. Extract the contents of the .zip or .tar.gz file
 3. Run the binary
 ```
-hashdir --help
+./hashdir --help
 ```
 4. _Optional_: copy the executable to a directory in your PATH (e.g. /usr/local/bin)
 
@@ -40,7 +40,7 @@ brew install ultimateanu/software/hashdir
 brew upgrade ultimateanu/software/hashdir
 ```
 
-* dotnet (NuGet)
+* dotnet ([NuGet](https://www.nuget.org/packages/hashdir))
 ```
 dotnet tool install --global hashdir
 dotnet tool update --global hashdir
