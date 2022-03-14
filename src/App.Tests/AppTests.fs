@@ -17,35 +17,27 @@ type AppTests(output: ITestOutputHelper) =
     member _.``RootOpt parses md5 algorithm correctly``() =
         let rootOpt =
             Program.RootOpt([|"report.pdf"; "sources.txt"|],
-                true, true, true, false, "md5")
+                true, true, true, false, "md5", false)
 
         Assert.Equal(HashType.MD5, rootOpt.Algorithm)
-        let expectedStr = "RootOpt[Items:[|\"report.pdf\"; \"sources.txt\"|] PrintTree:true Save:true IncludeHiddenFiles:true SkipEmptyDir:false Algorithm:MD5]"
+        let expectedStr = "RootOpt[Items:[|\"report.pdf\"; \"sources.txt\"|] PrintTree:true Save:true IncludeHiddenFiles:true SkipEmptyDir:false Algorithm:MD5 Color:false]"
         Assert.Equal(expectedStr, rootOpt.ToString())
-
-    [<Fact>]
-    member _.``RootOpt uses sha1 if algorithm not specified``() =
-        let rootOpt =
-            Program.RootOpt([|"report.pdf"; "sources.txt"|],
-                true, true, true, false, null)
-
-        Assert.Equal(HashType.SHA1, rootOpt.Algorithm)
 
     [<Fact>]
     member _.``CheckOpt parses algorithm and verbosity correctly``() =
         let checkOpt =
-            Program.CheckOpt([|"report.pdf"|], false, true, "sha256", "detailed")
+            Program.CheckOpt([|"report.pdf"|], false, true, "sha256", "detailed", true)
 
         Assert.True(checkOpt.Algorithm.IsSome)
         Assert.Equal(HashType.SHA256, checkOpt.Algorithm.Value)
         Assert.Equal(PrintVerbosity.Detailed, checkOpt.Verbosity)
-        let expectedStr = "CheckOpt[Items:[|\"report.pdf\"|] IncludeHiddenFiles:false SkipEmptyDir:true Algorithm:Some SHA256]"
+        let expectedStr = "CheckOpt[Items:[|\"report.pdf\"|] IncludeHiddenFiles:false SkipEmptyDir:true Algorithm:Some SHA256 Color:true]"
         Assert.Equal(expectedStr, checkOpt.ToString())
 
     [<Fact>]
     member _.``CheckOpt sets algorithm None when missing``() =
         let checkOpt =
-            Program.CheckOpt([|"report.pdf"|], false, true, null, "detailed")
+            Program.CheckOpt([|"report.pdf"|], false, true, null, "detailed", true)
 
         Assert.True(checkOpt.Algorithm.IsNone)
 
@@ -60,7 +52,7 @@ type AppTests(output: ITestOutputHelper) =
 
         // Create progress string.
         use strWriter = new StringWriter()
-        let nextIndex = Progress.makeProgressStr 0 observer strWriter
+        let nextIndex = Progress.makeProgressStr 0 observer strWriter true
         let progressStr = strWriter.ToString()
 
         // Expect final string to start this way.
@@ -78,7 +70,7 @@ type AppTests(output: ITestOutputHelper) =
 
         // Create progress string.
         use strWriter = new StringWriter()
-        let nextIndex = Progress.makeProgressStrInternal 0 observer 50 strWriter
+        let nextIndex = Progress.makeProgressStrInternal 0 observer 50 strWriter true
         let progressStr = strWriter.ToString()
 
         // Expect final string to start this way.
@@ -95,7 +87,7 @@ type AppTests(output: ITestOutputHelper) =
 
         // Create progress string.
         use strWriter = new StringWriter()
-        let nextIndex = Progress.makeProgressStr 15 observer strWriter
+        let nextIndex = Progress.makeProgressStr 15 observer strWriter true
         let progressStr = strWriter.ToString()
 
         // Expect final string to start this way.

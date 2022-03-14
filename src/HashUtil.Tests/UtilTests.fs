@@ -52,15 +52,16 @@ type UtilTests(output: ITestOutputHelper) =
     [<Fact>]
     member _.``printColorToWriter no color``() =
         use stringWriter = new IO.StringWriter()
-        Util.printColorToWriter (None) "hello" stringWriter
+        Util.printColorToWriter true (None) "hello" stringWriter
 
         let printOutput = stringWriter.GetStringBuilder().ToString()
         Assert.Equal("hello", printOutput)
 
     [<Fact>]
     member _.``printColorToWriter cyan color``() =
+        // TODO: Figure out if color was used.
         use stringWriter = new IO.StringWriter()
-        Util.printColorToWriter (Some ConsoleColor.Cyan) "hello" stringWriter
+        Util.printColorToWriter true (Some ConsoleColor.Cyan) "hello" stringWriter
 
         let printOutput = stringWriter.GetStringBuilder().ToString()
         Assert.Equal("hello", printOutput)

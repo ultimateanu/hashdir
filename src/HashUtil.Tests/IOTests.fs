@@ -14,13 +14,13 @@ type DisplayTests(output: ITestOutputHelper) =
         let strWriter = new StringWriter()
 
         // Output without tree should be a single line.
-        printHashStructure hashStructure false strWriter
+        printHashStructure hashStructure false strWriter true
         let expectedStr = "a1b2c3  file.txt\n"
         Assert.Equal(expectedStr, strWriter.ToString())
 
         // With tree should be same result.
         strWriter.GetStringBuilder().Clear() |> ignore
-        printHashStructure hashStructure true strWriter
+        printHashStructure hashStructure true strWriter true
         Assert.Equal(expectedStr, strWriter.ToString())
 
     [<Fact>]
@@ -29,7 +29,7 @@ type DisplayTests(output: ITestOutputHelper) =
             ItemHash.Dir(path = "/path/to/dir", hash = "d1", children = [])
 
         let strWriter = new StringWriter()
-        printHashStructure hashStructure true strWriter
+        printHashStructure hashStructure true strWriter true
 
         let expectedStr = "d1  /dir\n"
         Assert.Equal(expectedStr, strWriter.ToString())
@@ -44,7 +44,7 @@ type DisplayTests(output: ITestOutputHelper) =
             )
 
         let strWriter = new StringWriter()
-        printHashStructure hashStructure true strWriter
+        printHashStructure hashStructure true strWriter true
 
         let expectedStr = "d1  /dir\n└── f1  file1.txt\n"
         Assert.Equal(expectedStr, strWriter.ToString())
@@ -61,7 +61,7 @@ type DisplayTests(output: ITestOutputHelper) =
             )
 
         let strWriter = new StringWriter()
-        printHashStructure hashStructure true strWriter
+        printHashStructure hashStructure true strWriter true
 
         let expectedStr =
             "d1  /dir\n├── f1  file1.txt\n└── f2  file2.txt\n"
@@ -81,7 +81,7 @@ type DisplayTests(output: ITestOutputHelper) =
             )
 
         let strWriter = new StringWriter()
-        printHashStructure hashStructure false strWriter
+        printHashStructure hashStructure false strWriter true
 
         let expectedStr = "d1  /dir\n"
         Assert.Equal(expectedStr, strWriter.ToString())
