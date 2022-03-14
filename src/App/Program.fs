@@ -6,13 +6,12 @@ open HashUtil.Verification
 open System
 open System.CommandLine
 open System.CommandLine.Invocation
-open System.IO
 open System.Threading
 
 
 let defaultHashAlg = HashType.SHA1
 
-type RootOpt(item, tree, save, includeHiddenFiles, skipEmptyDir, algorithm: string, color: bool) =
+type RootOpt(item, tree, save, includeHiddenFiles, skipEmptyDir, algorithm, color: bool) =
     // Arguments
     member val Items: string [] = item
 
@@ -22,11 +21,12 @@ type RootOpt(item, tree, save, includeHiddenFiles, skipEmptyDir, algorithm: stri
     member val IncludeHiddenFiles: bool = includeHiddenFiles
     member val SkipEmptyDir: bool = skipEmptyDir
     member val Algorithm: HashType =
-        (
-            let alg = parseHashType algorithm
+        match algorithm with
+        | null -> defaultHashAlg
+        | str ->
+            let alg = parseHashType str
             assert alg.IsSome
             alg.Value
-        )
     member val Color: bool = color
 
     override x.ToString() =
@@ -135,7 +135,7 @@ let checkHandler (opt: CheckOpt) =
             1
         | Ok itemResults ->
             let printAndGetMatchResult result =
-                printVerificationResults opt.Verbosity result
+                printVerificationResults opt.Verbosity opt.Color result
                 match result with
                 | Ok r ->
                     match r with
@@ -189,8 +189,9 @@ let algorithmOpt forCheck =
         | false ->
             Option<string>(
                 [| "-a"; "--algorithm" |],
-                (fun () -> defaultHashAlg.ToString().ToLower()),
-                "The hash function to use")
+                sprintf "The hash function to use [default: %s]"
+                    <| defaultHashAlg.ToString().ToLower()
+            )
 
     let allHashTypesStr = allHashTypes |> Array.map toStrLower
     hashAlgOption.FromAmong(allHashTypesStr) |> ignore
@@ -226,9 +227,8 @@ let checkCmd =
     // OPTIONS
     checkCmd.AddOption hiddenFilesOpt
     checkCmd.AddOption skipEmptyOpt
-    checkCmd.AddOption(algorithmOpt true)
+    checkCmd.AddOption (algorithmOpt true)
     checkCmd.AddOption verbosityOpt
-    checkCmd.AddOption colorOpt
     checkCmd.Handler <- CommandHandler.Create(checkHandler)
 
     checkCmd

@@ -43,7 +43,7 @@ type UtilTests(output: ITestOutputHelper) =
         let oldOut = Console.Out
         use out = new IO.StringWriter()
         Console.SetOut(out)
-        Util.printColor ConsoleColor.Green "MATCHES"
+        Util.printColor true ConsoleColor.Green "MATCHES"
         Console.SetOut(oldOut)
         let printOutput = out.GetStringBuilder().ToString()
 

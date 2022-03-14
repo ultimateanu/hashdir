@@ -27,10 +27,13 @@ module Util =
         else
             Path.GetFileName path
 
-    let printColor color str =
-        Console.ForegroundColor <- color
-        printf "%s" str
-        Console.ResetColor()
+    let printColor colorize color str =
+        if colorize then
+            Console.ForegroundColor <- color
+            printf "%s" str
+            Console.ResetColor()
+        else
+            printf "%s" str
 
     let printColorToWriter (colorize: bool) (color: ConsoleColor option) (str: string) (outputWriter: TextWriter) =
         let colorToPrint: ConsoleColor option =

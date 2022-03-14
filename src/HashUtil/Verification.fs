@@ -132,33 +132,34 @@ module Verification =
 
     let printVerificationResults
         verbosity
+        colorize
         (result : Result<VerificationResult,string>) =
 
         let printSuccess path hash =
             match verbosity with
                 | Quiet -> ()
                 | Normal ->
-                    Util.printColor ConsoleColor.Green "MATCHES"
+                    Util.printColor colorize ConsoleColor.Green "MATCHES"
                     printfn "%s%s" Common.bSpacer path
                 | Detailed ->
-                    Util.printColor ConsoleColor.Green "MATCHES"
+                    Util.printColor colorize ConsoleColor.Green "MATCHES"
                     printfn "%s%s (%s)" Common.bSpacer path hash
 
         let printDiffer path actualHash expectedHash =
             match verbosity with
             | Quiet -> ()
             | Normal ->
-                Util.printColor ConsoleColor.DarkYellow "DIFFERS"
+                Util.printColor colorize ConsoleColor.DarkYellow "DIFFERS"
                 printfn "%s%s" Common.bSpacer path
             | Detailed ->
-                Util.printColor ConsoleColor.DarkYellow "DIFFERS"
+                Util.printColor colorize ConsoleColor.DarkYellow "DIFFERS"
                 printfn "%s%s (%s, expected: %s)" Common.bSpacer path actualHash expectedHash
 
         let printError path =
             match verbosity with
             | Quiet -> ()
             | _ ->
-                Util.printColor ConsoleColor.Red "ERROR  "
+                Util.printColor colorize ConsoleColor.Red "ERROR  "
                 printfn "%s%s" Common.bSpacer path
 
         match result with
