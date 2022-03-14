@@ -12,7 +12,7 @@ open System.Threading
 
 let defaultHashAlg = HashType.SHA1
 
-type RootOpt(item, tree, save, includeHiddenFiles, skipEmptyDir, algorithm) =
+type RootOpt(item, tree, save, includeHiddenFiles, skipEmptyDir, algorithm: string, color: bool) =
     // Arguments
     member val Items: string [] = item
 
@@ -22,22 +22,23 @@ type RootOpt(item, tree, save, includeHiddenFiles, skipEmptyDir, algorithm) =
     member val IncludeHiddenFiles: bool = includeHiddenFiles
     member val SkipEmptyDir: bool = skipEmptyDir
     member val Algorithm: HashType =
-        match algorithm with
-        | null -> defaultHashAlg
-        | str ->
-            let alg = parseHashType str
+        (
+            let alg = parseHashType algorithm
             assert alg.IsSome
             alg.Value
+        )
+    member val Color: bool = color
 
     override x.ToString() =
         sprintf
-            "RootOpt[Items:%A PrintTree:%A Save:%A IncludeHiddenFiles:%A SkipEmptyDir:%A Algorithm:%A]"
+            "RootOpt[Items:%A PrintTree:%A Save:%A IncludeHiddenFiles:%A SkipEmptyDir:%A Algorithm:%A Color:%A]"
             x.Items
             x.PrintTree
             x.Save
             x.IncludeHiddenFiles
             x.SkipEmptyDir
             x.Algorithm
+            x.Color
 
 
 type CheckOpt(item, includeHiddenFiles, skipEmptyDir, algorithm, verbosity) =
@@ -186,9 +187,8 @@ let algorithmOpt forCheck =
         | false ->
             Option<string>(
                 [| "-a"; "--algorithm" |],
-                sprintf "The hash function to use [default: %s]"
-                    <| defaultHashAlg.ToString().ToLower()
-            )
+                (fun () -> defaultHashAlg.ToString().ToLower()),
+                "The hash function to use")
 
     let allHashTypesStr = allHashTypes |> Array.map toStrLower
     hashAlgOption.FromAmong(allHashTypesStr) |> ignore
@@ -241,14 +241,13 @@ let rootCmd =
 
     // OPTIONS
     root.AddOption(Option<bool>([| "-t"; "--tree" |], "Print directory tree"))
-
     root.AddOption(
         Option<bool>([| "-s"; "--save" |], "Save the checksum to a file")
     )
-
     root.AddOption hiddenFilesOpt
     root.AddOption skipEmptyOpt
     root.AddOption(algorithmOpt false)
+    root.AddOption(Option<bool>([| "-c"; "--color" |], (fun () -> true), "Colorize the output"))
 
     root.Handler <- CommandHandler.Create(rootHandler)
     root
