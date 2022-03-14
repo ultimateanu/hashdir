@@ -216,29 +216,29 @@ let verbosityOpt =
 let colorOpt =
     Option<bool>([| "-c"; "--color" |], (fun () -> true), "Colorize the output")
 
-let verifyCmd =
-    let verifyCmd =
+let checkCmd =
+    let checkCmd =
         Command("check", "Verify that the specified hash file is valid.")
 
     // ARGS
-    verifyCmd.AddArgument itemArg
+    checkCmd.AddArgument itemArg
 
     // OPTIONS
-    verifyCmd.AddOption hiddenFilesOpt
-    verifyCmd.AddOption skipEmptyOpt
-    verifyCmd.AddOption(algorithmOpt true)
-    verifyCmd.AddOption verbosityOpt
-    verifyCmd.AddOption colorOpt
-    verifyCmd.Handler <- CommandHandler.Create(checkHandler)
+    checkCmd.AddOption hiddenFilesOpt
+    checkCmd.AddOption skipEmptyOpt
+    checkCmd.AddOption(algorithmOpt true)
+    checkCmd.AddOption verbosityOpt
+    checkCmd.AddOption colorOpt
+    checkCmd.Handler <- CommandHandler.Create(checkHandler)
 
-    verifyCmd
+    checkCmd
 
 let rootCmd =
     let root =
         RootCommand("A command-line utility to checksum directories and files.")
 
-    // Verify Command
-    root.AddCommand verifyCmd
+    // Check (verb command)
+    root.AddCommand checkCmd
 
     // ARGS
     root.AddArgument itemArg
