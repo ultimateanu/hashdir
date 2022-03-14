@@ -135,5 +135,5 @@ module FS =
                 (hashAlgorithm.ToString().ToLower())
 
         use fileStream = new StreamWriter(hashFilePath)
-        printHashStructure structure printTree fileStream
+        printHashStructure structure printTree fileStream true
         fileStream.Flush()
