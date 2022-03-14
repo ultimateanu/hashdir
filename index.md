@@ -91,6 +91,7 @@ Options:
   -i, --include-hidden-files                         Include hidden files
   -e, --skip-empty-dir                               Skip empty directories
   -a, --algorithm <md5|sha1|sha256|sha384|sha512>    The hash function to use [default: sha1]
+  -c, --color                                        Colorize the output [default: True]
   --version                                          Show version information
   -?, -h, --help                                     Show help and usage information
 
