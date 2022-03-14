@@ -8,7 +8,7 @@
 
 _A command-line utility to checksum directories and files._
 
-**hashdir** aims to be the easiest way to hash a file/directory. This is useful in many situations such as transferring files, archiving data, or detecting duplicates. It is a single binary, works on all major OS's, and has a simple command-line interface. It is developed with F# on .NET 5.
+**hashdir** aims to be the easiest way to hash a file/directory. This is useful in many situations such as transferring files, archiving data, or detecting duplicates. It is a single binary, works on all major OS's, and has a simple command-line interface. It is developed with F# on .NET 6.
 
 Links: [Github](https://github.com/ultimateanu/hashdir), [NuGet](https://www.nuget.org/packages/hashdir), [project site](https://ultimateanu.github.io/hashdir)
 
