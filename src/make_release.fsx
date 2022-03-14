@@ -11,7 +11,7 @@ open System.IO.Compression
 open System.Runtime.InteropServices
 
 // Configuration ----------------------------------------------------
-let versionStr = "0.5.0"
+let versionStr = "1.0.0"
 // ------------------------------------------------------------------
 
 let releaseDir = "release"
