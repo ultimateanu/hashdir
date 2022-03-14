@@ -47,6 +47,7 @@ module FS =
         printTree
         levels
         (outputWriter: TextWriter)
+        (colorize: bool)
         =
         // TODO: make the colors optional via cmd line flag
         match structure with
@@ -73,7 +74,7 @@ module FS =
                 sprintf
                     "/%s\n"
                     (DirectoryInfo(path).Name)
-            Util.printColorToWriter (Some ConsoleColor.Cyan) secondHalf outputWriter
+            Util.printColorToWriter colorize (Some ConsoleColor.Cyan) secondHalf outputWriter
 
             if printTree && not children.IsEmpty then
                 let allButLastChild = List.take (children.Length - 1) children
@@ -85,12 +86,14 @@ module FS =
                         printTree
                         (true :: levels)
                         outputWriter
+                        colorize
 
                 printHashStructureHelper
                     lastChild
                     printTree
                     (false :: levels)
                     outputWriter
+                    colorize
 
     let rec printHashStructure structure printTree outputWriter =
         printHashStructureHelper structure printTree [] outputWriter

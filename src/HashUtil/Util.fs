@@ -32,8 +32,13 @@ module Util =
         printf "%s" str
         Console.ResetColor()
 
-    let printColorToWriter (color: ConsoleColor option) (str: string) (outputWriter: TextWriter) =
-        match color with
+    let printColorToWriter (colorize: bool) (color: ConsoleColor option) (str: string) (outputWriter: TextWriter) =
+        let colorToPrint: ConsoleColor option =
+            match colorize with
+                | true -> color
+                | false -> None
+
+        match colorToPrint with
         | Some c ->
             Console.ForegroundColor <- c
             outputWriter.Write(str)

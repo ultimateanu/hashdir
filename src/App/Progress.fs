@@ -65,6 +65,7 @@ let makeProgressStrInternal
     (hashingObserver: HashingObserver)
     consoleMaxWidth
     (outputWriter: TextWriter)
+    (colorize: bool)
     =
     let slash =
         Array.get progressSymbols (slashIndex % progressSymbols.Length)
@@ -74,9 +75,9 @@ let makeProgressStrInternal
     let curDir = hashingObserver.HashingDir
     let fileStr = if numFiles = 1 then "file" else "files"
 
-    printColorToWriter None "\r" outputWriter
-    printColorToWriter (Some ConsoleColor.Green) (string slash) outputWriter
-    printColorToWriter None (sprintf " %d %s " numFiles fileStr) outputWriter
+    printColorToWriter colorize None "\r" outputWriter
+    printColorToWriter colorize (Some ConsoleColor.Green) (string slash) outputWriter
+    printColorToWriter colorize None (sprintf " %d %s " numFiles fileStr) outputWriter
 
     let mutable outputCopy =
         sprintf "\r%c %d %s " slash numFiles fileStr
@@ -108,24 +109,24 @@ let makeProgressStrInternal
             let dirStr =
                 makeTruncatedName ("/" + (getChildName dirPath))
 
-            printColorToWriter None "[ " outputWriter
-            printColorToWriter (Some ConsoleColor.Cyan) dirStr outputWriter
-            printColorToWriter None " ]" outputWriter
+            printColorToWriter colorize None "[ " outputWriter
+            printColorToWriter colorize (Some ConsoleColor.Cyan) dirStr outputWriter
+            printColorToWriter colorize None " ]" outputWriter
             outputCopy <- outputCopy + "[ " + dirStr + " ]"
     | Some fullPath ->
         let fileStr =
             fullPath |> getChildName |> makeTruncatedName
 
-        printColorToWriter None "[ " outputWriter
-        printColorToWriter None fileStr outputWriter
-        printColorToWriter None " ]" outputWriter
+        printColorToWriter colorize None "[ " outputWriter
+        printColorToWriter colorize None fileStr outputWriter
+        printColorToWriter colorize None " ]" outputWriter
         outputCopy <- outputCopy + "[ " + fileStr + " ]"
 
     // Print spaces to reach end of line (to clear old output).
     let remainingWidth =
         max 0 (consoleMaxWidth - outputCopy.Length)
 
-    printColorToWriter None (String.replicate remainingWidth " ") outputWriter
+    printColorToWriter colorize None (String.replicate remainingWidth " ") outputWriter
     outputCopy <- outputCopy + (String.replicate remainingWidth " ")
     assert (outputCopy.Length >= consoleMaxWidth)
 
@@ -136,9 +137,11 @@ let makeProgressStr
     slashIndex
     (hashingObserver: HashingObserver)
     (outputWriter: TextWriter)
+    (colorize: bool)
     =
     makeProgressStrInternal
         slashIndex
         hashingObserver
         (getConsoleMaxWidth ())
         outputWriter
+        colorize

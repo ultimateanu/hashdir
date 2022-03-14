@@ -41,7 +41,7 @@ type RootOpt(item, tree, save, includeHiddenFiles, skipEmptyDir, algorithm: stri
             x.Color
 
 
-type CheckOpt(item, includeHiddenFiles, skipEmptyDir, algorithm, verbosity) =
+type CheckOpt(item, includeHiddenFiles, skipEmptyDir, algorithm, verbosity, color) =
     // Arguments
     member val Items: string [] = item
 
@@ -59,14 +59,16 @@ type CheckOpt(item, includeHiddenFiles, skipEmptyDir, algorithm, verbosity) =
         let verbosityMaybe = parsePrintVerbosity verbosity
         assert verbosityMaybe.IsSome
         verbosityMaybe.Value
+    member val Color: bool = color
 
     override x.ToString() =
         sprintf
-            "CheckOpt[Items:%A IncludeHiddenFiles:%A SkipEmptyDir:%A Algorithm:%A]"
+            "CheckOpt[Items:%A IncludeHiddenFiles:%A SkipEmptyDir:%A Algorithm:%A Color:%A]"
             x.Items
             x.IncludeHiddenFiles
             x.SkipEmptyDir
             x.Algorithm
+            x.Color
 
 
 let rootHandler (opt: RootOpt) =
@@ -86,7 +88,7 @@ let rootHandler (opt: RootOpt) =
         // Show progress while hashing happens in background.
         let mutable slashIndex = 0
         while not hashingTask.IsCompleted do
-            let nextIndex = Progress.makeProgressStr slashIndex hashingProgressObserver Console.Error
+            let nextIndex = Progress.makeProgressStr slashIndex hashingProgressObserver Console.Error opt.Color
             slashIndex <- nextIndex
             Thread.Sleep(200)
         Console.Error.Write("\r".PadRight (Progress.getConsoleMaxWidth()))
@@ -100,7 +102,7 @@ let rootHandler (opt: RootOpt) =
             if opt.Save then
                 saveHashStructure hashStructure opt.PrintTree opt.Algorithm
 
-            printHashStructure hashStructure opt.PrintTree Console.Out
+            printHashStructure hashStructure opt.PrintTree Console.Out opt.Color
 
 let checkHandler (opt: CheckOpt) =
     let processHashFile hashFile =
@@ -118,7 +120,7 @@ let checkHandler (opt: CheckOpt) =
         // Show progress while verification happens in background.
         let mutable slashIndex = 0
         while not verifyTask.IsCompleted do
-            let nextIndex = Progress.makeProgressStr slashIndex hashingProgressObserver Console.Error
+            let nextIndex = Progress.makeProgressStr slashIndex hashingProgressObserver Console.Error opt.Color
             slashIndex <- nextIndex
             Thread.Sleep(200)
         Console.Error.Write("\r".PadRight (Progress.getConsoleMaxWidth()))
@@ -207,11 +209,12 @@ let verbosityOpt =
             (fun () -> toStrLower PrintVerbosity.Normal),
             "Sets the verbosity level for the output"
         )
-
     opt.FromAmong(allPrintVerbosity |> Array.map toStrLower)
     |> ignore
-
     opt
+
+let colorOpt =
+    Option<bool>([| "-c"; "--color" |], (fun () -> true), "Colorize the output")
 
 let verifyCmd =
     let verifyCmd =
@@ -225,6 +228,7 @@ let verifyCmd =
     verifyCmd.AddOption skipEmptyOpt
     verifyCmd.AddOption(algorithmOpt true)
     verifyCmd.AddOption verbosityOpt
+    verifyCmd.AddOption colorOpt
     verifyCmd.Handler <- CommandHandler.Create(checkHandler)
 
     verifyCmd
@@ -247,7 +251,7 @@ let rootCmd =
     root.AddOption hiddenFilesOpt
     root.AddOption skipEmptyOpt
     root.AddOption(algorithmOpt false)
-    root.AddOption(Option<bool>([| "-c"; "--color" |], (fun () -> true), "Colorize the output"))
+    root.AddOption colorOpt
 
     root.Handler <- CommandHandler.Create(rootHandler)
     root
