@@ -34,7 +34,7 @@ module Checksum =
     let getHashAlgorithm hashType: HashAlgorithm =
         match hashType with
         | MD5 -> upcast MD5.Create()
-        | RIPEMD160 -> upcast Checksums.RIPEMD160Managed.Create()
+        | RIPEMD160 -> upcast Checksums.RIPEMD160.Create()
         | SHA1 -> upcast SHA1.Create()
         | SHA256 -> upcast SHA256.Create()
         | SHA384 -> upcast SHA384.Create()
