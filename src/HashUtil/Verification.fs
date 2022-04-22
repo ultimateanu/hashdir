@@ -2,6 +2,7 @@
 
 open System
 open System.IO
+open System.Text.RegularExpressions;
 open Microsoft.FSharp.Reflection
 open Hashing
 
@@ -75,7 +76,6 @@ module Verification =
             if matchedHashType.Length = 1 then
                 verifyHashAndItem progressObserver matchedHashType.[0] includeHiddenFiles includeEmptyDir basePath hash itemPath
             else
-                // TODO: Try to use filename to guess
                 Error("Cannot determine which hash algorithm to use")
 
 
@@ -83,6 +83,16 @@ module Verification =
         includeHiddenFiles
         includeEmptyDir
         origPath =
+
+        let hashTypeBestGuess = 
+            if hashType.IsSome then
+                hashType
+            else
+                let m = Regex.Match(origPath, "\.([a-zA-Z0-9]+?).txt");
+                if m.Success then
+                    Checksum.parseHashType m.Groups[1].Value
+                else
+                    None
 
         let verifyValidHashFile (path:string) =
             let baseDirPath = Path.GetDirectoryName path
@@ -112,7 +122,7 @@ module Verification =
                 |> List.map (fun (hash, itemPath) ->
                     verifyHashAndItemByGuessing
                         progressObserver
-                        hashType
+                        hashTypeBestGuess
                         includeHiddenFiles
                         includeEmptyDir
                         baseDirPath
