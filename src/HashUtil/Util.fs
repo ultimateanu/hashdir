@@ -3,6 +3,8 @@
 open System
 open System.IO
 open System.Text.RegularExpressions
+open System.Security.Cryptography
+open System.Text
 
 
 module Common =
@@ -64,3 +66,19 @@ module Util =
             Some(List.tail [ for g in m.Groups -> g.Value ])
         else
             None
+
+    let computeHashOfString (hashAlg: HashAlgorithm) (str: string) =
+        str
+        |> Encoding.ASCII.GetBytes
+        |> hashAlg.ComputeHash
+        |> Seq.map (fun c -> c.ToString("x2"))
+        |> Seq.reduce (+)
+
+    let computeHashOfFile (hashAlg: HashAlgorithm) filePath =
+        assert File.Exists filePath
+        use file = File.OpenRead filePath
+
+        file
+        |> hashAlg.ComputeHash
+        |> Seq.map (fun c -> c.ToString("x2"))
+        |> Seq.reduce (+)

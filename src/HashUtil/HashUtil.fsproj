@@ -19,4 +19,8 @@
     <Compile Include="Verification.fs" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Checksums\Checksums.csproj" />
+  </ItemGroup>
+
 </Project>

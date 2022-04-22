@@ -19,6 +19,10 @@
     "Desktop --tree": {
       "commandName": "Project",
       "commandLineArgs": "--tree C:\\Users\\ultim\\Desktop\\test"
+    },
+    "Desktop check": {
+      "commandName": "Project",
+      "commandLineArgs": "check C:\\Users\\ultim\\Desktop\\test.1.ripemd160.txt"
     }
   }
 }
