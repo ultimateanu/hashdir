@@ -75,7 +75,7 @@ type FsTempDirSetupFixture() =
 
 
 type FsTests(fsTempDirSetupFixture: FsTempDirSetupFixture, debugOutput: ITestOutputHelper) =
-    let hashFile = Path.Combine(fsTempDirSetupFixture.TempDir, "project_hash.txt")
+    let hashFile = Path.Combine(fsTempDirSetupFixture.TempDir, "project_hash.sha1.txt")
     let oldStdOut = Console.Out
     let customStdOut = new IO.StringWriter()
     let getStdOut() =

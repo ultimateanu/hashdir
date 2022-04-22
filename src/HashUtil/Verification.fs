@@ -62,7 +62,10 @@ module Verification =
                     Ok (VerificationResult.Differs(path, expectedHash, actualHash))
 
     let verifyHashAndItemByGuessing (progressObserver: IObserver<HashingUpdate>) (hashType: Checksum.HashType option) includeHiddenFiles
-        includeEmptyDir basePath hash itemPath: Result<VerificationResult, string> =
+        includeEmptyDir (path:string) hash itemPath: Result<VerificationResult, string> =
+
+        let basePath = Path.GetDirectoryName path
+
         match hashType with
         | Some t ->
             // Use specified hashType
@@ -74,25 +77,22 @@ module Verification =
                 |> Array.filter(fun (_, len) -> len = hash.Length)
                 |> Array.map (fun (t, _) -> t)
             if matchedHashType.Length = 1 then
+                // Only one HashType matches the hash lengths.
                 verifyHashAndItem progressObserver matchedHashType.[0] includeHiddenFiles includeEmptyDir basePath hash itemPath
             else
-                Error("Cannot determine which hash algorithm to use")
+                // Try to determine HashType based on file extension.
+                let m = Regex.Match(path, "\.([a-zA-Z0-9]+?).txt");
+                if m.Success then
+                    let fileGuess = Checksum.parseHashType m.Groups[1].Value
+                    verifyHashAndItem progressObserver fileGuess.Value includeHiddenFiles includeEmptyDir basePath hash itemPath
+                else
+                    Error("Cannot determine which hash algorithm to use")
 
 
     let verifyHashFile (progressObserver: IObserver<HashingUpdate>) (hashType: Checksum.HashType option)
         includeHiddenFiles
         includeEmptyDir
         origPath =
-
-        let hashTypeBestGuess = 
-            if hashType.IsSome then
-                hashType
-            else
-                let m = Regex.Match(origPath, "\.([a-zA-Z0-9]+?).txt");
-                if m.Success then
-                    Checksum.parseHashType m.Groups[1].Value
-                else
-                    None
 
         let verifyValidHashFile (path:string) =
             let baseDirPath = Path.GetDirectoryName path
@@ -122,10 +122,10 @@ module Verification =
                 |> List.map (fun (hash, itemPath) ->
                     verifyHashAndItemByGuessing
                         progressObserver
-                        hashTypeBestGuess
+                        hashType
                         includeHiddenFiles
                         includeEmptyDir
-                        baseDirPath
+                        path
                         hash
                         itemPath)
             allVerificationResults
