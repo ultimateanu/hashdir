@@ -10,6 +10,8 @@ type ChecksumTests(output: ITestOutputHelper) =
     static member emptyHashes: obj [] seq =
         Seq.ofList [ [| MD5
                         "d41d8cd98f00b204e9800998ecf8427e" |]
+                     [| RIPEMD160
+                        "9c1185a5c5e9fc54612808977ee8f548b2258d31" |]
                      [| SHA1
                         "da39a3ee5e6b4b0d3255bfef95601890afd80709" |]
                      [| SHA256
@@ -29,6 +31,9 @@ type ChecksumTests(output: ITestOutputHelper) =
         Seq.ofList [ [| MD5
                         "hello"
                         "5d41402abc4b2a76b9719d911017c592" |]
+                     [| RIPEMD160
+                        "hello"
+                        "108f07b8382412612c048d07d13f814118445acd" |]
                      [| SHA1
                         "hello"
                         "aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d" |]
@@ -51,6 +56,8 @@ type ChecksumTests(output: ITestOutputHelper) =
     static member hashTypeStrings: obj [] seq =
         Seq.ofList [ [| [ "md5"; " md5   "; "MD5 " ]
                         Some MD5 |]
+                     [| [ "ripemd160"; " ripemd160   "; " RIPEMD160 " ]
+                        Some RIPEMD160 |]
                      [| [ "sha1"; " Sha1   "; "SHA1 " ]
                         Some SHA1 |]
                      [| [ "sha256"; " Sha256   "; "SHA256 " ]
