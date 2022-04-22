@@ -116,7 +116,7 @@ type FsTests(fsTempDirSetupFixture: FsTempDirSetupFixture, debugOutput: ITestOut
         File.WriteAllText(hashFile, "264aba9860d3dc213423759991dad98259bbf0c5  /project")
 
         // Run program and ask to check the hashfile.
-        let returnCode = Program.main [|"check"; hashFile|]
+        let returnCode = Program.main [|"check"; hashFile; "-a"; "sha1"|]
         Assert.Equal(0, returnCode)
 
         // Expect output to say matches.
@@ -129,7 +129,7 @@ type FsTests(fsTempDirSetupFixture: FsTempDirSetupFixture, debugOutput: ITestOut
         File.WriteAllText(hashFile, "ea60ecdab5f999ef34fd19825ce63fac83a0c75b  /project")
 
         // Run program and ask to check the hashfile.
-        let returnCode = Program.main [|"check"; hashFile; "--include-hidden-files"|]
+        let returnCode = Program.main [|"check"; hashFile; "-a"; "sha1"; "--include-hidden-files"|]
         Assert.Equal(0, returnCode)
 
         // Expect output to say matches.
@@ -142,7 +142,7 @@ type FsTests(fsTempDirSetupFixture: FsTempDirSetupFixture, debugOutput: ITestOut
         File.WriteAllText(hashFile, "d4efa40abcb6ec73ee83df4c532aad568e7160a5  /project")
 
         // Run program and ask to check the hashfile.
-        let returnCode = Program.main [|"check"; hashFile; "--skip-empty-dir"|]
+        let returnCode = Program.main [|"check"; hashFile; "-a"; "sha1"; "--skip-empty-dir"|]
         Assert.Equal(0, returnCode)
 
         // Expect output to say matches.
@@ -155,7 +155,7 @@ type FsTests(fsTempDirSetupFixture: FsTempDirSetupFixture, debugOutput: ITestOut
         File.WriteAllText(hashFile, "16e6570418dba2f4589c8972b9cfe4bb9e5c449c  /project")
 
         // Run program and ask to check the hashfile.
-        let returnCode = Program.main [|"check"; hashFile; "--include-hidden-files"; "--skip-empty-dir"|]
+        let returnCode = Program.main [|"check"; hashFile; "-a"; "sha1"; "--include-hidden-files"; "--skip-empty-dir"|]
         Assert.Equal(0, returnCode)
 
         // Expect output to say matches.
@@ -215,7 +215,7 @@ type FsTests(fsTempDirSetupFixture: FsTempDirSetupFixture, debugOutput: ITestOut
         File.WriteAllText(hashFile, hashFileContent)
 
         // Run program and ask to check the hashfile.
-        let returnCode = Program.main [|"check"; hashFile; "--verbosity"; verbosityLevel|]
+        let returnCode = Program.main [|"check"; hashFile; "-a"; "sha1"; "--verbosity"; verbosityLevel|]
 
         // Expect return code 1 (for missing hash item) and result messages.
         Assert.Equal(2, returnCode)
