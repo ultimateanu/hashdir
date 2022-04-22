@@ -11,7 +11,7 @@ module Verification =
         let hashTypesAndLengths =
             Checksum.allHashTypes
             |> Array.map(fun t ->
-                (t,Checksum.computeHashOfString (Checksum.getHashAlgorithm t) "str"))
+                (t, Util.computeHashOfString (Checksum.getHashAlgorithm t) "str"))
             |> Array.map(fun (t,hash) -> (t,hash.Length))
         let uniqueLengths =
             hashTypesAndLengths

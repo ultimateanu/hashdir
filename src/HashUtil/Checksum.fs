@@ -39,19 +39,3 @@ module Checksum =
         | SHA256 -> upcast SHA256.Create()
         | SHA384 -> upcast SHA384.Create()
         | SHA512 -> upcast SHA512.Create()
-
-    let computeHashOfString (hashAlg: HashAlgorithm) (str: string) =
-        str
-        |> Encoding.ASCII.GetBytes
-        |> hashAlg.ComputeHash
-        |> Seq.map (fun c -> c.ToString("x2"))
-        |> Seq.reduce (+)
-
-    let computeHashOfFile (hashAlg: HashAlgorithm) filePath =
-        assert File.Exists filePath
-        use file = File.OpenRead filePath
-
-        file
-        |> hashAlg.ComputeHash
-        |> Seq.map (fun c -> c.ToString("x2"))
-        |> Seq.reduce (+)

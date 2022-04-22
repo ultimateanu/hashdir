@@ -1,14 +1,15 @@
 #!/usr/bin/env dotnet fsi
 
 #r "System.IO.Compression.FileSystem.dll"
-#load "HashUtil/Checksum.fs"
+#load "HashUtil/Util.fs"
 
-open HashUtil.Checksum
 open System
 open System.Diagnostics
 open System.IO
 open System.IO.Compression
 open System.Runtime.InteropServices
+open System.Security.Cryptography
+open HashUtil.Util
 
 // Configuration ----------------------------------------------------
 let versionStr = "1.1.0"
@@ -206,7 +207,7 @@ let buildRelease () =
         makeDotnetRelease ()
 
 let makeChecksumFile () =
-    let hashAlg = getHashAlgorithm SHA256
+    let hashAlg = SHA256.Create()
 
     let checksumFilename =
         Path.Combine(releaseDir, sprintf "%s_checksums_sha256.txt" nameAndVersion)

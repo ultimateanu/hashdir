@@ -48,7 +48,7 @@ module Hashing =
                 |> List.map getNameAndHashString
                 |> fun x -> "" :: x // Add empty string as a child to compute hash of empty dir.
                 |> List.reduce (+)
-                |> Checksum.computeHashOfString hashAlg
+                |> Util.computeHashOfString hashAlg
 
             Ok(Dir(path = dirPath, hash = childrenHash, children = children))
 
@@ -66,7 +66,7 @@ module Hashing =
                 Error("Not including hidden file")
             else
                 progressObserver.OnNext(HashingUpdate.FileHashStarted path)
-                let hash = Checksum.computeHashOfFile hashAlg path
+                let hash = Util.computeHashOfFile hashAlg path
                 progressObserver.OnNext(HashingUpdate.FileHashCompleted path)
                 Ok(
                     ItemHash.File(

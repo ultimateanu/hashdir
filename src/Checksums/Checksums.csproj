@@ -5,6 +5,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+	  <DebugSymbols>False</DebugSymbols>
+	  <DebugType>None</DebugType>
   </PropertyGroup>
 
 </Project>

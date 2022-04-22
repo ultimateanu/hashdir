@@ -24,7 +24,7 @@ type ChecksumTests(output: ITestOutputHelper) =
     [<Theory; MemberData("emptyHashes")>]
     member _.``hash empty string``(hashType, expectedHash) =
         let hashAlg = Checksum.getHashAlgorithm hashType
-        let emptyStrHash = computeHashOfString hashAlg ""
+        let emptyStrHash = Util.computeHashOfString hashAlg ""
         Assert.Equal(expectedHash, emptyStrHash)
 
     static member simpleStringHashes: obj [] seq =
@@ -50,7 +50,7 @@ type ChecksumTests(output: ITestOutputHelper) =
     [<Theory; MemberData("simpleStringHashes")>]
     member _.``hash simple string``(hashType, inputStr, expectedHash) =
         let hashAlg = Checksum.getHashAlgorithm hashType
-        let strHash = computeHashOfString hashAlg inputStr
+        let strHash = Util.computeHashOfString hashAlg inputStr
         Assert.Equal(expectedHash, strHash)
 
     static member hashTypeStrings: obj [] seq =
