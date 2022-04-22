@@ -16,7 +16,6 @@ module Verification =
             hashTypesAndLengths
             |> Array.map snd
             |> Array.distinct
-        assert (uniqueLengths.Length = Checksum.allHashTypes.Length)
         hashTypesAndLengths
 
     type VerificationResult =
@@ -73,10 +72,10 @@ module Verification =
                 hashLengths
                 |> Array.filter(fun (_, len) -> len = hash.Length)
                 |> Array.map (fun (t, _) -> t)
-            assert (matchedHashType.Length <= 1)
             if matchedHashType.Length = 1 then
                 verifyHashAndItem progressObserver matchedHashType.[0] includeHiddenFiles includeEmptyDir basePath hash itemPath
             else
+                // TODO: Try to use filename to guess
                 Error("Cannot determine which hash algorithm to use")
 
 

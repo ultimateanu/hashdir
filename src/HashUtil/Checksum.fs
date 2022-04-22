@@ -8,6 +8,7 @@ open System.Text
 module Checksum =
     type HashType =
         | MD5
+        | RIPEMD160
         | SHA1
         | SHA256
         | SHA384
@@ -23,6 +24,7 @@ module Checksum =
 
         match hashTypeStr with
         | "MD5" -> Some MD5
+        | "RIPEMD160" -> Some RIPEMD160
         | "SHA1" -> Some SHA1
         | "SHA256" -> Some SHA256
         | "SHA384" -> Some SHA384
@@ -32,6 +34,7 @@ module Checksum =
     let getHashAlgorithm hashType: HashAlgorithm =
         match hashType with
         | MD5 -> upcast MD5.Create()
+        | RIPEMD160 -> upcast Checksums.RIPEMD160Managed.Create()
         | SHA1 -> upcast SHA1.Create()
         | SHA256 -> upcast SHA256.Create()
         | SHA384 -> upcast SHA384.Create()
