@@ -18,6 +18,7 @@ type RootOpt
         save,
         includeHiddenFiles,
         skipEmptyDir,
+        hashOnly,
         algorithm,
         color: bool
     ) =
@@ -29,6 +30,7 @@ type RootOpt
     member val Save: bool = save
     member val IncludeHiddenFiles: bool = includeHiddenFiles
     member val SkipEmptyDir: bool = skipEmptyDir
+    member val HashOnly: bool = hashOnly
 
     member val Algorithm: HashType =
         match algorithm with
@@ -42,12 +44,13 @@ type RootOpt
 
     override x.ToString() =
         sprintf
-            "RootOpt[Items:%A PrintTree:%A Save:%A IncludeHiddenFiles:%A SkipEmptyDir:%A Algorithm:%A Color:%A]"
+            "RootOpt[Items:%A PrintTree:%A Save:%A IncludeHiddenFiles:%A SkipEmptyDir:%A HashOnly:%A Algorithm:%A Color:%A]"
             x.Items
             x.PrintTree
             x.Save
             x.IncludeHiddenFiles
             x.SkipEmptyDir
+            x.HashOnly
             x.Algorithm
             x.Color
 
