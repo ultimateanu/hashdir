@@ -3,5 +3,6 @@
     "FSharp.suggestSdkScripts": false,
     "files.eol": "\n",
     "editor.renderWhitespace": "trailing",
-    "editor.fontSize": 16
+    "editor.fontSize": 16,
+    "editor.formatOnSave": false
 }

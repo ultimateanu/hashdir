@@ -99,7 +99,7 @@ module FS =
     let rec printHashStructure structure printTree hashOnly outputWriter =
         printHashStructureHelper structure printTree hashOnly [] outputWriter
 
-    let saveHashStructure structure printTree hashAlgorithm =
+    let saveHashStructure structure printTree hashOnly hashAlgorithm =
         let hashAlgName = hashAlgorithm.ToString().ToLower()
         let itemPath = getPath structure
         let parentDir = Directory.GetParent(itemPath).FullName
@@ -135,5 +135,5 @@ module FS =
                 (hashAlgorithm.ToString().ToLower())
 
         use fileStream = new StreamWriter(hashFilePath)
-        printHashStructure structure printTree false fileStream true
+        printHashStructure structure printTree hashOnly fileStream true
         fileStream.Flush()

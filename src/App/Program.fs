@@ -135,9 +135,18 @@ let rootHandler (opt: RootOpt) =
         | Error err -> printfn "Error: %s" err
         | Ok hashStructure ->
             if opt.Save then
-                saveHashStructure hashStructure opt.PrintTree opt.Algorithm
+                saveHashStructure
+                    hashStructure
+                    opt.PrintTree
+                    opt.HashOnly
+                    opt.Algorithm
 
-            printHashStructure hashStructure opt.PrintTree Console.Out opt.Color
+            printHashStructure
+                hashStructure
+                opt.PrintTree
+                opt.HashOnly
+                Console.Out
+                opt.Color
 
 let checkHandler (opt: CheckOpt) =
     let processHashFile hashFile =
