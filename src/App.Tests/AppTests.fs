@@ -11,33 +11,61 @@ open Xunit.Abstractions
 type AppTests(output: ITestOutputHelper) =
     [<Fact>]
     member _.``Console width is not too small``() =
-        Assert.True(Progress.getConsoleMaxWidth() > 10)
+        Assert.True(Progress.getConsoleMaxWidth () > 10)
 
     [<Fact>]
     member _.``RootOpt parses md5 algorithm correctly``() =
         let rootOpt =
-            Program.RootOpt([|"report.pdf"; "sources.txt"|],
-                true, true, true, false, "md5", false)
+            Program.RootOpt(
+                [| "report.pdf"; "sources.txt" |],
+                true,
+                true,
+                true,
+                false,
+                false,
+                "md5",
+                false
+            )
 
         Assert.Equal(HashType.MD5, rootOpt.Algorithm)
-        let expectedStr = "RootOpt[Items:[|\"report.pdf\"; \"sources.txt\"|] PrintTree:true Save:true IncludeHiddenFiles:true SkipEmptyDir:false Algorithm:MD5 Color:false]"
+
+        let expectedStr =
+            "RootOpt[Items:[|\"report.pdf\"; \"sources.txt\"|] PrintTree:true Save:true IncludeHiddenFiles:true SkipEmptyDir:false HashOnly:false Algorithm:MD5 Color:false]"
+
         Assert.Equal(expectedStr, rootOpt.ToString())
 
     [<Fact>]
     member _.``CheckOpt parses algorithm and verbosity correctly``() =
         let checkOpt =
-            Program.CheckOpt([|"report.pdf"|], false, true, "sha256", "detailed", true)
+            Program.CheckOpt(
+                [| "report.pdf" |],
+                false,
+                true,
+                "sha256",
+                "detailed",
+                true
+            )
 
         Assert.True(checkOpt.Algorithm.IsSome)
         Assert.Equal(HashType.SHA256, checkOpt.Algorithm.Value)
         Assert.Equal(PrintVerbosity.Detailed, checkOpt.Verbosity)
-        let expectedStr = "CheckOpt[Items:[|\"report.pdf\"|] IncludeHiddenFiles:false SkipEmptyDir:true Algorithm:Some SHA256 Color:true]"
+
+        let expectedStr =
+            "CheckOpt[Items:[|\"report.pdf\"|] IncludeHiddenFiles:false SkipEmptyDir:true Algorithm:Some SHA256 Color:true]"
+
         Assert.Equal(expectedStr, checkOpt.ToString())
 
     [<Fact>]
     member _.``CheckOpt sets algorithm None when missing``() =
         let checkOpt =
-            Program.CheckOpt([|"report.pdf"|], false, true, null, "detailed", true)
+            Program.CheckOpt(
+                [| "report.pdf" |],
+                false,
+                true,
+                null,
+                "detailed",
+                true
+            )
 
         Assert.True(checkOpt.Algorithm.IsNone)
 
@@ -46,9 +74,9 @@ type AppTests(output: ITestOutputHelper) =
         // Setup observer which is on second file.
         let observer = Progress.HashingObserver()
         let iObserver = observer :> IObserver<HashingUpdate>
-        iObserver.OnNext (HashingUpdate.FileHashStarted "/path/to/first.txt")
-        iObserver.OnNext (HashingUpdate.FileHashCompleted "/path/to/first.txt")
-        iObserver.OnNext (HashingUpdate.FileHashStarted "/path/to/second.txt")
+        iObserver.OnNext(HashingUpdate.FileHashStarted "/path/to/first.txt")
+        iObserver.OnNext(HashingUpdate.FileHashCompleted "/path/to/first.txt")
+        iObserver.OnNext(HashingUpdate.FileHashStarted "/path/to/second.txt")
 
         // Create progress string.
         use strWriter = new StringWriter()
@@ -57,7 +85,7 @@ type AppTests(output: ITestOutputHelper) =
 
         // Expect final string to start this way.
         Assert.Equal(1, nextIndex)
-        Assert.Equal(Progress.getConsoleMaxWidth(), progressStr.Length)
+        Assert.Equal(Progress.getConsoleMaxWidth (), progressStr.Length)
         Assert.Equal("\r⣷ 1 file [ second.txt ]", progressStr.TrimEnd())
 
     [<Fact>]
@@ -65,25 +93,35 @@ type AppTests(output: ITestOutputHelper) =
         // Setup observer which has long filename.
         let observer = Progress.HashingObserver()
         let iObserver = observer :> IObserver<HashingUpdate>
-        let filePath = sprintf "/path/to/%s.txt" (String.replicate 10 "longname")
-        iObserver.OnNext (HashingUpdate.FileHashStarted filePath)
+
+        let filePath =
+            sprintf "/path/to/%s.txt" (String.replicate 10 "longname")
+
+        iObserver.OnNext(HashingUpdate.FileHashStarted filePath)
 
         // Create progress string.
         use strWriter = new StringWriter()
-        let nextIndex = Progress.makeProgressStrInternal 0 observer 50 strWriter true
+
+        let nextIndex =
+            Progress.makeProgressStrInternal 0 observer 50 strWriter true
+
         let progressStr = strWriter.ToString()
 
         // Expect final string to start this way.
         Assert.Equal(1, nextIndex)
         Assert.Equal(50, progressStr.Length)
-        Assert.Equal("\r⣷ 0 files [ longnamelongname...namelongname.txt ]", progressStr.TrimEnd())
+
+        Assert.Equal(
+            "\r⣷ 0 files [ longnamelongname...namelongname.txt ]",
+            progressStr.TrimEnd()
+        )
 
     [<Fact>]
     member _.``Progress string for dir name``() =
         // Setup observer which is on first dir.
         let observer = Progress.HashingObserver()
         let iObserver = observer :> IObserver<HashingUpdate>
-        iObserver.OnNext (HashingUpdate.DirHashStarted "/path/to/dir")
+        iObserver.OnNext(HashingUpdate.DirHashStarted "/path/to/dir")
 
         // Create progress string.
         use strWriter = new StringWriter()
@@ -92,5 +130,5 @@ type AppTests(output: ITestOutputHelper) =
 
         // Expect final string to start this way.
         Assert.Equal(0, nextIndex)
-        Assert.Equal(Progress.getConsoleMaxWidth(), progressStr.Length)
+        Assert.Equal(Progress.getConsoleMaxWidth (), progressStr.Length)
         Assert.Equal("\r⣾ 0 files [ /dir ]", progressStr.TrimEnd())

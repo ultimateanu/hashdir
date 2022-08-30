@@ -23,10 +23,7 @@ module FS =
         | [] -> ""
         | lastLevelActive :: parentsActive ->
             let isActive x =
-                if x then
-                    Common.iSpacer
-                else
-                    Common.bSpacer
+                if x then Common.iSpacer else Common.bSpacer
 
             let parentSpacer =
                 parentsActive
@@ -35,16 +32,14 @@ module FS =
                 |> System.String.Concat
 
             let curSpacer =
-                if lastLevelActive then
-                    Common.tSpacer
-                else
-                    Common.lSpacer
+                if lastLevelActive then Common.tSpacer else Common.lSpacer
 
             parentSpacer + curSpacer
 
     let rec private printHashStructureHelper
         structure
         printTree
+        (hashOnly: bool)
         levels
         (outputWriter: TextWriter)
         (colorize: bool)
@@ -53,28 +48,32 @@ module FS =
         match structure with
         | File (path, hash) ->
             let fileLine =
-                sprintf
-                    "%s%s  %s\n"
-                    (makeLeftSpacer levels)
-                    hash
-                    (Path.GetFileName path)
+                if hashOnly then
+                    sprintf "%s%s\n" (makeLeftSpacer levels) hash
+                else
+                    sprintf
+                        "%s%s  %s\n"
+                        (makeLeftSpacer levels)
+                        hash
+                        (Path.GetFileName path)
             // Use "\n" rather than use WriteLine() to avoid system line endings (e.g. "\r\n")
             outputWriter.Write(fileLine)
 
         | Dir (path, hash, children) ->
             // Print dir line, with optional colors.
-            let firstHalf =
-                sprintf
-                    "%s%s  "
-                    (makeLeftSpacer levels)
-                    hash
+            let firstHalf = sprintf "%s%s" (makeLeftSpacer levels) hash
             outputWriter.Write(firstHalf)
 
-            let secondHalf =
-                sprintf
-                    "/%s\n"
-                    (DirectoryInfo(path).Name)
-            Util.printColorToWriter colorize (Some ConsoleColor.Cyan) secondHalf outputWriter
+            if hashOnly then
+                outputWriter.Write("\n")
+            else
+                let secondHalf = sprintf "  /%s\n" (DirectoryInfo(path).Name)
+
+                Util.printColorToWriter
+                    colorize
+                    (Some ConsoleColor.Cyan)
+                    secondHalf
+                    outputWriter
 
             if printTree && not children.IsEmpty then
                 let allButLastChild = List.take (children.Length - 1) children
@@ -84,6 +83,7 @@ module FS =
                     printHashStructureHelper
                         child
                         printTree
+                        hashOnly
                         (true :: levels)
                         outputWriter
                         colorize
@@ -91,14 +91,15 @@ module FS =
                 printHashStructureHelper
                     lastChild
                     printTree
+                    hashOnly
                     (false :: levels)
                     outputWriter
                     colorize
 
-    let rec printHashStructure structure printTree outputWriter =
-        printHashStructureHelper structure printTree [] outputWriter
+    let rec printHashStructure structure printTree hashOnly outputWriter =
+        printHashStructureHelper structure printTree hashOnly [] outputWriter
 
-    let saveHashStructure structure printTree hashAlgorithm =
+    let saveHashStructure structure printTree hashOnly hashAlgorithm =
         let hashAlgName = hashAlgorithm.ToString().ToLower()
         let itemPath = getPath structure
         let parentDir = Directory.GetParent(itemPath).FullName
@@ -106,8 +107,7 @@ module FS =
 
         let searchPattern = sprintf "%s.*.%s.txt" child hashAlgName
 
-        let matchPattern =
-            sprintf "%s\.(\d+)\.%s\.txt" child hashAlgName
+        let matchPattern = sprintf "%s\.(\d+)\.%s\.txt" child hashAlgName
 
         // Find largest existing id.
         let extractVersionNum hashFilePath =
@@ -135,5 +135,5 @@ module FS =
                 (hashAlgorithm.ToString().ToLower())
 
         use fileStream = new StreamWriter(hashFilePath)
-        printHashStructure structure printTree fileStream true
+        printHashStructure structure printTree hashOnly fileStream true
         fileStream.Flush()
