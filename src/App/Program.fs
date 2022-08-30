@@ -11,15 +11,25 @@ open System.Threading
 
 let defaultHashAlg = HashType.SHA1
 
-type RootOpt(item, tree, save, includeHiddenFiles, skipEmptyDir, algorithm, color: bool) =
+type RootOpt
+    (
+        item,
+        tree,
+        save,
+        includeHiddenFiles,
+        skipEmptyDir,
+        algorithm,
+        color: bool
+    ) =
     // Arguments
-    member val Items: string [] = item
+    member val Items: string[] = item
 
     // Options
     member val PrintTree: bool = tree
     member val Save: bool = save
     member val IncludeHiddenFiles: bool = includeHiddenFiles
     member val SkipEmptyDir: bool = skipEmptyDir
+
     member val Algorithm: HashType =
         match algorithm with
         | null -> defaultHashAlg
@@ -27,6 +37,7 @@ type RootOpt(item, tree, save, includeHiddenFiles, skipEmptyDir, algorithm, colo
             let alg = parseHashType str
             assert alg.IsSome
             alg.Value
+
     member val Color: bool = color
 
     override x.ToString() =
@@ -41,13 +52,22 @@ type RootOpt(item, tree, save, includeHiddenFiles, skipEmptyDir, algorithm, colo
             x.Color
 
 
-type CheckOpt(item, includeHiddenFiles, skipEmptyDir, algorithm, verbosity, color) =
+type CheckOpt
+    (
+        item,
+        includeHiddenFiles,
+        skipEmptyDir,
+        algorithm,
+        verbosity,
+        color
+    ) =
     // Arguments
-    member val Items: string [] = item
+    member val Items: string[] = item
 
     // Options
     member val IncludeHiddenFiles: bool = includeHiddenFiles
     member val SkipEmptyDir: bool = skipEmptyDir
+
     member val Algorithm: HashType option =
         match algorithm with
         | null -> None
@@ -55,10 +75,12 @@ type CheckOpt(item, includeHiddenFiles, skipEmptyDir, algorithm, verbosity, colo
             let alg = parseHashType str
             assert alg.IsSome
             Some alg.Value
+
     member val Verbosity: PrintVerbosity =
         let verbosityMaybe = parsePrintVerbosity verbosity
         assert verbosityMaybe.IsSome
         verbosityMaybe.Value
+
     member val Color: bool = color
 
     override x.ToString() =
@@ -76,26 +98,36 @@ let rootHandler (opt: RootOpt) =
         let hashingProgressObserver = Progress.HashingObserver()
 
         let path = cleanPath pathRaw
+
         let hashingTask =
-            Async.StartAsTask <|
-                makeHashStructureObservable
-                    hashingProgressObserver
-                    opt.Algorithm
-                    opt.IncludeHiddenFiles
-                    (not opt.SkipEmptyDir)
-                    path
+            Async.StartAsTask
+            <| makeHashStructureObservable
+                hashingProgressObserver
+                opt.Algorithm
+                opt.IncludeHiddenFiles
+                (not opt.SkipEmptyDir)
+                path
 
         // Show progress while hashing happens in background.
         let mutable slashIndex = 0
+
         while not hashingTask.IsCompleted do
-            let nextIndex = Progress.makeProgressStr slashIndex hashingProgressObserver Console.Error opt.Color
+            let nextIndex =
+                Progress.makeProgressStr
+                    slashIndex
+                    hashingProgressObserver
+                    Console.Error
+                    opt.Color
+
             slashIndex <- nextIndex
             Thread.Sleep(200)
-        Console.Error.Write("\r".PadRight (Progress.getConsoleMaxWidth()))
+
+        Console.Error.Write("\r".PadRight(Progress.getConsoleMaxWidth ()))
         Console.Error.Write("\r")
         Console.Error.Flush()
 
         let optHashStructure = hashingTask.Result
+
         match optHashStructure with
         | Error err -> printfn "Error: %s" err
         | Ok hashStructure ->
@@ -109,25 +141,34 @@ let checkHandler (opt: CheckOpt) =
         let hashingProgressObserver = Progress.HashingObserver()
 
         let verifyTask =
-            Async.StartAsTask <|
-                verifyHashFile
-                    hashingProgressObserver
-                    opt.Algorithm
-                    opt.IncludeHiddenFiles
-                    (not opt.SkipEmptyDir)
-                    hashFile
+            Async.StartAsTask
+            <| verifyHashFile
+                hashingProgressObserver
+                opt.Algorithm
+                opt.IncludeHiddenFiles
+                (not opt.SkipEmptyDir)
+                hashFile
 
         // Show progress while verification happens in background.
         let mutable slashIndex = 0
+
         while not verifyTask.IsCompleted do
-            let nextIndex = Progress.makeProgressStr slashIndex hashingProgressObserver Console.Error opt.Color
+            let nextIndex =
+                Progress.makeProgressStr
+                    slashIndex
+                    hashingProgressObserver
+                    Console.Error
+                    opt.Color
+
             slashIndex <- nextIndex
             Thread.Sleep(200)
-        Console.Error.Write("\r".PadRight (Progress.getConsoleMaxWidth()))
+
+        Console.Error.Write("\r".PadRight(Progress.getConsoleMaxWidth ()))
         Console.Error.Write("\r")
         Console.Error.Flush()
 
         let verifyResult = verifyTask.Result
+
         match verifyResult with
         | Error err ->
             printfn "Error: %s" err
@@ -136,27 +177,20 @@ let checkHandler (opt: CheckOpt) =
         | Ok itemResults ->
             let printAndGetMatchResult result =
                 printVerificationResults opt.Verbosity opt.Color result
+
                 match result with
                 | Ok r ->
                     match r with
-                        | VerificationResult.Matches _ -> true
-                        | _ -> false
+                    | VerificationResult.Matches _ -> true
+                    | _ -> false
                 | Error _ -> false
 
             // Make list of matched before List.forall which might short circuit.
-            let matched =
-                itemResults
-                |> List.map printAndGetMatchResult
+            let matched = itemResults |> List.map printAndGetMatchResult
 
-            if List.forall id matched then
-                0
-            else
-                2
+            if List.forall id matched then 0 else 2
 
-    let resultCodes =
-        opt.Items
-        |> Array.toList
-        |> List.map processHashFile
+    let resultCodes = opt.Items |> Array.toList |> List.map processHashFile
 
     let hasError x =
         resultCodes |> List.tryFind (fun code -> code = x)
@@ -170,8 +204,7 @@ let checkHandler (opt: CheckOpt) =
 
 
 let itemArg =
-    let arg =
-        Argument<string []>("item", "Directory or file to hash/check")
+    let arg = Argument<string[]>("item", "Directory or file to hash/check")
 
     arg.Arity <- ArgumentArity.OneOrMore
     arg
@@ -190,7 +223,7 @@ let algorithmOpt forCheck =
             Option<string>(
                 [| "-a"; "--algorithm" |],
                 sprintf "The hash function to use [default: %s]"
-                    <| defaultHashAlg.ToString().ToLower()
+                <| defaultHashAlg.ToString().ToLower()
             )
 
     let allHashTypesStr = allHashTypes |> Array.map toStrLower
@@ -203,6 +236,8 @@ let hiddenFilesOpt =
 let skipEmptyOpt =
     Option<bool>([| "-e"; "--skip-empty-dir" |], "Skip empty directories")
 
+let hashOnlyOpt = Option<bool>([| "-h"; "--hash-only" |], "Print only the hash")
+
 let verbosityOpt =
     let opt =
         Option<string>(
@@ -210,8 +245,8 @@ let verbosityOpt =
             (fun () -> toStrLower PrintVerbosity.Normal),
             "Sets the verbosity level for the output"
         )
-    opt.FromAmong(allPrintVerbosity |> Array.map toStrLower)
-    |> ignore
+
+    opt.FromAmong(allPrintVerbosity |> Array.map toStrLower) |> ignore
     opt
 
 let colorOpt =
@@ -227,7 +262,7 @@ let checkCmd =
     // OPTIONS
     checkCmd.AddOption hiddenFilesOpt
     checkCmd.AddOption skipEmptyOpt
-    checkCmd.AddOption (algorithmOpt true)
+    checkCmd.AddOption(algorithmOpt true)
     checkCmd.AddOption verbosityOpt
     checkCmd.Handler <- CommandHandler.Create(checkHandler)
 
@@ -245,11 +280,14 @@ let rootCmd =
 
     // OPTIONS
     root.AddOption(Option<bool>([| "-t"; "--tree" |], "Print directory tree"))
+
     root.AddOption(
         Option<bool>([| "-s"; "--save" |], "Save the checksum to a file")
     )
+
     root.AddOption hiddenFilesOpt
     root.AddOption skipEmptyOpt
+    root.AddOption hashOnlyOpt
     root.AddOption(algorithmOpt false)
     root.AddOption colorOpt
 
@@ -259,6 +297,6 @@ let rootCmd =
 
 [<EntryPoint>]
 let main args =
-    Console.OutputEncoding <- System.Text.Encoding.UTF8;
+    Console.OutputEncoding <- System.Text.Encoding.UTF8
     let returnCode = rootCmd.Invoke args
     returnCode
