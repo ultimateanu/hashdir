@@ -34,16 +34,15 @@ Arguments:
   <item>    Directory or file to hash/check
 
 Options:
-  -t, --tree                                                  Print directory tree
-  -s, --save                                                  Save the checksum to a file
-  -i, --include-hidden-files                                  Include hidden files
-  -e, --skip-empty-dir                                        Skip empty directories
-  -h, --hash-only                                             Print only the hash
-  <md5|ripemd160|sha1|sha256|sha384|sha512>                   The hash function to use [default: sha1]
-  -a, --algorithm
-  -c, --color                                                 Colorize the output [default: True]
-  --version                                                   Show version information
-  -?, -h, --help                                              Show help and usage information
+  -t, --tree                                                   Print directory tree
+  -s, --save                                                   Save the checksum to a file
+  -i, --include-hidden-files                                   Include hidden files
+  -e, --skip-empty-dir                                         Skip empty directories
+  -h, --hash-only                                              Print only the hash
+  -a, --algorithm <md5|ripemd160|sha1|sha256|sha384|sha512>    The hash function to use [default: sha1]
+  -c, --color                                                  Colorize the output [default: True]
+  --version                                                    Show version information
+  -?, -h, --help                                               Show help and usage information
 
 Commands:
   check <item>    Verify that the specified hash file is valid.
