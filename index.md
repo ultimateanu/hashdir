@@ -8,13 +8,13 @@
 
 ![sample terminal usage](assets/img/check_demo.svg)
 
-**hashdir** is a simple command-line tool to checksum directories and files.
+**hashdir** is a simple command-line tool to hash directories and files.
 
-A [checksum](https://en.wikipedia.org/wiki/Checksum) is a short sequence of letters and numbers derived from another (often larger) sequence of data. Checksums are created from input data using a hashing algorithm. For a good hashing algorithm, it is extremely difficult to come up with an input that results in a specific checksum. Therefore a checksum acts like a digital fingerprint - _if the checksums match we can be reasonably sure the input data matches_.
+A hash or [checksum](https://en.wikipedia.org/wiki/Checksum) is a short sequence of letters and numbers derived from another (often larger) sequence of data. Checksums are created from input data using a hashing algorithm. For a good hashing algorithm, it is extremely difficult to come up with an input that results in a specific checksum. Therefore a checksum acts like a digital fingerprint - _if the checksums match we can be reasonably sure the input data matches_.
 
 This is useful in many situations:
 - **Transferring files** - compare checksums to ensure nothing was corrupted or tampered
-- **Archiving data** - storing the checksum along with the data allows you to verify that your USB/hard drive/cloud provider didn’t modify your data
+- **Archiving data** - storing the checksum along with the data allows you to verify that your flash drive / hard drive / cloud provider didn’t modify your data
 - **Duplicate detection** - check if you have duplicate files or directories and know what is safe to delete
 
 
