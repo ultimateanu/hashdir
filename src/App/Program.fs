@@ -290,7 +290,7 @@ let checkCmd =
 
 let rootCmd =
     let root =
-        RootCommand("A command-line utility to checksum directories and files.")
+        RootCommand("A command-line utility to hash directories and files.")
 
     // Check (verb command)
     root.AddCommand checkCmd
