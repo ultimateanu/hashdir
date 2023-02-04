@@ -22,6 +22,7 @@ type AppTests(output: ITestOutputHelper) =
                 true,
                 true,
                 false,
+                [| "**/node"; "cache.txt" |], (* ignore *)
                 false,
                 "md5",
                 false
@@ -30,7 +31,7 @@ type AppTests(output: ITestOutputHelper) =
         Assert.Equal(HashType.MD5, rootOpt.Algorithm)
 
         let expectedStr =
-            "RootOpt[Items:[|\"report.pdf\"; \"sources.txt\"|] PrintTree:true Save:true IncludeHiddenFiles:true SkipEmptyDir:false HashOnly:false Algorithm:MD5 Color:false]"
+            "RootOpt[Items:[|\"report.pdf\"; \"sources.txt\"|] PrintTree:true Save:true IncludeHiddenFiles:true SkipEmptyDir:false Ignore:[|\"**/node\"; \"cache.txt\"|] HashOnly:false Algorithm:MD5 Color:false]"
 
         Assert.Equal(expectedStr, rootOpt.ToString())
 
@@ -41,6 +42,7 @@ type AppTests(output: ITestOutputHelper) =
                 [| "report.pdf" |],
                 false,
                 true,
+                [| "**/node"; "cache.txt" |], (* ignore *)
                 "sha256",
                 "detailed",
                 true
@@ -51,7 +53,7 @@ type AppTests(output: ITestOutputHelper) =
         Assert.Equal(PrintVerbosity.Detailed, checkOpt.Verbosity)
 
         let expectedStr =
-            "CheckOpt[Items:[|\"report.pdf\"|] IncludeHiddenFiles:false SkipEmptyDir:true Algorithm:Some SHA256 Color:true]"
+            "CheckOpt[Items:[|\"report.pdf\"|] IncludeHiddenFiles:false SkipEmptyDir:true Ignore:[|\"**/node\"; \"cache.txt\"|] Algorithm:Some SHA256 Color:true]"
 
         Assert.Equal(expectedStr, checkOpt.ToString())
 
@@ -62,6 +64,7 @@ type AppTests(output: ITestOutputHelper) =
                 [| "report.pdf" |],
                 false,
                 true,
+                [||], (* ignore *)
                 null,
                 "detailed",
                 true
