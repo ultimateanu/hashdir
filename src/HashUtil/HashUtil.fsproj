@@ -23,4 +23,8 @@
     <ProjectReference Include="..\Checksums\Checksums.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Glob" Version="1.2.0-alpha0037" />
+  </ItemGroup>
+
 </Project>

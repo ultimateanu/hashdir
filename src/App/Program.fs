@@ -3,7 +3,6 @@ open HashUtil.FS
 open HashUtil.Hashing
 open HashUtil.Util
 open HashUtil.Verification
-open Microsoft.Extensions.FileSystemGlobbing
 open System
 open System.CommandLine
 open System.CommandLine.Invocation
@@ -102,17 +101,16 @@ let rootHandler (opt: RootOpt) =
 
         let path = cleanPath pathRaw
 
-        // TODO: use this to filter files
-        let fileMatcher = new Matcher()
-        fileMatcher.AddExcludePatterns opt.Ignore
 
         let hashingTask =
             Async.StartAsTask
             <| makeHashStructureObservable
                 hashingProgressObserver
                 opt.Algorithm
+                opt.Ignore
                 opt.IncludeHiddenFiles
                 (not opt.SkipEmptyDir)
+                path
                 path
 
         // Show progress while hashing happens in background.

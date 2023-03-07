@@ -18,7 +18,7 @@
     },
     "Desktop ignore --tree": {
       "commandName": "Project",
-      "commandLineArgs": "--ignore \"node_mod\" --tree C:\\Users\\ultim\\Desktop\\test"
+      "commandLineArgs": "--ignore \"**/node_mod\" --ignore \"**/*.jpg\" --tree C:\\Users\\ultim\\Desktop\\test"
     },
     "Desktop check": {
       "commandName": "Project",

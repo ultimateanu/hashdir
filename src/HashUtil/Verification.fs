@@ -64,8 +64,10 @@ module Verification =
             <| Hashing.makeHashStructureObservable
                 progressObserver
                 hashType
+                [||] // TODO: fix later
                 includeHiddenFiles
                 includeEmptyDir
+                "" // TODO: fix later with root dir
                 fullPath
 
         match itemHashResult with

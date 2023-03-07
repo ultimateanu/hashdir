@@ -1,6 +1,7 @@
 ﻿namespace HashUtil
 
 open FS
+open GlobExpressions
 open System.IO
 open System.Security.Cryptography
 open System
@@ -15,8 +16,10 @@ module Hashing =
     let rec private makeDirHashStructure
         (progressObserver: IObserver<HashingUpdate>)
         (hashAlg: HashAlgorithm)
+        (ignoreGlobs: Glob list)
         includeHiddenFiles
         includeEmptyDir
+        (rootDir: string)
         dirPath
         =
         assert Directory.Exists(dirPath)
@@ -30,8 +33,10 @@ module Hashing =
                 makeHashStructureHelper
                     progressObserver
                     hashAlg
+                    ignoreGlobs
                     includeHiddenFiles
                     includeEmptyDir
+                    rootDir
             )
             |> List.choose Util.makeOption
 
@@ -40,8 +45,8 @@ module Hashing =
         else
             let getNameAndHashString (x: FS.ItemHash) : string =
                 match x with
-                | File (path, hash) -> hash + (Path.GetFileName path)
-                | Dir (path, hash, _) -> hash + (Util.getChildName path)
+                | File(path, hash) -> hash + (Path.GetFileName path)
+                | Dir(path, hash, _) -> hash + (Util.getChildName path)
 
             let childrenHash =
                 children
@@ -55,28 +60,47 @@ module Hashing =
     and private makeHashStructureHelper
         (progressObserver: IObserver<HashingUpdate>)
         (hashAlg: HashAlgorithm)
-        includeHiddenFiles
-        includeEmptyDir
+        (ignoreGlobs: Glob list)
+        (includeHiddenFiles: bool)
+        (includeEmptyDir: bool)
+        (rootDir: string)
         path
         =
-        if File.Exists(path) then
-            if ((not includeHiddenFiles)
-                && (File.GetAttributes(path) &&& FileAttributes.Hidden)
-                    .Equals(FileAttributes.Hidden)) then
+
+        let relativePath = Path.GetRelativePath(rootDir, path)
+
+        let shouldIgnore =
+            ignoreGlobs
+            |> List.map (fun glob -> glob.IsMatch relativePath)
+            |> List.contains true
+
+        if shouldIgnore then
+            Error("Not including ignored pattern")
+        else if File.Exists(path) then
+            if
+                ((not includeHiddenFiles)
+                 && (File.GetAttributes(path) &&& FileAttributes.Hidden)
+                     .Equals(FileAttributes.Hidden))
+            then
                 Error("Not including hidden file")
             else
                 progressObserver.OnNext(HashingUpdate.FileHashStarted path)
                 let hash = Util.computeHashOfFile hashAlg path
                 progressObserver.OnNext(HashingUpdate.FileHashCompleted path)
-                Ok(
-                    ItemHash.File(
-                        path = path,
-                        hash = hash
-                    )
-                )
+                Ok(ItemHash.File(path = path, hash = hash))
         else if Directory.Exists(path) then
             progressObserver.OnNext(HashingUpdate.DirHashStarted path)
-            let result = makeDirHashStructure progressObserver hashAlg includeHiddenFiles includeEmptyDir path
+
+            let result =
+                makeDirHashStructure
+                    progressObserver
+                    hashAlg
+                    ignoreGlobs
+                    includeHiddenFiles
+                    includeEmptyDir
+                    rootDir
+                    path
+
             progressObserver.OnNext(HashingUpdate.DirHashCompleted path)
             result
         else
@@ -85,26 +109,42 @@ module Hashing =
     let makeHashStructureObservable
         (progressObserver: IObserver<HashingUpdate>)
         (hashType: Checksum.HashType)
+        (ignorePatterns: string[])
         includeHiddenFiles
         includeEmptyDir
+        (rootDir: string)
         path
         =
         async {
             let hashAlg = Checksum.getHashAlgorithm hashType
-            let result = makeHashStructureHelper progressObserver hashAlg includeHiddenFiles includeEmptyDir path
+
+            let ignoreGlobMatchers =
+                ignorePatterns |> Array.toList |> List.map Glob
+
+            let result =
+                makeHashStructureHelper
+                    progressObserver
+                    hashAlg
+                    ignoreGlobMatchers
+                    includeHiddenFiles
+                    includeEmptyDir
+                    rootDir
+                    path
+
             progressObserver.OnCompleted()
             return result
         }
 
     type EmptyHashingObserver() =
         interface IObserver<HashingUpdate> with
-            member this.OnCompleted(): unit =
-                ()
-            member this.OnError(error: exn): unit =
-                raise (System.NotImplementedException())
-            member this.OnNext(hashingUpdate: HashingUpdate): unit =
-                ()
+            member this.OnCompleted() : unit = ()
 
+            member this.OnError(error: exn) : unit =
+                raise (System.NotImplementedException())
+
+            member this.OnNext(hashingUpdate: HashingUpdate) : unit = ()
+
+(*
     let makeHashStructure
         (hashType: Checksum.HashType)
         includeHiddenFiles
@@ -112,6 +152,12 @@ module Hashing =
         path
         =
         let emptyHashingObserver = EmptyHashingObserver()
-        Async.RunSynchronously <|
-            makeHashStructureObservable
-                emptyHashingObserver hashType includeHiddenFiles includeEmptyDir path
+
+        Async.RunSynchronously
+        <| makeHashStructureObservable
+            emptyHashingObserver
+            hashType
+            includeHiddenFiles
+            includeEmptyDir
+            path
+    *)
