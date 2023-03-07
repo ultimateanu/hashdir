@@ -144,7 +144,7 @@ module Hashing =
 
             member this.OnNext(hashingUpdate: HashingUpdate) : unit = ()
 
-(*
+
     let makeHashStructure
         (hashType: Checksum.HashType)
         includeHiddenFiles
@@ -157,7 +157,8 @@ module Hashing =
         <| makeHashStructureObservable
             emptyHashingObserver
             hashType
+            [||] // ignorePatterns
             includeHiddenFiles
             includeEmptyDir
+            path // rootDir
             path
-    *)
