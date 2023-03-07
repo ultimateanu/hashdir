@@ -67,7 +67,7 @@ module Verification =
                 [||] // TODO: fix later
                 includeHiddenFiles
                 includeEmptyDir
-                "" // TODO: fix later with root dir
+                fullPath // TODO: fix later with root dir
                 fullPath
 
         match itemHashResult with
