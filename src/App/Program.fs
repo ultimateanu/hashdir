@@ -18,6 +18,7 @@ type RootOpt
         save,
         includeHiddenFiles,
         skipEmptyDir,
+        ignore,
         hashOnly,
         algorithm,
         color: bool
@@ -30,6 +31,7 @@ type RootOpt
     member val Save: bool = save
     member val IncludeHiddenFiles: bool = includeHiddenFiles
     member val SkipEmptyDir: bool = skipEmptyDir
+    member val IgnorePatterns: string[] = ignore
     member val HashOnly: bool = hashOnly
 
     member val Algorithm: HashType =
@@ -44,32 +46,28 @@ type RootOpt
 
     override x.ToString() =
         sprintf
-            "RootOpt[Items:%A PrintTree:%A Save:%A IncludeHiddenFiles:%A SkipEmptyDir:%A HashOnly:%A Algorithm:%A Color:%A]"
+            "RootOpt[Items:%A PrintTree:%A Save:%A IncludeHiddenFiles:%A SkipEmptyDir:%A IgnorePatterns:%A HashOnly:%A Algorithm:%A Color:%A]"
             x.Items
             x.PrintTree
             x.Save
             x.IncludeHiddenFiles
             x.SkipEmptyDir
+            x.IgnorePatterns
             x.HashOnly
             x.Algorithm
             x.Color
 
 
 type CheckOpt
-    (
-        item,
-        includeHiddenFiles,
-        skipEmptyDir,
-        algorithm,
-        verbosity,
-        color
-    ) =
+    (item, includeHiddenFiles, skipEmptyDir, ignore, algorithm, verbosity, color)
+    =
     // Arguments
     member val Items: string[] = item
 
     // Options
     member val IncludeHiddenFiles: bool = includeHiddenFiles
     member val SkipEmptyDir: bool = skipEmptyDir
+    member val IgnorePatterns: string[] = ignore
 
     member val Algorithm: HashType option =
         match algorithm with
@@ -88,10 +86,11 @@ type CheckOpt
 
     override x.ToString() =
         sprintf
-            "CheckOpt[Items:%A IncludeHiddenFiles:%A SkipEmptyDir:%A Algorithm:%A Color:%A]"
+            "CheckOpt[Items:%A IncludeHiddenFiles:%A SkipEmptyDir:%A IgnorePatterns:%A Algorithm:%A Color:%A]"
             x.Items
             x.IncludeHiddenFiles
             x.SkipEmptyDir
+            x.IgnorePatterns
             x.Algorithm
             x.Color
 
@@ -99,7 +98,6 @@ type CheckOpt
 let rootHandler (opt: RootOpt) =
     for pathRaw in opt.Items do
         let hashingProgressObserver = Progress.HashingObserver()
-
         let path = cleanPath pathRaw
 
         let hashingTask =
@@ -107,8 +105,10 @@ let rootHandler (opt: RootOpt) =
             <| makeHashStructureObservable
                 hashingProgressObserver
                 opt.Algorithm
+                opt.IgnorePatterns
                 opt.IncludeHiddenFiles
                 (not opt.SkipEmptyDir)
+                path
                 path
 
         // Show progress while hashing happens in background.
@@ -157,6 +157,7 @@ let checkHandler (opt: CheckOpt) =
             <| verifyHashFile
                 hashingProgressObserver
                 opt.Algorithm
+                opt.IgnorePatterns
                 opt.IncludeHiddenFiles
                 (not opt.SkipEmptyDir)
                 hashFile
@@ -217,7 +218,6 @@ let checkHandler (opt: CheckOpt) =
 
 let itemArg =
     let arg = Argument<string[]>("item", "Directory or file to hash/check")
-
     arg.Arity <- ArgumentArity.OneOrMore
     arg
 
@@ -248,6 +248,12 @@ let hiddenFilesOpt =
 let skipEmptyOpt =
     Option<bool>([| "-e"; "--skip-empty-dir" |], "Skip empty directories")
 
+let ignorePatternOpt =
+    Option<string[]>([| "-n"; "--ignore" |], "Directories/files to not include")
+
+ignorePatternOpt.Arity <- ArgumentArity.OneOrMore
+ignorePatternOpt.ArgumentHelpName <- "pattern"
+
 let hashOnlyOpt = Option<bool>([| "-h"; "--hash-only" |], "Print only the hash")
 
 let verbosityOpt =
@@ -274,15 +280,32 @@ let checkCmd =
     // OPTIONS
     checkCmd.AddOption hiddenFilesOpt
     checkCmd.AddOption skipEmptyOpt
+    checkCmd.AddOption ignorePatternOpt
     checkCmd.AddOption(algorithmOpt true)
     checkCmd.AddOption verbosityOpt
-    checkCmd.Handler <- CommandHandler.Create(checkHandler)
+
+    checkCmd.SetHandler(
+        new Action<InvocationContext>(fun x ->
+            let checkOpt =
+                CheckOpt(
+                    x.ParseResult.GetValueForArgument itemArg,
+                    x.ParseResult.GetValueForOption hiddenFilesOpt,
+                    x.ParseResult.GetValueForOption skipEmptyOpt,
+                    x.ParseResult.GetValueForOption ignorePatternOpt,
+                    x.ParseResult.GetValueForOption(algorithmOpt true),
+                    x.ParseResult.GetValueForOption verbosityOpt,
+                    x.ParseResult.GetValueForOption colorOpt
+                )
+
+            let exitCode = checkHandler checkOpt
+            x.ExitCode <- exitCode)
+    )
 
     checkCmd
 
 let rootCmd =
     let root =
-        RootCommand("A command-line utility to checksum directories and files.")
+        RootCommand("A command-line utility to hash directories and files.")
 
     // Check (verb command)
     root.AddCommand checkCmd
@@ -291,19 +314,39 @@ let rootCmd =
     root.AddArgument itemArg
 
     // OPTIONS
-    root.AddOption(Option<bool>([| "-t"; "--tree" |], "Print directory tree"))
+    let treeOpt = Option<bool>([| "-t"; "--tree" |], "Print directory tree")
+    root.AddOption(treeOpt)
 
-    root.AddOption(
+    let saveOpt =
         Option<bool>([| "-s"; "--save" |], "Save the checksum to a file")
-    )
+
+    root.AddOption(saveOpt)
 
     root.AddOption hiddenFilesOpt
     root.AddOption skipEmptyOpt
+    root.AddOption ignorePatternOpt
     root.AddOption hashOnlyOpt
     root.AddOption(algorithmOpt false)
     root.AddOption colorOpt
 
-    root.Handler <- CommandHandler.Create(rootHandler)
+    root.SetHandler(
+        new Action<InvocationContext>(fun x ->
+            let rootOpt =
+                RootOpt(
+                    x.ParseResult.GetValueForArgument itemArg,
+                    x.ParseResult.GetValueForOption treeOpt,
+                    x.ParseResult.GetValueForOption saveOpt,
+                    x.ParseResult.GetValueForOption hiddenFilesOpt,
+                    x.ParseResult.GetValueForOption skipEmptyOpt,
+                    x.ParseResult.GetValueForOption ignorePatternOpt,
+                    x.ParseResult.GetValueForOption hashOnlyOpt,
+                    x.ParseResult.GetValueForOption(algorithmOpt false),
+                    x.ParseResult.GetValueForOption(colorOpt)
+                )
+
+            rootHandler rootOpt)
+    )
+
     root
 
 

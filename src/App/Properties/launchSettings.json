@@ -16,9 +16,9 @@
       "commandName": "Project",
       "commandLineArgs": "--skip-empty-dir --tree C:\\Users\\ultim\\Desktop\\test"
     },
-    "Desktop --tree": {
+    "Desktop ignore --tree": {
       "commandName": "Project",
-      "commandLineArgs": "--tree C:\\Users\\ultim\\Desktop\\test"
+      "commandLineArgs": "--tree --ignore \"**/node_mod\" --ignore \"**/*.jpg\" C:\\Users\\ultim\\Desktop\\test"
     },
     "Desktop check": {
       "commandName": "Project",
