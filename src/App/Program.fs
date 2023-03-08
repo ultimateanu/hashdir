@@ -18,7 +18,7 @@ type RootOpt
         save,
         includeHiddenFiles,
         skipEmptyDir,
-        ignorePatterns,
+        ignore,
         hashOnly,
         algorithm,
         color: bool
@@ -31,7 +31,7 @@ type RootOpt
     member val Save: bool = save
     member val IncludeHiddenFiles: bool = includeHiddenFiles
     member val SkipEmptyDir: bool = skipEmptyDir
-    member val IgnorePatterns: string[] = ignorePatterns
+    member val IgnorePatterns: string[] = ignore
     member val HashOnly: bool = hashOnly
 
     member val Algorithm: HashType =
@@ -59,22 +59,15 @@ type RootOpt
 
 
 type CheckOpt
-    (
-        item,
-        includeHiddenFiles,
-        skipEmptyDir,
-        ignorePatterns,
-        algorithm,
-        verbosity,
-        color
-    ) =
+    (item, includeHiddenFiles, skipEmptyDir, ignore, algorithm, verbosity, color)
+    =
     // Arguments
     member val Items: string[] = item
 
     // Options
     member val IncludeHiddenFiles: bool = includeHiddenFiles
     member val SkipEmptyDir: bool = skipEmptyDir
-    member val IgnorePatterns: string[] = ignorePatterns
+    member val IgnorePatterns: string[] = ignore
 
     member val Algorithm: HashType option =
         match algorithm with

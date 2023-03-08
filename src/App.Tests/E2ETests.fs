@@ -26,6 +26,7 @@ type HashingConfigs() =
         Seq.ofList
             [ [| box [||] |]
               [| box [| "--algorithm"; "md5" |] |]
+              [| box [| "--ignore"; "**/a1.txt" |] |]
               [| box [| "--include-hidden-files" |] |]
               [| box [| "--skip-empty-dir" |] |]
               [| box [| "--skip-empty-dir"; "--include-hidden-files" |] |] ]
@@ -57,7 +58,6 @@ type FsTempDirSetupFixture() =
         // Dir a has a couple of files.
         Directory.CreateDirectory(Path.Combine(projectDir, "a")) |> ignore
         File.WriteAllText(Path.Combine(projectDir, "a", "a1.txt"), "a1")
-        File.WriteAllText(Path.Combine(projectDir, "a", "a2.txt"), "a2")
         File.WriteAllText(Path.Combine(projectDir, "a", "a2.txt"), "a2")
 
         // Dir b has a sub dir and a file within that.
