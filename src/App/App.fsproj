@@ -11,6 +11,7 @@
     <RepositoryUrl>https://github.com/ultimateanu/hashdir</RepositoryUrl>
     <Description>A command line utility to hash directories and files.</Description>
     <PublishReadyToRunShowWarnings>true</PublishReadyToRunShowWarnings>
+    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
 
     <!-- Create NuGet tool -->
     <Title>hashdir</Title>
@@ -41,6 +42,10 @@
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="FSharp.Core" Version="7.0.200" />
   </ItemGroup>
 
 </Project>
