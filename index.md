@@ -58,7 +58,7 @@ dotnet hashdir.dll --help
 ```
 
 ### Build from source
-Since this is an open-source project you can also build from source! This requires [dotnet 6](https://dotnet.microsoft.com).
+Since this is an open-source project you can also build from source! This requires [dotnet 7](https://dotnet.microsoft.com).
 1. Download the source code from the main branch on [GitHub](https://github.com/ultimateanu/hashdir/tree/main)
 2. _Optional_: Build and run the app
 ```
@@ -70,14 +70,14 @@ dotnet publish -c Release src/App/App.fsproj
 ```
 4. Run the app
 ```
-dotnet src/App/bin/Release/net6.0/publish/hashdir.dll --help
+dotnet src/App/bin/Release/net7.0/publish/hashdir.dll --help
 ```
 
 
 ## Usage
 ```
 hashdir:
-  A command-line utility to checksum directories and files.
+  A command-line utility to hash directories and files.
 
 Usage:
   hashdir [options] [<item>...] [command]
@@ -90,6 +90,7 @@ Options:
   -s, --save                                                   Save the checksum to a file
   -i, --include-hidden-files                                   Include hidden files
   -e, --skip-empty-dir                                         Skip empty directories
+  -n, --ignore <pattern>                                       Directories/files to not include
   -h, --hash-only                                              Print only the hash
   -a, --algorithm <md5|ripemd160|sha1|sha256|sha384|sha512>    The hash function to use [default: sha1]
   -c, --color                                                  Colorize the output [default: True]
@@ -113,7 +114,10 @@ hashdir --include-hidden-files --tree ~/Desktop/project
 ```
 hashdir -a md5 song.mp3 info.txt report.pdf
 ```
-
+4. Hash a directory, but ignore certain directories/files.
+```
+hashdir --ignore "node_modules" --ignore "**/*.xml" ~/Desktop/project
+```
 
 ## About
 hashdir is an open-source project with a permissive [MIT License](https://github.com/ultimateanu/hashdir/blob/main/LICENSE). If you find a bug or have suggestions feel free to create an [issue](https://github.com/ultimateanu/hashdir/issues) on Github. Any contributions to the code, tests, or documentation are also welcome via a pull request.
