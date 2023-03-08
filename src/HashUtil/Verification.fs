@@ -47,6 +47,7 @@ module Verification =
     let verifyHashAndItem
         (progressObserver: IObserver<HashingUpdate>)
         (hashType: Checksum.HashType)
+        (ignorePatterns: string[])
         includeHiddenFiles
         includeEmptyDir
         basePath
@@ -64,10 +65,10 @@ module Verification =
             <| Hashing.makeHashStructureObservable
                 progressObserver
                 hashType
-                [||] // TODO: fix later
+                ignorePatterns
                 includeHiddenFiles
                 includeEmptyDir
-                fullPath // TODO: fix later with root dir
+                fullPath
                 fullPath
 
         match itemHashResult with
@@ -83,6 +84,7 @@ module Verification =
     let verifyHashAndItemByGuessing
         (progressObserver: IObserver<HashingUpdate>)
         (hashType: Checksum.HashType option)
+        (ignorePatterns: string[])
         includeHiddenFiles
         includeEmptyDir
         (path: string)
@@ -98,6 +100,7 @@ module Verification =
             verifyHashAndItem
                 progressObserver
                 t
+                ignorePatterns
                 includeHiddenFiles
                 includeEmptyDir
                 basePath
@@ -115,6 +118,7 @@ module Verification =
                 verifyHashAndItem
                     progressObserver
                     matchedHashType.[0]
+                    ignorePatterns
                     includeHiddenFiles
                     includeEmptyDir
                     basePath
@@ -130,6 +134,7 @@ module Verification =
                     verifyHashAndItem
                         progressObserver
                         fileGuess.Value
+                        ignorePatterns
                         includeHiddenFiles
                         includeEmptyDir
                         basePath
@@ -142,14 +147,13 @@ module Verification =
     let verifyHashFile
         (progressObserver: IObserver<HashingUpdate>)
         (hashType: Checksum.HashType option)
+        (ignorePatterns: string[])
         includeHiddenFiles
         includeEmptyDir
         origPath
         =
 
         let verifyValidHashFile (path: string) =
-            let baseDirPath = Path.GetDirectoryName path
-
             let isTopLevelItem (line: string) : bool =
                 match line with
                 | txt when txt.StartsWith(Common.bSpacer) -> false
@@ -176,6 +180,7 @@ module Verification =
                     verifyHashAndItemByGuessing
                         progressObserver
                         hashType
+                        ignorePatterns
                         includeHiddenFiles
                         includeEmptyDir
                         path

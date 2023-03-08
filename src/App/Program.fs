@@ -164,6 +164,7 @@ let checkHandler (opt: CheckOpt) =
             <| verifyHashFile
                 hashingProgressObserver
                 opt.Algorithm
+                opt.IgnorePatterns
                 opt.IncludeHiddenFiles
                 (not opt.SkipEmptyDir)
                 hashFile
