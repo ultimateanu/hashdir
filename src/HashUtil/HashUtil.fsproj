@@ -9,6 +9,7 @@
     <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
     <DebugSymbols>False</DebugSymbols>
     <DebugType>None</DebugType>
+    <NoWarn>NU5104</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
