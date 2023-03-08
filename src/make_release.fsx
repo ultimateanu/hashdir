@@ -12,7 +12,7 @@ open System.Security.Cryptography
 open HashUtil.Util
 
 // Configuration ----------------------------------------------------
-let versionStr = "1.2.0"
+let versionStr = "1.3.0"
 // ------------------------------------------------------------------
 
 let releaseDir = "release"
