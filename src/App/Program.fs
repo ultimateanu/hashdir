@@ -18,7 +18,7 @@ type RootOpt
         save,
         includeHiddenFiles,
         skipEmptyDir,
-        ignore,
+        ignorePatterns,
         hashOnly,
         algorithm,
         color: bool
@@ -31,7 +31,7 @@ type RootOpt
     member val Save: bool = save
     member val IncludeHiddenFiles: bool = includeHiddenFiles
     member val SkipEmptyDir: bool = skipEmptyDir
-    member val Ignore: string[] = ignore
+    member val IgnorePatterns: string[] = ignorePatterns
     member val HashOnly: bool = hashOnly
 
     member val Algorithm: HashType =
@@ -46,28 +46,35 @@ type RootOpt
 
     override x.ToString() =
         sprintf
-            "RootOpt[Items:%A PrintTree:%A Save:%A IncludeHiddenFiles:%A SkipEmptyDir:%A Ignore:%A HashOnly:%A Algorithm:%A Color:%A]"
+            "RootOpt[Items:%A PrintTree:%A Save:%A IncludeHiddenFiles:%A SkipEmptyDir:%A IgnorePatterns:%A HashOnly:%A Algorithm:%A Color:%A]"
             x.Items
             x.PrintTree
             x.Save
             x.IncludeHiddenFiles
             x.SkipEmptyDir
-            x.Ignore
+            x.IgnorePatterns
             x.HashOnly
             x.Algorithm
             x.Color
 
 
 type CheckOpt
-    (item, includeHiddenFiles, skipEmptyDir, ignore, algorithm, verbosity, color)
-    =
+    (
+        item,
+        includeHiddenFiles,
+        skipEmptyDir,
+        ignorePatterns,
+        algorithm,
+        verbosity,
+        color
+    ) =
     // Arguments
     member val Items: string[] = item
 
     // Options
     member val IncludeHiddenFiles: bool = includeHiddenFiles
     member val SkipEmptyDir: bool = skipEmptyDir
-    member val Ignore: string[] = ignore
+    member val IgnorePatterns: string[] = ignorePatterns
 
     member val Algorithm: HashType option =
         match algorithm with
@@ -86,11 +93,11 @@ type CheckOpt
 
     override x.ToString() =
         sprintf
-            "CheckOpt[Items:%A IncludeHiddenFiles:%A SkipEmptyDir:%A Ignore:%A Algorithm:%A Color:%A]"
+            "CheckOpt[Items:%A IncludeHiddenFiles:%A SkipEmptyDir:%A IgnorePatterns:%A Algorithm:%A Color:%A]"
             x.Items
             x.IncludeHiddenFiles
             x.SkipEmptyDir
-            x.Ignore
+            x.IgnorePatterns
             x.Algorithm
             x.Color
 
@@ -98,16 +105,14 @@ type CheckOpt
 let rootHandler (opt: RootOpt) =
     for pathRaw in opt.Items do
         let hashingProgressObserver = Progress.HashingObserver()
-
         let path = cleanPath pathRaw
-
 
         let hashingTask =
             Async.StartAsTask
             <| makeHashStructureObservable
                 hashingProgressObserver
                 opt.Algorithm
-                opt.Ignore
+                opt.IgnorePatterns
                 opt.IncludeHiddenFiles
                 (not opt.SkipEmptyDir)
                 path
@@ -219,7 +224,6 @@ let checkHandler (opt: CheckOpt) =
 
 let itemArg =
     let arg = Argument<string[]>("item", "Directory or file to hash/check")
-
     arg.Arity <- ArgumentArity.OneOrMore
     arg
 
@@ -250,13 +254,13 @@ let hiddenFilesOpt =
 let skipEmptyOpt =
     Option<bool>([| "-e"; "--skip-empty-dir" |], "Skip empty directories")
 
-let ignoreArg = Argument<string[]>("pattern", "Pattern to ignore")
-ignoreArg.Arity <- ArgumentArity.OneOrMore
+let ignorePatternsArg = Argument<string[]>("pattern", "Pattern to ignore")
+ignorePatternsArg.Arity <- ArgumentArity.OneOrMore
 
-let ignoreOpt =
+let ignorePatternOpt =
     Option<string[]>([| "-n"; "--ignore" |], "Directories/files to not include")
 
-ignoreOpt.Argument <- ignoreArg
+ignorePatternOpt.Argument <- ignorePatternsArg
 
 let hashOnlyOpt = Option<bool>([| "-h"; "--hash-only" |], "Print only the hash")
 
@@ -284,7 +288,7 @@ let checkCmd =
     // OPTIONS
     checkCmd.AddOption hiddenFilesOpt
     checkCmd.AddOption skipEmptyOpt
-    checkCmd.AddOption ignoreOpt
+    checkCmd.AddOption ignorePatternOpt
     checkCmd.AddOption(algorithmOpt true)
     checkCmd.AddOption verbosityOpt
     checkCmd.Handler <- CommandHandler.Create(checkHandler)
@@ -310,7 +314,7 @@ let rootCmd =
 
     root.AddOption hiddenFilesOpt
     root.AddOption skipEmptyOpt
-    root.AddOption ignoreOpt
+    root.AddOption ignorePatternOpt
     root.AddOption hashOnlyOpt
     root.AddOption(algorithmOpt false)
     root.AddOption colorOpt
