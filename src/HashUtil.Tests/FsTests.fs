@@ -80,6 +80,7 @@ type FilenameInHash
             dirA
             |> makeHashStructure
                 HashType.SHA256
+                (* ignorePatterns= *) [||]
                 includeHiddenFiles
                 includeEmptyDir
             |> makeOption
@@ -88,6 +89,7 @@ type FilenameInHash
             dirB
             |> makeHashStructure
                 HashType.SHA256
+                (* ignorePatterns= *) [||]
                 includeHiddenFiles
                 includeEmptyDir
             |> makeOption
@@ -127,6 +129,7 @@ type FilenameInHash
             dirA
             |> makeHashStructure
                 HashType.SHA256
+                (* ignorePatterns= *) [||]
                 includeHiddenFiles
                 includeEmptyDir
             |> makeOption
@@ -135,6 +138,7 @@ type FilenameInHash
             dirB
             |> makeHashStructure
                 HashType.SHA256
+                (* ignorePatterns= *) [||]
                 includeHiddenFiles
                 includeEmptyDir
             |> makeOption
@@ -174,6 +178,7 @@ type FilenameInHash
             dirA
             |> makeHashStructure
                 HashType.SHA256
+                (* ignorePatterns= *) [||]
                 includeHiddenFiles
                 includeEmptyDir
             |> makeOption
@@ -182,6 +187,7 @@ type FilenameInHash
             dirB
             |> makeHashStructure
                 HashType.SHA256
+                (* ignorePatterns= *) [||]
                 includeHiddenFiles
                 includeEmptyDir
             |> makeOption
@@ -220,6 +226,7 @@ type HashProperties
             dirPath
             |> makeHashStructure
                 HashType.SHA256
+                (* ignorePatterns= *) [||]
                 includeHiddenFiles
                 includeEmptyDir
             |> makeOption
@@ -228,6 +235,7 @@ type HashProperties
             filePath
             |> makeHashStructure
                 HashType.SHA256
+                (* ignorePatterns= *) [||]
                 includeHiddenFiles
                 includeEmptyDir
             |> makeOption
@@ -262,7 +270,11 @@ type FileHashes
 
         let fileHash =
             hiddenFilePath
-            |> makeHashStructure SHA256 includeHiddenFiles true
+            |> makeHashStructure
+                SHA256
+                (* ignorePatterns= *) [||]
+                includeHiddenFiles
+                true
             |> makeOption
 
         // Hash should exist and match
@@ -280,7 +292,11 @@ type FileHashes
 
         let fileHash =
             hiddenFilePath
-            |> makeHashStructure SHA256 includeHiddenFiles true
+            |> makeHashStructure
+                SHA256
+                (* ignorePatterns= *) [||]
+                includeHiddenFiles
+                true
             |> makeOption
 
         // Hash should exist and match
@@ -303,7 +319,11 @@ type DirHashes
 
         let zeroFileDirHash =
             dirZero
-            |> makeHashStructure SHA256 false includeEmptyDir
+            |> makeHashStructure
+                SHA256
+                (* ignorePatterns= *) [||]
+                false
+                includeEmptyDir
             |> makeOption
 
         // Hash should exist and match
@@ -326,7 +346,11 @@ type DirHashes
 
         let zeroFileDirHash =
             dirZero
-            |> makeHashStructure SHA256 false includeEmptyDir
+            |> makeHashStructure
+                SHA256
+                (* ignorePatterns= *) [||]
+                false
+                includeEmptyDir
             |> makeOption
 
         // Hash should exist and match
@@ -342,7 +366,13 @@ type DirHashes
 
         // Compute hash
         let oneFileDirHash =
-            dirOne |> makeHashStructure SHA256 false false |> makeOption
+            dirOne
+            |> makeHashStructure
+                SHA256
+                (* ignorePatterns= *) [||]
+                false
+                false
+            |> makeOption
 
         // Hash should exist and match
         Assert.True(oneFileDirHash.IsSome)
@@ -363,7 +393,13 @@ type DirHashes
 
         // Compute hash
         let twoFileDirHash =
-            dirTwo |> makeHashStructure SHA256 false false |> makeOption
+            dirTwo
+            |> makeHashStructure
+                SHA256
+                (* ignorePatterns= *) [||]
+                false
+                false
+            |> makeOption
 
         // Hash should exist and match
         Assert.True(twoFileDirHash.IsSome)
@@ -437,7 +473,11 @@ type FullTreeHash
 
         let rootHash =
             rootDir
-            |> makeHashStructure SHA256 includeHiddenFiles includeEmptyDir
+            |> makeHashStructure
+                SHA256
+                (* ignorePatterns= *) [||]
+                includeHiddenFiles
+                includeEmptyDir
             |> makeOption
 
         Assert.True(rootHash.IsSome)
@@ -454,7 +494,11 @@ type FullTreeHash
 
         let rootHash =
             rootDir
-            |> makeHashStructure SHA256 includeHiddenFiles includeEmptyDir
+            |> makeHashStructure
+                SHA256
+                (* ignorePatterns= *) [||]
+                includeHiddenFiles
+                includeEmptyDir
             |> makeOption
 
         Assert.True(rootHash.IsSome)
@@ -471,7 +515,11 @@ type FullTreeHash
 
         let rootHash =
             rootDir
-            |> makeHashStructure SHA256 includeHiddenFiles includeEmptyDir
+            |> makeHashStructure
+                SHA256
+                (* ignorePatterns= *) [||]
+                includeHiddenFiles
+                includeEmptyDir
             |> makeOption
 
         Assert.True(rootHash.IsSome)
@@ -488,7 +536,11 @@ type FullTreeHash
 
         let rootHash =
             rootDir
-            |> makeHashStructure SHA256 includeHiddenFiles includeEmptyDir
+            |> makeHashStructure
+                SHA256
+                (* ignorePatterns= *) [||]
+                includeHiddenFiles
+                includeEmptyDir
             |> makeOption
 
         Assert.True(rootHash.IsSome)
@@ -497,3 +549,202 @@ type FullTreeHash
             "1ae01db575f5965c003d47c026cb0bc141de0fb4897713a54a5296651ad743db",
             getHash rootHash.Value
         )
+
+
+type IgnorePatterns
+    (fsTempDirSetupFixture: FsTempDirSetupFixture, output: ITestOutputHelper) =
+    let rootDir = Path.Combine(fsTempDirSetupFixture.TempDir, "root")
+
+    // SETUP
+    do
+        // Root dir has several files
+        Directory.CreateDirectory(rootDir) |> ignore
+        File.WriteAllText(Path.Combine(rootDir, "z1.txt"), "z1")
+        File.WriteAllText(Path.Combine(rootDir, "z1.csv"), "z1d")
+        File.WriteAllText(Path.Combine(rootDir, "z2.txt"), "z2")
+        File.WriteAllText(Path.Combine(rootDir, "z2.csv"), "z2d")
+
+        // Dir A has sub dirs
+        let dirA = Path.Combine(rootDir, "dir_a")
+        let dirANode = Path.Combine(dirA, "node")
+        let dirAInner = Path.Combine(dirA, "inner")
+        Directory.CreateDirectory(dirA) |> ignore
+        Directory.CreateDirectory(dirANode) |> ignore
+        Directory.CreateDirectory(dirAInner) |> ignore
+        File.WriteAllText(Path.Combine(dirANode, "a_node.txt"), "an")
+        File.WriteAllText(Path.Combine(dirANode, "a_node.csv"), "an csv")
+        File.WriteAllText(Path.Combine(dirAInner, "inner_a1.txt"), "aaa")
+        File.WriteAllText(Path.Combine(dirAInner, "inner_a1.csv"), "aaa csv")
+
+        // Dir B has sub dirs
+        let dirB = Path.Combine(rootDir, "dir_b")
+        let dirBInner = Path.Combine(dirB, "inner")
+        let dirBNode = Path.Combine(dirBInner, "node")
+        Directory.CreateDirectory(dirB) |> ignore
+        Directory.CreateDirectory(dirBInner) |> ignore
+        Directory.CreateDirectory(dirBNode) |> ignore
+        File.WriteAllText(Path.Combine(dirBInner, "inner_b1.txt"), "bbb")
+        File.WriteAllText(Path.Combine(dirBInner, "inner_b1.csv"), "bbb csv")
+        File.WriteAllText(Path.Combine(dirBNode, "b_node.txt"), "bn")
+        File.WriteAllText(Path.Combine(dirBNode, "b_node.csv"), "bn csv")
+
+        // Dir node has sub dirs
+        let dirNode = Path.Combine(rootDir, "node")
+        let dirNodeInner = Path.Combine(dirNode, "inner")
+        Directory.CreateDirectory(dirNode) |> ignore
+        Directory.CreateDirectory(dirNodeInner) |> ignore
+        File.WriteAllText(Path.Combine(dirNodeInner, "node.txt"), "node")
+        File.WriteAllText(Path.Combine(dirNodeInner, "node.csv"), "node csv")
+
+    // CLEANUP
+    interface IDisposable with
+        member this.Dispose() = Directory.Delete(rootDir, true)
+
+    interface IClassFixture<FsTempDirSetupFixture>
+
+    [<Fact>]
+    member _.``Ignore single file``() =
+        let ignorePatterns = [| "z1.txt" |]
+
+        let rootHash =
+            rootDir
+            |> makeHashStructure
+                HashType.MD5
+                ignorePatterns
+                (* includeHiddenFiles= *) true
+                (* includeEmptyDir= *) true
+            |> makeOption
+
+        Assert.True(rootHash.IsSome)
+
+        let strWriter = new StringWriter()
+        printHashStructure rootHash.Value true false strWriter true
+        output.WriteLine(strWriter.ToString())
+
+        Assert.Equal("c817e3d89464e80a2fca714089eaafbc", getHash rootHash.Value)
+
+    [<Fact>]
+    member _.``Ignore single dir``() =
+        let ignorePatterns = [| "node" |]
+
+        let rootHash =
+            rootDir
+            |> makeHashStructure
+                HashType.MD5
+                ignorePatterns
+                (* includeHiddenFiles= *) true
+                (* includeEmptyDir= *) true
+            |> makeOption
+
+        Assert.True(rootHash.IsSome)
+
+        let strWriter = new StringWriter()
+        printHashStructure rootHash.Value true false strWriter true
+        output.WriteLine(strWriter.ToString())
+
+        Assert.Equal("89b9a43ef7b35f697ed85f91a5a7eafd", getHash rootHash.Value)
+
+    [<Fact>]
+    member _.``Ignore multiple items``() =
+        let ignorePatterns = [| "z1.txt"; "z2.csv"; "node" |]
+
+        let rootHash =
+            rootDir
+            |> makeHashStructure
+                HashType.MD5
+                ignorePatterns
+                (* includeHiddenFiles= *) true
+                (* includeEmptyDir= *) true
+            |> makeOption
+
+        Assert.True(rootHash.IsSome)
+
+        let strWriter = new StringWriter()
+        printHashStructure rootHash.Value true false strWriter true
+        output.WriteLine(strWriter.ToString())
+
+        Assert.Equal("d964a1f49101b8629921ea878a0f1fc7", getHash rootHash.Value)
+
+    [<Fact>]
+    member _.``Ignore an item in specific dir``() =
+        let ignorePatterns = [| "dir_a/inner/*.txt" |]
+
+        let rootHash =
+            rootDir
+            |> makeHashStructure
+                HashType.MD5
+                ignorePatterns
+                (* includeHiddenFiles= *) true
+                (* includeEmptyDir= *) true
+            |> makeOption
+
+        Assert.True(rootHash.IsSome)
+
+        let strWriter = new StringWriter()
+        printHashStructure rootHash.Value true false strWriter true
+        output.WriteLine(strWriter.ToString())
+
+        Assert.Equal("010d611ad240c98ce2d50b8df978e960", getHash rootHash.Value)
+
+    [<Fact>]
+    member _.``Ignore items under specific dir``() =
+        let ignorePatterns = [| "dir_a/**/*.txt" |]
+
+        let rootHash =
+            rootDir
+            |> makeHashStructure
+                HashType.MD5
+                ignorePatterns
+                (* includeHiddenFiles= *) true
+                (* includeEmptyDir= *) true
+            |> makeOption
+
+        Assert.True(rootHash.IsSome)
+
+        let strWriter = new StringWriter()
+        printHashStructure rootHash.Value true false strWriter true
+        output.WriteLine(strWriter.ToString())
+
+        Assert.Equal("1837a19c15ac00addbccf911d527c733", getHash rootHash.Value)
+
+    [<Fact>]
+    member _.``Ignore file anywhere``() =
+        let ignorePatterns = [| "**/*.txt" |]
+
+        let rootHash =
+            rootDir
+            |> makeHashStructure
+                HashType.MD5
+                ignorePatterns
+                (* includeHiddenFiles= *) true
+                (* includeEmptyDir= *) true
+            |> makeOption
+
+        Assert.True(rootHash.IsSome)
+
+        let strWriter = new StringWriter()
+        printHashStructure rootHash.Value true false strWriter true
+        output.WriteLine(strWriter.ToString())
+
+        Assert.Equal("30f0cc375454ac1f32429abadaf4f05f", getHash rootHash.Value)
+
+    [<Fact>]
+    member _.``Ignore dir anywhere``() =
+        let ignorePatterns = [| "**/node" |]
+
+        let rootHash =
+            rootDir
+            |> makeHashStructure
+                HashType.MD5
+                ignorePatterns
+                (* includeHiddenFiles= *) true
+                (* includeEmptyDir= *) true
+            |> makeOption
+
+        Assert.True(rootHash.IsSome)
+
+        let strWriter = new StringWriter()
+        printHashStructure rootHash.Value true false strWriter true
+        output.WriteLine(strWriter.ToString())
+
+        Assert.Equal("a59a1763d85b2767792264fa16af2415", getHash rootHash.Value)

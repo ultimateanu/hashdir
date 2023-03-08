@@ -147,6 +147,7 @@ module Hashing =
 
     let makeHashStructure
         (hashType: Checksum.HashType)
+        (ignorePatterns: string[])
         includeHiddenFiles
         includeEmptyDir
         path
@@ -157,7 +158,7 @@ module Hashing =
         <| makeHashStructureObservable
             emptyHashingObserver
             hashType
-            [||] // ignorePatterns
+            ignorePatterns
             includeHiddenFiles
             includeEmptyDir
             path // rootDir
