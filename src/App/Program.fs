@@ -248,13 +248,11 @@ let hiddenFilesOpt =
 let skipEmptyOpt =
     Option<bool>([| "-e"; "--skip-empty-dir" |], "Skip empty directories")
 
-let ignorePatternsArg = Argument<string[]>("pattern", "Pattern to ignore")
-ignorePatternsArg.Arity <- ArgumentArity.OneOrMore
-
 let ignorePatternOpt =
     Option<string[]>([| "-n"; "--ignore" |], "Directories/files to not include")
 
-ignorePatternOpt.Argument <- ignorePatternsArg
+ignorePatternOpt.Arity <- ArgumentArity.OneOrMore
+ignorePatternOpt.ArgumentHelpName <- "pattern"
 
 let hashOnlyOpt = Option<bool>([| "-h"; "--hash-only" |], "Print only the hash")
 
@@ -285,7 +283,23 @@ let checkCmd =
     checkCmd.AddOption ignorePatternOpt
     checkCmd.AddOption(algorithmOpt true)
     checkCmd.AddOption verbosityOpt
-    checkCmd.Handler <- CommandHandler.Create(checkHandler)
+
+    checkCmd.SetHandler(
+        new Action<InvocationContext>(fun x ->
+            let checkOpt =
+                CheckOpt(
+                    x.ParseResult.GetValueForArgument itemArg,
+                    x.ParseResult.GetValueForOption hiddenFilesOpt,
+                    x.ParseResult.GetValueForOption skipEmptyOpt,
+                    x.ParseResult.GetValueForOption ignorePatternOpt,
+                    x.ParseResult.GetValueForOption(algorithmOpt true),
+                    x.ParseResult.GetValueForOption verbosityOpt,
+                    x.ParseResult.GetValueForOption colorOpt
+                )
+
+            let exitCode = checkHandler checkOpt
+            x.ExitCode <- exitCode)
+    )
 
     checkCmd
 
@@ -300,11 +314,13 @@ let rootCmd =
     root.AddArgument itemArg
 
     // OPTIONS
-    root.AddOption(Option<bool>([| "-t"; "--tree" |], "Print directory tree"))
+    let treeOpt = Option<bool>([| "-t"; "--tree" |], "Print directory tree")
+    root.AddOption(treeOpt)
 
-    root.AddOption(
+    let saveOpt =
         Option<bool>([| "-s"; "--save" |], "Save the checksum to a file")
-    )
+
+    root.AddOption(saveOpt)
 
     root.AddOption hiddenFilesOpt
     root.AddOption skipEmptyOpt
@@ -313,7 +329,24 @@ let rootCmd =
     root.AddOption(algorithmOpt false)
     root.AddOption colorOpt
 
-    root.Handler <- CommandHandler.Create(rootHandler)
+    root.SetHandler(
+        new Action<InvocationContext>(fun x ->
+            let rootOpt =
+                RootOpt(
+                    x.ParseResult.GetValueForArgument itemArg,
+                    x.ParseResult.GetValueForOption treeOpt,
+                    x.ParseResult.GetValueForOption saveOpt,
+                    x.ParseResult.GetValueForOption hiddenFilesOpt,
+                    x.ParseResult.GetValueForOption skipEmptyOpt,
+                    x.ParseResult.GetValueForOption ignorePatternOpt,
+                    x.ParseResult.GetValueForOption hashOnlyOpt,
+                    x.ParseResult.GetValueForOption(algorithmOpt false),
+                    x.ParseResult.GetValueForOption(colorOpt)
+                )
+
+            rootHandler rootOpt)
+    )
+
     root
 
 
