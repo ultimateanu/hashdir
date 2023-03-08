@@ -53,6 +53,7 @@ Commands:
 1. Hash a file/directory: `hashdir ~/Desktop/project/`
 2. Hash a directory with hidden files and print tree: `hashdir --include-hidden-files --tree ~/Desktop/project`
 3. Hash multiple items using MD5: `hashdir -a md5 song.mp3 info.txt report.pdf`
+4. Hash a directory, but ignore certain directories/files: `hashdir --ignore "node_modules" --ignore "**/*.xml" ~/Desktop/project`
 
 ## License
 [MIT License](https://github.com/ultimateanu/hashdir/blob/main/LICENSE)
