@@ -278,10 +278,11 @@ let checkCmd =
     checkCmd.AddArgument itemArg
 
     // OPTIONS
+    let checkAlgorithmOpt = (algorithmOpt true)
+    checkCmd.AddOption checkAlgorithmOpt
     checkCmd.AddOption hiddenFilesOpt
     checkCmd.AddOption skipEmptyOpt
     checkCmd.AddOption ignorePatternOpt
-    checkCmd.AddOption(algorithmOpt true)
     checkCmd.AddOption verbosityOpt
 
     checkCmd.SetHandler(
@@ -292,7 +293,7 @@ let checkCmd =
                     x.ParseResult.GetValueForOption hiddenFilesOpt,
                     x.ParseResult.GetValueForOption skipEmptyOpt,
                     x.ParseResult.GetValueForOption ignorePatternOpt,
-                    x.ParseResult.GetValueForOption(algorithmOpt true),
+                    x.ParseResult.GetValueForOption checkAlgorithmOpt,
                     x.ParseResult.GetValueForOption verbosityOpt,
                     x.ParseResult.GetValueForOption colorOpt
                 )
@@ -322,11 +323,13 @@ let rootCmd =
 
     root.AddOption(saveOpt)
 
+    let rootAlgorithmOpt = (algorithmOpt false)
+    root.AddOption(rootAlgorithmOpt)
+
     root.AddOption hiddenFilesOpt
     root.AddOption skipEmptyOpt
     root.AddOption ignorePatternOpt
     root.AddOption hashOnlyOpt
-    root.AddOption(algorithmOpt false)
     root.AddOption colorOpt
 
     root.SetHandler(
@@ -340,7 +343,7 @@ let rootCmd =
                     x.ParseResult.GetValueForOption skipEmptyOpt,
                     x.ParseResult.GetValueForOption ignorePatternOpt,
                     x.ParseResult.GetValueForOption hashOnlyOpt,
-                    x.ParseResult.GetValueForOption(algorithmOpt false),
+                    x.ParseResult.GetValueForOption rootAlgorithmOpt,
                     x.ParseResult.GetValueForOption(colorOpt)
                 )
 

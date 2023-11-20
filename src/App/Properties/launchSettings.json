@@ -23,6 +23,10 @@
     "Desktop check": {
       "commandName": "Project",
       "commandLineArgs": "check C:\\Users\\ultim\\Desktop\\test.1.ripemd160.txt"
+    },
+    "md5": {
+      "commandName": "Project",
+      "commandLineArgs": "--tree -a md5 C:\\Users\\ultim\\Desktop\\test"
     }
   }
 }
