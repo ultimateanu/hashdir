@@ -321,37 +321,47 @@ type FsTests
 
         Assert.Equal(expectedOutput, getStdOut ())
 
-    [<Fact>]
-    member _.``save hash files correctly``() =
+    [<Theory>]
+    [<InlineData("sha1",
+                 "264aba9860d3dc213423759991dad98259bbf0c5  /project\n",
+                 "80c7fac7855e00074c94782d5d85076981be0115  topA.txt\n")>]
+    [<InlineData("md5",
+                 "66d43407673f7cd471f448920abbed9a  /project\n",
+                 "7167f8d27602ccd0df292bc8e6551c72  topA.txt\n")>]
+    member _.``save hash files correctly``
+        (
+            hashAlg,
+            projectHashContents,
+            topAHashContents
+        ) =
         // Run hashdir and save hash file.
         let returnCode =
             Program.main
                 [| fsTempDirSetupFixture.TopFileA
                    fsTempDirSetupFixture.ProjectDir
+                   "-a"
+                   hashAlg
                    "--save" |]
 
         Assert.Equal(0, returnCode)
 
         // Expect saved hash files with correct hash.
         let projectHashFile =
-            Path.Join(fsTempDirSetupFixture.TempDir, "project.1.sha1.txt")
-
-        Assert.True(File.Exists(projectHashFile))
-
-        Assert.Equal(
-            "264aba9860d3dc213423759991dad98259bbf0c5  /project\n",
-            File.ReadAllText(projectHashFile)
-        )
+            Path.Join(
+                fsTempDirSetupFixture.TempDir,
+                sprintf "project.1.%s.txt" hashAlg
+            )
 
         let topAHashFile =
-            Path.Join(fsTempDirSetupFixture.TempDir, "topA.txt.1.sha1.txt")
+            Path.Join(
+                fsTempDirSetupFixture.TempDir,
+                sprintf "topA.txt.1.%s.txt" hashAlg
+            )
 
+        Assert.True(File.Exists(projectHashFile))
+        Assert.Equal(projectHashContents, File.ReadAllText(projectHashFile))
         Assert.True(File.Exists(topAHashFile))
-
-        Assert.Equal(
-            "80c7fac7855e00074c94782d5d85076981be0115  topA.txt\n",
-            File.ReadAllText(topAHashFile)
-        )
+        Assert.Equal(topAHashContents, File.ReadAllText(topAHashFile))
 
         // Cleanup
         File.Delete(projectHashFile)
