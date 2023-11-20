@@ -76,29 +76,30 @@ dotnet src/App/bin/Release/net7.0/publish/hashdir.dll --help
 
 ## Usage
 ```
-hashdir:
+Description:
   A command-line utility to hash directories and files.
 
 Usage:
-  hashdir [options] [<item>...] [command]
+  hashdir [<item>...] [command] [options]
 
 Arguments:
-  <item>    Directory or file to hash/check
+  <item>  Directory or file to hash/check
 
 Options:
-  -t, --tree                                                   Print directory tree
-  -s, --save                                                   Save the checksum to a file
-  -i, --include-hidden-files                                   Include hidden files
-  -e, --skip-empty-dir                                         Skip empty directories
-  -n, --ignore <pattern>                                       Directories/files to not include
-  -h, --hash-only                                              Print only the hash
-  -a, --algorithm <md5|ripemd160|sha1|sha256|sha384|sha512>    The hash function to use [default: sha1]
-  -c, --color                                                  Colorize the output [default: True]
-  --version                                                    Show version information
-  -?, -h, --help                                               Show help and usage information
+  -t, --tree                                                 Print directory tree
+  -s, --save                                                 Save the checksum to a file
+  -a, --algorithm <md5|ripemd160|sha1|sha256|sha384|sha512>  The hash function to use [default: sha1]
+  -i, --include-hidden-files                                 Include hidden files
+  -e, --skip-empty-dir                                       Skip empty directories
+  -n, --ignore <pattern>                                     Directories/files to not include
+  -h, --hash-only                                            Print only the hash
+  -c, --color                                                Colorize the output [default: True]
+  --version                                                  Show version information
+  -?, -h, --help                                             Show help and usage information
+
 
 Commands:
-  check <item>    Verify that the specified hash file is valid.
+  check <item>  Verify that the specified hash file is valid.
 ```
 
 ### Examples
