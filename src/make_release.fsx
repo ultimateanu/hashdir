@@ -134,25 +134,14 @@ let buildSingleBinary (profile: PublishSpec) =
     )
 
     // Create published dir
-    let releaseName =
-        sprintf "%s_%s" nameAndVersion profile.Name
-
-    let oldProfileDir =
-        "src/App/bin/Release/net7.0/publish/binary"
-
+    let releaseName = sprintf "%s_%s" nameAndVersion profile.Name
+    let binaryPath = sprintf "src/App/bin/Release/net8.0/%s/hashdir" (RuntimeIdentifierString profile.Rid)
     let newProfileDir = Path.Combine(releaseDir, releaseName)
 
     Directory.CreateDirectory(newProfileDir) |> ignore
     File.Copy("README.md", Path.Combine(newProfileDir, "README.md"))
     File.Copy("LICENSE", Path.Combine(newProfileDir, "LICENSE"))
-
-    let releaseFiles = Directory.GetFiles oldProfileDir
-    // Expect only a single binary.
-    ensure (1 = Array.length releaseFiles) "Expected a single binary file."
-    // Copy binary to output dir.
-    releaseFiles
-    |> Array.map (fun f -> File.Copy(f, Path.Combine(newProfileDir, Path.GetFileName(f))))
-    |> ignore
+    File.Copy(binaryPath, Path.Combine(newProfileDir, "hashdir"))
 
     // Compress release into a single file.
     compressDir profile.Compression releaseName
