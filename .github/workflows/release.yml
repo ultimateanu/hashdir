@@ -26,7 +26,7 @@ jobs:
 
     - uses: actions/upload-artifact@v4
       with:
-        name: release-binaries-${{ matrix.os }}
+        name: binaries-${{ matrix.os }}
         path: |
           release/*.tar.gz
           release/*.zip
@@ -45,17 +45,17 @@ jobs:
     - name: Download ubuntu binaries
       uses: actions/download-artifact@v4
       with:
-        name: release-binaries-ubuntu-latest
+        name: binaries-ubuntu-latest
         path: release/
     - name: Download mac binaries
       uses: actions/download-artifact@v4
       with:
-        name: release-binaries-macos-latest
+        name: binaries-macos-latest
         path: release/
     - name: Download windows binaries
       uses: actions/download-artifact@v4
       with:
-        name: release-binaries-windows-latest
+        name: binaries-windows-latest
         path: release/
 
     - name: Checksum binaries
@@ -63,7 +63,7 @@ jobs:
 
     - uses: actions/upload-artifact@v4
       with:
-        name: release-binaries-checksum-${{ github.run_id }}
+        name: release-binaries-all
         path: |
           release/*.tar.gz
           release/*.zip
