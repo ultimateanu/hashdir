@@ -135,7 +135,7 @@ let buildSingleBinary (profile: PublishSpec) =
 
     // Create published dir
     let releaseName = sprintf "%s_%s" nameAndVersion profile.Name
-    let binaryPath = sprintf "src/App/bin/Release/net8.0/%s/hashdir" (RuntimeIdentifierString profile.Rid)
+    let binaryPath = sprintf "src/App/bin/Release/net8.0/%s/publish/hashdir" (RuntimeIdentifierString profile.Rid)
     let newProfileDir = Path.Combine(releaseDir, releaseName)
 
     Directory.CreateDirectory(newProfileDir) |> ignore
@@ -156,7 +156,7 @@ let makeNuGetRelease () =
 let makeDotnetRelease () =
     dotnet "publish -c Release --framework net8.0 -p:PublishProfile=dotnet src/App/App.fsproj"
     let releaseName = sprintf "%s_dotnet" nameAndVersion
-    Directory.Move("src/App/bin/Release/net7.0/publish/dotnet", Path.Combine(releaseDir, releaseName))
+    Directory.Move("src/App/bin/Release/net8.0/publish", Path.Combine(releaseDir, releaseName))
     compressDir Zip releaseName
     compressDir TarGz releaseName
 
