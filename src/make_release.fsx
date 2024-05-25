@@ -135,13 +135,18 @@ let buildSingleBinary (profile: PublishSpec) =
 
     // Create published dir
     let releaseName = sprintf "%s_%s" nameAndVersion profile.Name
-    let binaryPath = sprintf "src/App/bin/Release/net8.0/%s/publish/hashdir" (RuntimeIdentifierString profile.Rid)
+    let binaryName =
+        windowsProfiles
+            |> List.map (fun p -> p.Rid)
+            |> List.contains(profile.Rid)
+            |> fun isWindows -> if isWindows then "hashdir.exe" else "hashdir"
+    let binaryPath = sprintf "src/App/bin/Release/net8.0/%s/publish/%s" (RuntimeIdentifierString profile.Rid) binaryName
     let newProfileDir = Path.Combine(releaseDir, releaseName)
 
     Directory.CreateDirectory(newProfileDir) |> ignore
     File.Copy("README.md", Path.Combine(newProfileDir, "README.md"))
     File.Copy("LICENSE", Path.Combine(newProfileDir, "LICENSE"))
-    File.Copy(binaryPath, Path.Combine(newProfileDir, "hashdir"))
+    File.Copy(binaryPath, Path.Combine(newProfileDir, binaryName))
 
     // Compress release into a single file.
     compressDir profile.Compression releaseName
