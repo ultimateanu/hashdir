@@ -26,7 +26,7 @@ jobs:
 
     - uses: actions/upload-artifact@v4
       with:
-        name: release-binaries
+        name: release-binaries-${{ matrix.os }}-${{ github.run_id }}
         path: |
           release/*.tar.gz
           release/*.zip
@@ -44,7 +44,7 @@ jobs:
 
     - uses: actions/download-artifact@v4
       with:
-        name: release-binaries
+        name: release-binaries-${{ matrix.os }}-${{ github.run_id }}
         path: release/
 
     - name: Checksum binaries
@@ -52,7 +52,7 @@ jobs:
 
     - uses: actions/upload-artifact@v4
       with:
-        name: release-binaries
+        name: release-binaries-checksum-${{ github.run_id }}
         path: |
           release/*.tar.gz
           release/*.zip
