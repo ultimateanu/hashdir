@@ -158,7 +158,6 @@ let makeDotnetRelease () =
     let releaseName = sprintf "%s_dotnet" nameAndVersion
     Directory.Move("src/App/bin/Release/net8.0/publish", Path.Combine(releaseDir, releaseName))
     compressDir Zip releaseName
-    compressDir TarGz releaseName
 
 let buildRelease () =
     // Create fresh output dir
