@@ -31,7 +31,6 @@ type RuntimeIdentifier =
     // Windows
     | Win86
     | Win64
-    | WinArm
     | WinArm64
     // Linux
     | Linux64
@@ -58,9 +57,6 @@ let windowsProfiles =
       { Name = "Windows_64bit"
         Rid = Win64
         Compression = Zip }
-      { Name = "Windows_ARM"
-        Rid = WinArm
-        Compression = Zip }
       { Name = "Windows_ARM64"
         Rid = WinArm64
         Compression = Zip } ]
@@ -84,7 +80,6 @@ let RuntimeIdentifierString id =
     // Windows
     | Win86 -> "win-x86"
     | Win64 -> "win-x64"
-    | WinArm -> "win-arm"
     | WinArm64 -> "win-arm64"
     // Linux
     | Linux64 -> "linux-x64"
