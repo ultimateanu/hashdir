@@ -26,7 +26,7 @@ jobs:
 
     - uses: actions/upload-artifact@v4
       with:
-        name: release-binaries-${{ matrix.os }}-${{ github.run_id }}
+        name: release-binaries-${{ matrix.os }}
         path: |
           release/*.tar.gz
           release/*.zip
@@ -42,9 +42,20 @@ jobs:
       with:
         dotnet-version: 8.0.x
 
-    - uses: actions/download-artifact@v4
+    - name: Download ubuntu binaries
+      uses: actions/download-artifact@v4
       with:
-        name: release-binaries-${{ matrix.os }}-${{ github.run_id }}
+        name: release-binaries-ubuntu-latest
+        path: release/
+    - name: Download mac binaries
+      uses: actions/download-artifact@v4
+      with:
+        name: release-binaries-macos-latest
+        path: release/
+    - name: Download windows binaries
+      uses: actions/download-artifact@v4
+      with:
+        name: release-binaries-windows-latest
         path: release/
 
     - name: Checksum binaries
