@@ -23,7 +23,7 @@ jobs:
       run: dotnet build --no-restore /p:ContinuousIntegrationBuild=true
 
     - name: Test
-      run: dotnet test --no-build /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
+      run: dotnet test --no-build --framework net8.0 /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
 
     - name: Codecov
       uses: codecov/codecov-action@v1
