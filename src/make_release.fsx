@@ -129,7 +129,7 @@ let buildSingleBinary (profile: PublishSpec) =
     // Build binary
     dotnet (
         sprintf
-            "publish -c Release -p:PublishProfile=binary -p:RuntimeIdentifier=%s src/App/App.fsproj"
+            "publish -c Release --framework net8.0 -p:PublishProfile=binary -p:RuntimeIdentifier=%s src/App/App.fsproj"
             (RuntimeIdentifierString profile.Rid)
     )
 
@@ -165,7 +165,7 @@ let makeNuGetRelease () =
     File.Copy(nugetPackagePath, Path.Combine(releaseDir, Path.GetFileName(nugetPackagePath)))
 
 let makeDotnetRelease () =
-    dotnet "publish -c Release -p:PublishProfile=dotnet src/App/App.fsproj"
+    dotnet "publish -c Release --framework net8.0 -p:PublishProfile=dotnet src/App/App.fsproj"
     let releaseName = sprintf "%s_dotnet" nameAndVersion
     Directory.Move("src/App/bin/Release/net7.0/publish/dotnet", Path.Combine(releaseDir, releaseName))
     compressDir Zip releaseName
