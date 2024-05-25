@@ -196,10 +196,10 @@ let buildRelease () =
         makeDotnetRelease ()
 
 let makeChecksumFile () =
-    let hashAlg = SHA256.Create()
+    let hashAlg = SHA1.Create()
 
     let checksumFilename =
-        Path.Combine(releaseDir, sprintf "%s_checksums_sha256.txt" nameAndVersion)
+        Path.Combine(releaseDir, sprintf "%s_checksums_sha1.txt" nameAndVersion)
 
     // Delete old checksum file.
     if File.Exists checksumFilename then
