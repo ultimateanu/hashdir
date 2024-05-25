@@ -24,7 +24,7 @@ jobs:
     - name: Build binaries
       run: dotnet fsi ./src/make_release.fsx build
 
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v4
       with:
         name: release-binaries
         path: |
@@ -42,7 +42,7 @@ jobs:
       with:
         dotnet-version: 8.0.x
 
-    - uses: actions/download-artifact@v2
+    - uses: actions/download-artifact@v4
       with:
         name: release-binaries
         path: release/
@@ -50,7 +50,7 @@ jobs:
     - name: Checksum binaries
       run: dotnet fsi ./src/make_release.fsx hash
 
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v4
       with:
         name: release-binaries
         path: |
