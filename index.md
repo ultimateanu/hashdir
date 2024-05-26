@@ -46,6 +46,13 @@ dotnet tool install --global hashdir
 dotnet tool update --global hashdir
 ```
 
+* Scoop
+```
+scoop bucket add ultimateanu https://github.com/ultimateanu/homebrew-software
+scoop install hashdir
+scoop update hashdir
+```
+
 \*_Homebrew currently requires a project to have 50 stars to be included in core. So I've set up a custom tap for now that still allows easy installation. If you like this project, please consider starring on Github and adding a formula to Homebrew core eventually._
 
 ### Cross-platform dotnet app
