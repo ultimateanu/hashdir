@@ -17,6 +17,7 @@ There are several ways to get hashdir. Full details can be found [here](https://
 
 - **Homebrew\***: `brew install ultimateanu/software/hashdir`
 - **dotnet**: `dotnet tool install --global hashdir`
+- **Scoop**: `scoop bucket add ultimateanu https://github.com/ultimateanu/homebrew-software; scoop install hashdir`
 - **Stand-alone binary**: latest version for macOS, Windows, and Linux can be found at [releases](https://github.com/ultimateanu/hashdir/releases)
 - **AUR (Arch User Repository)**: If you are using an Arch-based distribution, you can build and install the [hashdir](https://aur.archlinux.org/packages/hashdir) package from the AUR
 
