@@ -6,24 +6,23 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: 8.0.x
+      - uses: actions/checkout@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
 
-    - name: Restore dependencies
-      run: dotnet restore
+      - name: Restore dependencies
+        run: dotnet restore --framework net8.0
 
-    - name: Build
-      run: dotnet build --no-restore /p:ContinuousIntegrationBuild=true
+      - name: Build
+        run: dotnet build --no-restore --framework net8.0 /p:ContinuousIntegrationBuild=true
 
-    - name: Test
-      run: dotnet test --no-build --framework net8.0 /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
+      - name: Test
+        run: dotnet test --no-build --framework net8.0 /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
 
-    - name: Codecov
-      uses: codecov/codecov-action@v1
+      - name: Codecov
+        uses: codecov/codecov-action@v1
