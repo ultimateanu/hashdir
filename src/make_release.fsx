@@ -107,16 +107,13 @@ let dotnet args = runProcess "dotnet" args
 let compressDir compression releaseName =
     match compression with
     | Zip ->
-        let zipFilename =
-            Path.Combine(releaseDir, sprintf "%s.zip" releaseName)
+        let zipFilename = Path.Combine(releaseDir, sprintf "%s.zip" releaseName)
 
         ZipFile.CreateFromDirectory(Path.Combine(releaseDir, releaseName), zipFilename)
     | TarGz ->
-        let tarGzFilename =
-            Path.Combine(releaseDir, sprintf "%s.tar.gz" releaseName)
+        let tarGzFilename = Path.Combine(releaseDir, sprintf "%s.tar.gz" releaseName)
 
-        let tarArgs =
-            sprintf "-czv -C %s -f %s %s" releaseDir tarGzFilename releaseName
+        let tarArgs = sprintf "-czv -C %s -f %s %s" releaseDir tarGzFilename releaseName
 
         runProcess "tar" tarArgs
 
@@ -130,12 +127,16 @@ let buildSingleBinary (profile: PublishSpec) =
 
     // Create published dir
     let releaseName = sprintf "%s_%s" nameAndVersion profile.Name
+
     let binaryName =
         windowsProfiles
-            |> List.map (fun p -> p.Rid)
-            |> List.contains(profile.Rid)
-            |> fun isWindows -> if isWindows then "hashdir.exe" else "hashdir"
-    let binaryPath = sprintf "src/App/bin/Release/net8.0/%s/publish/%s" (RuntimeIdentifierString profile.Rid) binaryName
+        |> List.map (fun p -> p.Rid)
+        |> List.contains (profile.Rid)
+        |> fun isWindows -> if isWindows then "hashdir.exe" else "hashdir"
+
+    let binaryPath =
+        sprintf "src/App/bin/Release/net8.0/%s/publish/%s" (RuntimeIdentifierString profile.Rid) binaryName
+
     let newProfileDir = Path.Combine(releaseDir, releaseName)
 
     Directory.CreateDirectory(newProfileDir) |> ignore
@@ -214,8 +215,7 @@ let makeChecksumFile () =
     File.WriteAllLines(checksumFilename, hashLines)
 
 let main () =
-    let argErrorMsg =
-        "Expected a single argument: <build | hash>"
+    let argErrorMsg = "Expected a single argument: <build | hash>"
 
     ensure (fsi.CommandLineArgs.Length = 2) argErrorMsg
 

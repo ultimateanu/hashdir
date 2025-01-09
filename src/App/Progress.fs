@@ -7,8 +7,8 @@ open System.IO
 
 type HashingObserver() =
     let mutable filesHashed = 0
-    let mutable hashingFile : string option = None
-    let mutable hashingDir : string option = None
+    let mutable hashingFile: string option = None
+    let mutable hashingDir: string option = None
     member this.FilesHashed = filesHashed
     member this.HashingFile = hashingFile
     member this.HashingDir = hashingDir
@@ -34,15 +34,7 @@ type HashingObserver() =
 
             ()
 
-let progressSymbols =
-    [| '⣷'
-       '⣯'
-       '⣟'
-       '⡿'
-       '⢿'
-       '⣻'
-       '⣽'
-       '⣾' |]
+let progressSymbols = [| '⣷'; '⣯'; '⣟'; '⡿'; '⢿'; '⣻'; '⣽'; '⣾' |]
 
 let private incProgressIndex slashIndex =
     (slashIndex + 1) % progressSymbols.Length
@@ -57,7 +49,8 @@ let getConsoleMaxWidth () =
             defaultWidth
     with
     // Use a default backup width value if needed (e.g. xUnit tests)
-    | _ -> defaultWidth
+    | _ ->
+        defaultWidth
 
 // Internal version which takes in console width for testing.
 let makeProgressStrInternal
@@ -67,8 +60,7 @@ let makeProgressStrInternal
     (outputWriter: TextWriter)
     (colorize: bool)
     =
-    let slash =
-        Array.get progressSymbols (slashIndex % progressSymbols.Length)
+    let slash = Array.get progressSymbols (slashIndex % progressSymbols.Length)
 
     let numFiles = hashingObserver.FilesHashed
     let curFile = hashingObserver.HashingFile
@@ -76,11 +68,20 @@ let makeProgressStrInternal
     let fileStr = if numFiles = 1 then "file" else "files"
 
     printColorToWriter colorize None "\r" outputWriter
-    printColorToWriter colorize (Some ConsoleColor.Green) (string slash) outputWriter
-    printColorToWriter colorize None (sprintf " %d %s " numFiles fileStr) outputWriter
 
-    let mutable outputCopy =
-        sprintf "\r%c %d %s " slash numFiles fileStr
+    printColorToWriter
+        colorize
+        (Some ConsoleColor.Green)
+        (string slash)
+        outputWriter
+
+    printColorToWriter
+        colorize
+        None
+        (sprintf " %d %s " numFiles fileStr)
+        outputWriter
+
+    let mutable outputCopy = sprintf "\r%c %d %s " slash numFiles fileStr
 
     let makeTruncatedName (item: string) =
         let oldLen = outputCopy.Length + "[  ]".Length
@@ -106,16 +107,20 @@ let makeProgressStrInternal
         match curDir with
         | None -> ()
         | Some dirPath ->
-            let dirStr =
-                makeTruncatedName ("/" + (getChildName dirPath))
+            let dirStr = makeTruncatedName ("/" + (getChildName dirPath))
 
             printColorToWriter colorize None "[ " outputWriter
-            printColorToWriter colorize (Some ConsoleColor.Cyan) dirStr outputWriter
+
+            printColorToWriter
+                colorize
+                (Some ConsoleColor.Cyan)
+                dirStr
+                outputWriter
+
             printColorToWriter colorize None " ]" outputWriter
             outputCopy <- outputCopy + "[ " + dirStr + " ]"
     | Some fullPath ->
-        let fileStr =
-            fullPath |> getChildName |> makeTruncatedName
+        let fileStr = fullPath |> getChildName |> makeTruncatedName
 
         printColorToWriter colorize None "[ " outputWriter
         printColorToWriter colorize None fileStr outputWriter
@@ -123,10 +128,14 @@ let makeProgressStrInternal
         outputCopy <- outputCopy + "[ " + fileStr + " ]"
 
     // Print spaces to reach end of line (to clear old output).
-    let remainingWidth =
-        max 0 (consoleMaxWidth - outputCopy.Length)
+    let remainingWidth = max 0 (consoleMaxWidth - outputCopy.Length)
 
-    printColorToWriter colorize None (String.replicate remainingWidth " ") outputWriter
+    printColorToWriter
+        colorize
+        None
+        (String.replicate remainingWidth " ")
+        outputWriter
+
     outputCopy <- outputCopy + (String.replicate remainingWidth " ")
     assert (outputCopy.Length >= consoleMaxWidth)
 

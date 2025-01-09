@@ -10,13 +10,13 @@ module FS =
 
     let getPath itemHash =
         match itemHash with
-        | File (path, _) -> path
-        | Dir (path, _, _) -> path
+        | File(path, _) -> path
+        | Dir(path, _, _) -> path
 
     let getHash itemHash =
         match itemHash with
-        | File (_, hash) -> hash
-        | Dir (_, hash, _) -> hash
+        | File(_, hash) -> hash
+        | Dir(_, hash, _) -> hash
 
     let private makeLeftSpacer levels =
         match levels with
@@ -46,7 +46,7 @@ module FS =
         =
         // TODO: make the colors optional via cmd line flag
         match structure with
-        | File (path, hash) ->
+        | File(path, hash) ->
             let fileLine =
                 if hashOnly then
                     sprintf "%s%s\n" (makeLeftSpacer levels) hash
@@ -59,7 +59,7 @@ module FS =
             // Use "\n" rather than use WriteLine() to avoid system line endings (e.g. "\r\n")
             outputWriter.Write(fileLine)
 
-        | Dir (path, hash, children) ->
+        | Dir(path, hash, children) ->
             // Print dir line, with optional colors.
             let firstHalf = sprintf "%s%s" (makeLeftSpacer levels) hash
             outputWriter.Write(firstHalf)

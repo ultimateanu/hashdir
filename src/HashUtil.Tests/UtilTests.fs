@@ -61,7 +61,12 @@ type UtilTests(output: ITestOutputHelper) =
     member _.``printColorToWriter cyan color``() =
         // TODO: Figure out if color was used.
         use stringWriter = new IO.StringWriter()
-        Util.printColorToWriter true (Some ConsoleColor.Cyan) "hello" stringWriter
+
+        Util.printColorToWriter
+            true
+            (Some ConsoleColor.Cyan)
+            "hello"
+            stringWriter
 
         let printOutput = stringWriter.GetStringBuilder().ToString()
         Assert.Equal("hello", printOutput)

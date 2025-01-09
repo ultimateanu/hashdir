@@ -257,12 +257,8 @@ type FsTests
                  "missing.txt is not a valid path")>]
     [<InlineData("quiet", "", "", "")>]
     member _.``check hash file different verbosity levels``
-        (
-            verbosityLevel,
-            matchOutput,
-            diffOutput,
-            errorOutput
-        ) =
+        (verbosityLevel, matchOutput, diffOutput, errorOutput)
+        =
         // Setup to ensure 1 match, diff and missing result.
         File.WriteAllText(
             Path.Combine(fsTempDirSetupFixture.TempDir, "match.txt"),
@@ -329,11 +325,8 @@ type FsTests
                  "66d43407673f7cd471f448920abbed9a  /project\n",
                  "7167f8d27602ccd0df292bc8e6551c72  topA.txt\n")>]
     member _.``save hash files correctly``
-        (
-            hashAlg,
-            projectHashContents,
-            topAHashContents
-        ) =
+        (hashAlg, projectHashContents, topAHashContents)
+        =
         // Run hashdir and save hash file.
         let returnCode =
             Program.main

@@ -15,8 +15,7 @@ module Common =
 
 
 module Util =
-    let toStrLower x =
-        x.ToString().ToLower()
+    let toStrLower x = x.ToString().ToLower()
 
     let makeOption x =
         match x with
@@ -37,19 +36,23 @@ module Util =
         else
             printf "%s" str
 
-    let printColorToWriter (colorize: bool) (color: ConsoleColor option) (str: string) (outputWriter: TextWriter) =
+    let printColorToWriter
+        (colorize: bool)
+        (color: ConsoleColor option)
+        (str: string)
+        (outputWriter: TextWriter)
+        =
         let colorToPrint: ConsoleColor option =
             match colorize with
-                | true -> color
-                | false -> None
+            | true -> color
+            | false -> None
 
         match colorToPrint with
         | Some c ->
             Console.ForegroundColor <- c
             outputWriter.Write(str)
             Console.ResetColor()
-        | None ->
-            outputWriter.Write(str)
+        | None -> outputWriter.Write(str)
 
     // Removes trailing characters if path is directory.
     let cleanPath path =
@@ -62,6 +65,7 @@ module Util =
 
     let (|Regex|_|) pattern input =
         let m = Regex.Match(input, pattern)
+
         if m.Success then
             Some(List.tail [ for g in m.Groups -> g.Value ])
         else
