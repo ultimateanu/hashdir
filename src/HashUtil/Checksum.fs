@@ -4,6 +4,7 @@ open Microsoft.FSharp.Reflection
 open System.IO
 open System.Security.Cryptography
 open System.Text
+open Blake3
 
 module Checksum =
     type HashType =
@@ -13,6 +14,7 @@ module Checksum =
         | SHA256
         | SHA384
         | SHA512
+        | BLAKE3
 
     let allHashTypes: HashType[] =
         typeof<HashType>
@@ -30,6 +32,7 @@ module Checksum =
         | "SHA256" -> Some SHA256
         | "SHA384" -> Some SHA384
         | "SHA512" -> Some SHA512
+        | "BLAKE3" -> Some BLAKE3
         | _ -> None
 
     let getHashAlgorithm hashType : HashAlgorithm =
@@ -40,3 +43,4 @@ module Checksum =
         | SHA256 -> upcast SHA256.Create()
         | SHA384 -> upcast SHA384.Create()
         | SHA512 -> upcast SHA512.Create()
+        | BLAKE3 -> upcast (new Blake3.Blake3HashAlgorithm())
