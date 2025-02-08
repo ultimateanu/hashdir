@@ -4,6 +4,7 @@ RUN dnf install -y \
     dotnet-sdk-8.0 \
     make \
     findutils \
+    tmux \
     htop \
     wget && \
     dnf clean all
