@@ -6,8 +6,8 @@ format:
 build-release:
 	dotnet fsi src/make_release.fsx build
 
-dev-container-build:
+podman-build-dev:
 	podman build -t dotnet-dev -f Containerfile
 
-dev-container-run:
+podman-run-dev:
 	podman run --rm -it -v $(shell pwd):/mnt/code:z dotnet-dev

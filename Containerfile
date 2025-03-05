@@ -1,5 +1,7 @@
 FROM fedora:41
 
+RUN echo 'alias v="vi"' >> /etc/bashrc
+
 RUN dnf install -y \
     dotnet-sdk-8.0 \
     make \
