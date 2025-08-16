@@ -3,6 +3,22 @@
   <PropertyGroup>
     <TargetFrameworks>net8.0</TargetFrameworks>
     <OutputType>Library</OutputType>
+    <PackageId>ultimateanu.HashDir.HashUtil</PackageId>
+
+
+
+    <!-- Metadata -->
+    <Version>1.4.1</Version>
+    <Authors>Anu Bandi</Authors>
+    <PackageProjectUrl>https://ultimateanu.github.io/hashdir</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/ultimateanu/hashdir</RepositoryUrl>
+    <Description>Library for hashing directories and files</Description>
+
+    <!-- Create NuGet package -->
+    <Title>HashDir.HashUtil</Title>
+    <PackageOutputPath>./nupkg</PackageOutputPath>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
@@ -18,15 +34,17 @@
     <Compile Include="Library.fs" />
     <Compile Include="Hashing.fs" />
     <Compile Include="Verification.fs" />
-  </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Checksums\Checksums.csproj" />
-  </ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+    <None Include="..\..\LICENSE" Pack="true" PackagePath="\" />
 
-  <ItemGroup>
+    <PackageReference Include="ultimateanu.HashDir.Checksums" Version="1.0.0" />
     <PackageReference Include="Blake3" Version="2.0.0" />
     <PackageReference Include="Glob" Version="1.2.0-alpha0037" />
   </ItemGroup>
+
+  <Target Name="CleanPackages" BeforeTargets="Clean">
+    <RemoveDir Directories="$(PackageOutputPath)" />
+  </Target>
 
 </Project>

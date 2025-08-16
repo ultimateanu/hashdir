@@ -20,9 +20,10 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
 
-    - name: Pack NuGet package
+    - name: Pack NuGet packages
       run: dotnet pack --no-restore -c Release
 
     - name: Publish to NuGet.org
-      run: dotnet nuget push ./src/App/nupkg/hashdir* --source https://api.nuget.org/v3/index.json --skip-duplicate --api-key ${{secrets.NUGET_API_KEY}}
-
+      run: |
+        dotnet nuget push ./src/App/nupkg/hashdir.*.nupkg --source https://api.nuget.org/v3/index.json --skip-duplicate --api-key ${{secrets.NUGET_API_KEY}}
+        dotnet nuget push ./src/HashUtil/nupkg/ultimateanu.HashDir.HashUtil.*.nupkg --source https://api.nuget.org/v3/index.json --skip-duplicate --api-key ${{secrets.NUGET_LIBS_API_KEY}}
