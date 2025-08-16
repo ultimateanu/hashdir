@@ -1,4 +1,4 @@
-FROM fedora:41
+FROM fedora:42
 
 RUN echo 'alias v="vi"' >> /etc/bashrc
 
@@ -11,7 +11,7 @@ RUN dnf install -y \
     wget && \
     dnf clean all
 
-RUN dotnet tool install --global fantomas --version 7.0.0
+RUN dotnet tool install --global fantomas --version 7.0.3
 
 WORKDIR /mnt/code
 
