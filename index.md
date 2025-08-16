@@ -61,7 +61,7 @@ scoop install hashdir
 scoop update hashdir
 ```
 
-\*_Homebrew currently requires a project to have 50 stars to be included in core. So I've set up a custom tap for now that still allows easy installation. If you like this project, please consider starring on Github and adding a formula to Homebrew core eventually._
+\*_Homebrew currently requires a project to have [75 stars](https://docs.brew.sh/Acceptable-Formulae#niche-or-self-submitted-stuff) to be included in core. So I've set up a custom tap for now that still allows easy installation. If you like this project, please consider starring on Github and adding a formula to Homebrew core eventually._
 
 ### Cross-platform dotnet app
 
