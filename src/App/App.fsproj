@@ -1,47 +1,41 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
     <TargetFrameworks>net8.0</TargetFrameworks>
+    <OutputType>Exe</OutputType>
     <AssemblyName>hashdir</AssemblyName>
-    <Version>1.4.0</Version>
-    <Company></Company>
-    <Authors>Anu Bandi</Authors>
-    <PackageProjectUrl>https://ultimateanu.github.io/hashdir</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/ultimateanu/hashdir</RepositoryUrl>
-    <Description>A command line utility to hash directories and files.</Description>
     <PublishReadyToRunShowWarnings>true</PublishReadyToRunShowWarnings>
     <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
 
+    <!-- Metadata -->
+    <Version>1.4.1</Version>
+    <Authors>Anu Bandi</Authors>
+    <PackageProjectUrl>https://ultimateanu.github.io/hashdir</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/ultimateanu/hashdir</RepositoryUrl>
+    <Description>A command line utility to hash directories and files</Description>
+
     <!-- Create NuGet tool -->
     <Title>hashdir</Title>
-    <PackAsTool>true</PackAsTool>
-    <ToolCommandName>hashdir</ToolCommandName>
     <PackageOutputPath>./nupkg</PackageOutputPath>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>hashdir</ToolCommandName>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="Progress.fs" />
     <Compile Include="Program.fs" />
+
     <None Include="..\..\README.md" Pack="true" PackagePath="\" />
-  </ItemGroup>
+    <None Include="..\..\LICENSE" Pack="true" PackagePath="\" />
 
-  <ItemGroup>
     <ProjectReference Include="..\HashUtil\HashUtil.fsproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Include="..\..\LICENSE">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-    </None>
-  </ItemGroup>
+  <Target Name="CleanPackages" BeforeTargets="Clean">
+    <RemoveDir Directories="$(PackageOutputPath)" />
+  </Target>
 
 </Project>
