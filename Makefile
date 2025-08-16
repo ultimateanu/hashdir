@@ -24,6 +24,9 @@ format: ##(@main) Format all F# code
 build-release: ##(@main) Do a release build
 	dotnet fsi src/make_release.fsx build
 
+clean: ##(@main) Clean everything
+	dotnet clean
+
 podman-build-dev: ## (@dev-ide) Build image
 	podman build -t dotnet-dev -f Containerfile
 
