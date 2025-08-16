@@ -22,7 +22,7 @@ There are several ways to get hashdir. Full details can be found [here](https://
 - **Stand-alone binary**: latest version for macOS, Windows, and Linux can be found at [releases](https://github.com/ultimateanu/hashdir/releases)
 - **AUR (Arch User Repository)**: If you are using an Arch-based distribution, you can build and install the [hashdir](https://aur.archlinux.org/packages/hashdir) package from the AUR
 
-\*_Homebrew currently requires a project to have 50 stars to be included in core. So I’ve set up a custom tap for now that still allows easy installation. If you like this project, please consider starring on Github and adding a formula to Homebrew core eventually._
+\*_Homebrew currently requires a project to have [75 stars](https://docs.brew.sh/Acceptable-Formulae#niche-or-self-submitted-stuff) to be included in core. So I’ve set up a custom tap for now that still allows easy installation. If you like this project, please consider starring on Github and adding a formula to Homebrew core eventually._
 
 ## Usage
 
