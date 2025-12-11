@@ -20,7 +20,8 @@ type ChecksumTests(output: ITestOutputHelper) =
                  "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e" |]
               [| BLAKE3
                  "af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262" |]
-              [| XXHASH3; "2d06800538d394c2" |] ]
+              [| XXHASH3; "2d06800538d394c2" |]
+              [| CRC32; "00000000" |] ]
 
     [<Theory; MemberData("emptyHashes")>]
     member _.``hash empty string``(hashType, expectedHash) =
@@ -47,7 +48,8 @@ type ChecksumTests(output: ITestOutputHelper) =
               [| BLAKE3
                  "hello"
                  "ea8f163db38682925e4491c5e58d4bb3506ef8c14eb78a86e908c5624a67200f" |]
-              [| XXHASH3; "hello"; "9555e8555c62dcfd" |] ]
+              [| XXHASH3; "hello"; "9555e8555c62dcfd" |]
+              [| CRC32; "hello"; "86a61036" |] ]
 
 
     [<Theory; MemberData("simpleStringHashes")>]
@@ -67,6 +69,7 @@ type ChecksumTests(output: ITestOutputHelper) =
               [| [ "sha512"; " Sha512   "; "SHA512 " ]; Some SHA512 |]
               [| [ "blake3"; " Blake3   "; "BLAKE3 " ]; Some BLAKE3 |]
               [| [ "xxhash3"; " xxHash3   "; "XXHASH3 " ]; Some XXHASH3 |]
+              [| [ "crc32"; " crc32   "; "CRC32 " ]; Some CRC32 |]
               [| [ "asna1"; " md6   "; "SHA513 " ]; None |] ]
 
     [<Theory; MemberData("hashTypeStrings")>]

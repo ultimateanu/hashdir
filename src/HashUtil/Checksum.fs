@@ -17,6 +17,7 @@ module Checksum =
         | SHA512
         | BLAKE3
         | XXHASH3
+        | CRC32
 
     let allHashTypes: HashType[] =
         typeof<HashType>
@@ -36,6 +37,7 @@ module Checksum =
         | "SHA512" -> Some SHA512
         | "BLAKE3" -> Some BLAKE3
         | "XXHASH3" -> Some XXHASH3
+        | "CRC32" -> Some CRC32
         | _ -> None
 
     let getHashAlgorithm hashType : HashAlgorithm =
@@ -47,4 +49,7 @@ module Checksum =
         | SHA384 -> SHA384.Create()
         | SHA512 -> SHA512.Create()
         | BLAKE3 -> new Blake3.Blake3HashAlgorithm()
-        | XXHASH3 -> new NonCryptoWrapper(new System.IO.Hashing.XxHash3())
+        | XXHASH3 ->
+            new NonCryptoWrapper(new System.IO.Hashing.XxHash3() )
+        | CRC32 ->
+            new NonCryptoWrapper(new System.IO.Hashing.Crc32() )
