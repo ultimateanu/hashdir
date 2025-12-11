@@ -49,7 +49,5 @@ module Checksum =
         | SHA384 -> SHA384.Create()
         | SHA512 -> SHA512.Create()
         | BLAKE3 -> new Blake3.Blake3HashAlgorithm()
-        | XXHASH3 ->
-            new NonCryptoWrapper(new System.IO.Hashing.XxHash3() )
-        | CRC32 ->
-            new NonCryptoWrapper(new System.IO.Hashing.Crc32() )
+        | XXHASH3 -> new NonCryptoWrapper(new System.IO.Hashing.XxHash3())
+        | CRC32 -> new NonCryptoWrapper(new System.IO.Hashing.Crc32())
