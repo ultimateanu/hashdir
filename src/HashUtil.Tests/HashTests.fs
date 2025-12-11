@@ -19,7 +19,10 @@ type ChecksumTests(output: ITestOutputHelper) =
               [| SHA512
                  "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e" |]
               [| BLAKE3
-                 "af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262" |] ]
+                 "af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262" |]
+              [| XXHASH3
+                 "2d06800538d394c2" |]
+                 ]
 
     [<Theory; MemberData("emptyHashes")>]
     member _.``hash empty string``(hashType, expectedHash) =
@@ -45,7 +48,11 @@ type ChecksumTests(output: ITestOutputHelper) =
                  "9b71d224bd62f3785d96d46ad3ea3d73319bfbc2890caadae2dff72519673ca72323c3d99ba5c11d7c7acc6e14b8c5da0c4663475c2e5c3adef46f73bcdec043" |]
               [| BLAKE3
                  "hello"
-                 "ea8f163db38682925e4491c5e58d4bb3506ef8c14eb78a86e908c5624a67200f" |] ]
+                 "ea8f163db38682925e4491c5e58d4bb3506ef8c14eb78a86e908c5624a67200f" |]
+              [| XXHASH3
+                 "hello"
+                 "9555e8555c62dcfd" |]
+                 ]
 
 
     [<Theory; MemberData("simpleStringHashes")>]
@@ -64,7 +71,8 @@ type ChecksumTests(output: ITestOutputHelper) =
               [| [ "sha384"; " Sha384   "; "SHA384 " ]; Some SHA384 |]
               [| [ "sha512"; " Sha512   "; "SHA512 " ]; Some SHA512 |]
               [| [ "blake3"; " Blake3   "; "BLAKE3 " ]; Some BLAKE3 |]
-              [| [ "asha1"; " md6   "; "SHA513 " ]; None |] ]
+              [| [ "xxhash3"; " xxHash3   "; "XXHASH3 " ]; Some XXHASH3 |]
+              [| [ "asna1"; " md6   "; "SHA513 " ]; None |] ]
 
     [<Theory; MemberData("hashTypeStrings")>]
     member _.``parse HashType``(inputStrs, expectedType) =

@@ -39,7 +39,7 @@ Arguments:
 Options:
   -t, --tree                                                        Print directory tree
   -s, --save                                                        Save the checksum to a file
-  -a, --algorithm <blake3|md5|ripemd160|sha1|sha256|sha384|sha512>  The hash function to use [default: sha1]
+  -a, --algorithm <blake3|md5|ripemd160|sha1|sha256|sha384|sha512|xxhash3>  The hash function to use [default: sha1]
   -i, --include-hidden-files                                        Include hidden files
   -e, --skip-empty-dir                                              Skip empty directories
   -n, --ignore <pattern>                                            Directories/files to not include
