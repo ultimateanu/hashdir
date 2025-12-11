@@ -10,8 +10,6 @@ type NonCryptoWrapper(hashAlgo: NonCryptographicHashAlgorithm) =
     override this.HashCore(array: byte[], ibStart: int, cbSize: int) =
         hashAlgo.Append(System.ArraySegment<byte>(array, ibStart, cbSize))
 
-    override this.HashFinal() =
-        hashAlgo.GetCurrentHash()
+    override this.HashFinal() = hashAlgo.GetCurrentHash()
 
-    override this.Initialize() =
-        hashAlgo.Reset()
+    override this.Initialize() = hashAlgo.Reset()
