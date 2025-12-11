@@ -40,11 +40,11 @@ module Checksum =
 
     let getHashAlgorithm hashType : HashAlgorithm =
         match hashType with
-        | MD5 ->  MD5.Create()
-        | RIPEMD160 ->  Checksums.RIPEMD160.Create()
-        | SHA1 ->  SHA1.Create()
-        | SHA256 ->  SHA256.Create()
-        | SHA384 ->  SHA384.Create()
-        | SHA512 ->  SHA512.Create()
-        | BLAKE3 ->  (new Blake3.Blake3HashAlgorithm())
-        | XXHASH3 -> (new NonCryptoWrapper(new System.IO.Hashing.XxHash3()))
+        | MD5 -> MD5.Create()
+        | RIPEMD160 -> Checksums.RIPEMD160.Create()
+        | SHA1 -> SHA1.Create()
+        | SHA256 -> SHA256.Create()
+        | SHA384 -> SHA384.Create()
+        | SHA512 -> SHA512.Create()
+        | BLAKE3 -> new Blake3.Blake3HashAlgorithm()
+        | XXHASH3 -> new NonCryptoWrapper(new System.IO.Hashing.XxHash3())
