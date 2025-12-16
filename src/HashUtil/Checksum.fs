@@ -2,6 +2,7 @@
 
 open Microsoft.FSharp.Reflection
 open System.IO
+open System.IO.Hashing
 open System.Security.Cryptography
 open System.Text
 open Blake3
@@ -15,6 +16,8 @@ module Checksum =
         | SHA384
         | SHA512
         | BLAKE3
+        | XXHASH3
+        | CRC32
 
     let allHashTypes: HashType[] =
         typeof<HashType>
@@ -33,14 +36,18 @@ module Checksum =
         | "SHA384" -> Some SHA384
         | "SHA512" -> Some SHA512
         | "BLAKE3" -> Some BLAKE3
+        | "XXHASH3" -> Some XXHASH3
+        | "CRC32" -> Some CRC32
         | _ -> None
 
     let getHashAlgorithm hashType : HashAlgorithm =
         match hashType with
-        | MD5 -> upcast MD5.Create()
-        | RIPEMD160 -> upcast Checksums.RIPEMD160.Create()
-        | SHA1 -> upcast SHA1.Create()
-        | SHA256 -> upcast SHA256.Create()
-        | SHA384 -> upcast SHA384.Create()
-        | SHA512 -> upcast SHA512.Create()
-        | BLAKE3 -> upcast (new Blake3.Blake3HashAlgorithm())
+        | MD5 -> MD5.Create()
+        | RIPEMD160 -> Checksums.RIPEMD160.Create()
+        | SHA1 -> SHA1.Create()
+        | SHA256 -> SHA256.Create()
+        | SHA384 -> SHA384.Create()
+        | SHA512 -> SHA512.Create()
+        | BLAKE3 -> new Blake3.Blake3HashAlgorithm()
+        | XXHASH3 -> new NonCryptoWrapper(new System.IO.Hashing.XxHash3())
+        | CRC32 -> new NonCryptoWrapper(new System.IO.Hashing.Crc32())

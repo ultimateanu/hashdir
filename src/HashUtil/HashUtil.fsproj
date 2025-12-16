@@ -30,6 +30,7 @@
 
   <ItemGroup>
     <Compile Include="Util.fs" />
+    <Compile Include="NonCryptoWrapper.fs" />
     <Compile Include="Checksum.fs" />
     <Compile Include="Library.fs" />
     <Compile Include="Hashing.fs" />
@@ -38,9 +39,10 @@
     <None Include="..\..\README.md" Pack="true" PackagePath="\" />
     <None Include="..\..\LICENSE" Pack="true" PackagePath="\" />
 
-    <PackageReference Include="ultimateanu.HashDir.Checksums" Version="1.0.0" />
     <PackageReference Include="Blake3" Version="2.0.0" />
     <PackageReference Include="Glob" Version="1.2.0-alpha0037" />
+    <PackageReference Include="System.IO.Hashing" Version="8.0.0" />
+    <PackageReference Include="ultimateanu.HashDir.Checksums" Version="1.0.0" />
   </ItemGroup>
 
   <Target Name="CleanPackages" BeforeTargets="Clean">
