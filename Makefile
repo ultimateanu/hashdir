@@ -18,6 +18,12 @@ help: ## (@main) Show this help
 		} \
 	}' $(MAKEFILE_LIST)
 
+build: ##(@main) Build everything
+	dotnet build
+
+test: ##(@main) Run all unit tests
+	dotnet test
+
 format: ##(@main) Format all F# code
 	find . -type f \( -name "*.fs" -o -name "*.fsx" \) -not -path "*obj*" | xargs fantomas
 
