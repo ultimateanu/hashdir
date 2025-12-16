@@ -92,7 +92,7 @@ type FsTests
         debugOutput: ITestOutputHelper
     ) =
     let hashFile =
-        Path.Combine(fsTempDirSetupFixture.TempDir, "project_hash.sha1.txt")
+        Path.Combine(fsTempDirSetupFixture.TempDir, "project_hash.xxhash3.txt")
 
     let oldStdOut = Console.Out
     let customStdOut = new IO.StringWriter()
@@ -365,7 +365,7 @@ type FsTests
         let getHashFilePath id =
             Path.Join(
                 fsTempDirSetupFixture.TempDir,
-                sprintf "topA.txt.%s.sha1.txt" (id.ToString())
+                sprintf "topA.txt.%s.xxhash3.txt" (id.ToString())
             )
 
         // Run hashdir multiple times.
