@@ -8,8 +8,8 @@ The tool supports many popular hashing algorithms such as `blake3`, `md5`, `ripe
 
 # How to Run
 
-- **Dev Build:** `dotnet build` can be used to quickly make sure the app builds.
-- **Run Tests:** `dotnet test` can be used to make sure the tests are passing.
+- **Dev Build:** `make build` can be used to quickly make sure the app builds.
+- **Run Tests:** `make test` can be used to make sure the tests are passing.
 - **Check changes/PR:** `git diff main` can be used to understand the feature branch.
 
 # Project Structure
