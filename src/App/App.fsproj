@@ -8,7 +8,7 @@
     <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
 
     <!-- Metadata -->
-    <Version>1.4.1</Version>
+    <Version>1.5.0</Version>
     <Authors>Anu Bandi</Authors>
     <PackageProjectUrl>https://ultimateanu.github.io/hashdir</PackageProjectUrl>
     <RepositoryUrl>https://github.com/ultimateanu/hashdir</RepositoryUrl>
