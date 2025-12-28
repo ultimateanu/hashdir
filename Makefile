@@ -24,6 +24,10 @@ build: ##(@main) Build everything
 test: ##(@main) Run all unit tests
 	dotnet test
 
+clean: ##(@main) Clean the project and remove release binaries
+	dotnet clean
+	rm -rf release
+
 format: ##(@main) Format all F# code
 	find . -type f \( -name "*.fs" -o -name "*.fsx" \) -not -path "*obj*" | xargs fantomas
 
